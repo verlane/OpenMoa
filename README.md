@@ -54,8 +54,15 @@
 모아키의 기본적인 동작에서 크게 벗어난 완전히 새로운 입력 방법을 구현하는 것은
 현재로서는 목표가 아님을 이해해주시기 바랍니다.
 
+### 오픈 소스 라이선스
+
+이 프로젝트는 다음 오픈 소스 프로젝트의 코드를 포함합니다:
+
+- [HangulParser][5] (MIT License)
+
 [1]: https://www.youtube.com/watch?v=Mcz0sSz1Ky4
 [2]: https://doi.org/10.8080/1020110078022
 [3]: https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%ED%8A%B9%ED%97%88%EB%B2%95
 [4]: https://developer.android.com/studio
+[5]: https://github.com/kimkevin/HangulParser
 [101]: https://github.com/AiOO/OpenMoa/actions/workflows/test.yml/badge.svg
