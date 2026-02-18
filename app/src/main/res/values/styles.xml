@@ -18,4 +18,13 @@
         <item name="android:background">@color/keyboard_background</item>
     </style>
 
+    <style name="EmojiPickerViewStyle" >
+        <!-- Category tab icon text color -->
+        <item name="android:colorControlNormal">@color/key_foreground</item>
+        <!-- Category name text color -->
+        <item name="android:textColorPrimary">@color/key_foreground_muted</item>
+        <!-- Active color -->
+        <item name="android:colorAccent">@color/key_foreground_locked</item>
+    </style>
+
 </resources>
