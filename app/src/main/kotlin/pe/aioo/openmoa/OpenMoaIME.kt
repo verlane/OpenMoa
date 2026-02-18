@@ -29,6 +29,7 @@ import androidx.autofill.inline.common.TextViewStyle
 import androidx.autofill.inline.common.ViewStyle
 import androidx.autofill.inline.v1.InlineSuggestionUi
 import androidx.core.content.ContextCompat
+import androidx.core.view.isEmpty
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -64,7 +65,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
             @Suppress("DEPRECATION")
             intent.getSerializableExtra(EXTRA_NAME)
         }
-        return if (extra is T) extra else null
+        return extra as? T
     }
 
     private fun sendKeyDownUpEvent(keyCode: Int, metaState: Int = 0, withShift: Boolean = false) {
@@ -581,13 +582,13 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         binding.suggestionStripEndChipGroup.removeAllViews()
         binding.suggestionStripLayout.visibility =
             if (response.inlineSuggestions.isEmpty()) View.GONE else View.VISIBLE
-        response.inlineSuggestions.map { inlineSuggestion ->
+        response.inlineSuggestions.forEach { inlineSuggestion ->
             val size = Size(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
             )
             inlineSuggestion.inflate(this, size, mainExecutor) { view ->
                 if (inlineSuggestion.info.isPinned) {
-                    if (binding.suggestionStripStartChipGroup.childCount == 0) {
+                    if (binding.suggestionStripStartChipGroup.isEmpty()) {
                         binding.suggestionStripStartChipGroup.addView(view)
                     } else {
                         binding.suggestionStripEndChipGroup.addView(view)
