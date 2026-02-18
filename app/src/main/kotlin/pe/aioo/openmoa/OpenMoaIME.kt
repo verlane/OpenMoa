@@ -50,6 +50,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     private val config: Config by inject()
     private val hangulAssembler = HangulAssembler()
     private var imeMode = IMEMode.IME_KO
+    private var previousImeMode = IMEMode.IME_KO
     private var composingText = ""
 
     private fun finishComposing() {
@@ -173,7 +174,8 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                                         IMEMode.IME_KO_PUNCTUATION,
                                         IMEMode.IME_KO_NUMBER,
                                         IMEMode.IME_KO_ARROW,
-                                        IMEMode.IME_KO_PHONE -> IMEMode.IME_KO
+                                        IMEMode.IME_KO_PHONE,
+                                        IMEMode.IME_EMOJI -> IMEMode.IME_KO
                                         IMEMode.IME_EN_PUNCTUATION,
                                         IMEMode.IME_EN_NUMBER,
                                         IMEMode.IME_EN_ARROW,
@@ -187,7 +189,8 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                                         IMEMode.IME_KO,
                                         IMEMode.IME_KO_NUMBER,
                                         IMEMode.IME_KO_ARROW,
-                                        IMEMode.IME_KO_PHONE -> IMEMode.IME_KO_PUNCTUATION
+                                        IMEMode.IME_KO_PHONE,
+                                        IMEMode.IME_EMOJI -> IMEMode.IME_KO_PUNCTUATION
                                         IMEMode.IME_EN,
                                         IMEMode.IME_EN_NUMBER,
                                         IMEMode.IME_EN_ARROW,
@@ -204,7 +207,8 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                                         IMEMode.IME_KO_NUMBER,
                                         IMEMode.IME_KO_PUNCTUATION,
                                         IMEMode.IME_KO_ARROW,
-                                        IMEMode.IME_KO_PHONE -> IMEMode.IME_KO_ARROW
+                                        IMEMode.IME_KO_PHONE,
+                                        IMEMode.IME_EMOJI -> IMEMode.IME_KO_ARROW
                                         IMEMode.IME_EN,
                                         IMEMode.IME_EN_NUMBER,
                                         IMEMode.IME_EN_PUNCTUATION,
@@ -298,7 +302,14 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                                     KeyEvent.KEYCODE_MOVE_HOME, KeyEvent.META_CTRL_ON, true
                                 )
                             }
-                            SpecialKey.EMOJI -> Unit
+                            SpecialKey.EMOJI -> {
+                                if (imeMode == IMEMode.IME_EMOJI) {
+                                    setKeyboard(previousImeMode)
+                                } else {
+                                    previousImeMode = imeMode
+                                    setKeyboard(IMEMode.IME_EMOJI)
+                                }
+                            }
                         }
                     }
                     is String -> {
@@ -367,7 +378,8 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
             IMEMode.IME_KO_PUNCTUATION,
             IMEMode.IME_KO_NUMBER,
             IMEMode.IME_KO_ARROW,
-            IMEMode.IME_KO_PHONE -> setKeyboard(IMEMode.IME_KO)
+            IMEMode.IME_KO_PHONE,
+            IMEMode.IME_EMOJI -> setKeyboard(IMEMode.IME_KO)
             IMEMode.IME_EN,
             IMEMode.IME_EN_PUNCTUATION,
             IMEMode.IME_EN_NUMBER,
@@ -401,6 +413,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         val numberView = NumberView(this)
         val arrowView = ArrowView(this)
         val phoneView = PhoneView(this)
+        val emojiView = EmojiView(this)
         keyboardViews = mapOf(
             IMEMode.IME_KO to OpenMoaView(this),
             IMEMode.IME_EN to QuertyView(this),
@@ -412,6 +425,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
             IMEMode.IME_EN_ARROW to arrowView,
             IMEMode.IME_KO_PHONE to phoneView,
             IMEMode.IME_EN_PHONE to phoneView,
+            IMEMode.IME_EMOJI to emojiView,
         )
         val view = layoutInflater.inflate(R.layout.open_moa_ime, null)
         binding = OpenMoaImeBinding.bind(view)
@@ -430,7 +444,8 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                         IMEMode.IME_KO_PUNCTUATION,
                         IMEMode.IME_KO_NUMBER,
                         IMEMode.IME_KO_ARROW,
-                        IMEMode.IME_KO_PHONE -> IMEMode.IME_KO_NUMBER
+                        IMEMode.IME_KO_PHONE,
+                        IMEMode.IME_EMOJI -> IMEMode.IME_KO_NUMBER
                         IMEMode.IME_EN,
                         IMEMode.IME_EN_PUNCTUATION,
                         IMEMode.IME_EN_NUMBER,
@@ -446,7 +461,8 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                         IMEMode.IME_KO_PUNCTUATION,
                         IMEMode.IME_KO_NUMBER,
                         IMEMode.IME_KO_ARROW,
-                        IMEMode.IME_KO_PHONE -> IMEMode.IME_KO_PHONE
+                        IMEMode.IME_KO_PHONE,
+                        IMEMode.IME_EMOJI -> IMEMode.IME_KO_PHONE
                         IMEMode.IME_EN,
                         IMEMode.IME_EN_PUNCTUATION,
                         IMEMode.IME_EN_NUMBER,

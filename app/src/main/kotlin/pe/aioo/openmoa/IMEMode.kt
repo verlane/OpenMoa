@@ -11,4 +11,5 @@ enum class IMEMode {
     IME_KO_PHONE,
     IME_KO_PUNCTUATION,
     IME_KO_NUMBER,
+    IME_EMOJI,
 }
