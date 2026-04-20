@@ -9,6 +9,7 @@ import pe.aioo.openmoa.databinding.NumberViewBinding
 import pe.aioo.openmoa.view.message.SpecialKey
 import pe.aioo.openmoa.view.keytouchlistener.RepeatKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.SimpleKeyTouchListener
+import pe.aioo.openmoa.view.keytouchlistener.SpaceKeyTouchListener
 import pe.aioo.openmoa.view.message.SpecialKeyMessage
 import pe.aioo.openmoa.view.message.StringKeyMessage
 
@@ -67,7 +68,7 @@ class NumberView : ConstraintLayout {
                 )
             )
             zeroKey.setOnTouchListener(SimpleKeyTouchListener(context, StringKeyMessage("0")))
-            spaceKey.setOnTouchListener(SimpleKeyTouchListener(context, StringKeyMessage(" ")))
+            spaceKey.setOnTouchListener(SpaceKeyTouchListener(context))
             enterKey.setOnTouchListener(
                 SimpleKeyTouchListener(context, SpecialKeyMessage(SpecialKey.ENTER))
             )

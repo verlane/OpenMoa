@@ -12,6 +12,7 @@ import android.inputmethodservice.InputMethodService
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
+import android.view.inputmethod.InputMethodManager
 import android.text.InputType
 import android.util.Size
 import android.view.KeyEvent
@@ -56,6 +57,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     private var imeMode = IMEMode.IME_KO
     private var previousImeMode = IMEMode.IME_KO
     private var composingText = ""
+    private var lastSpaceTime = 0L
 
     private fun finishComposing() {
         currentInputConnection?.finishComposingText()
@@ -321,6 +323,11 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                                     }
                                 )
                             }
+                            SpecialKey.SHOW_IME_PICKER -> {
+                                finishComposing()
+                                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                                imm?.showInputMethodPicker()
+                            }
                         }
                     }
                     is String -> {
@@ -343,7 +350,22 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                         } else {
                             // Process for another key
                             finishComposing()
-                            currentInputConnection.commitText(key, 1)
+                            if (key == " ") {
+                                val autoEnabled = SettingsPreferences.getAutoSpacePeriod(this@OpenMoaIME)
+                                val now = SystemClock.elapsedRealtime()
+                                if (autoEnabled && now - lastSpaceTime < 1000L &&
+                                    currentInputConnection.getTextBeforeCursor(1, 0) == " ") {
+                                    currentInputConnection.deleteSurroundingText(1, 0)
+                                    currentInputConnection.commitText(". ", 1)
+                                    lastSpaceTime = 0L
+                                } else {
+                                    currentInputConnection.commitText(key, 1)
+                                    lastSpaceTime = if (autoEnabled) now else 0L
+                                }
+                            } else {
+                                currentInputConnection.commitText(key, 1)
+                                lastSpaceTime = 0L
+                            }
                         }
                     }
                 }

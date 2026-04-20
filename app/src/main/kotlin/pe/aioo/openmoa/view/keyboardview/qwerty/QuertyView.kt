@@ -15,6 +15,7 @@ import pe.aioo.openmoa.view.keytouchlistener.CrossKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.FunctionalKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.RepeatKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.SimpleKeyTouchListener
+import pe.aioo.openmoa.view.keytouchlistener.SpaceKeyTouchListener
 import pe.aioo.openmoa.view.message.SpecialKeyMessage
 import pe.aioo.openmoa.view.message.StringKeyMessage
 import pe.aioo.openmoa.view.preview.KeyPreviewController
@@ -139,7 +140,7 @@ class QuertyView : ConstraintLayout, KoinComponent {
                     context, SpecialKeyMessage(SpecialKey.HANJA_NUMBER_PUNCTUATION)
                 )
             )
-            spaceKey.setOnTouchListener(SimpleKeyTouchListener(context, StringKeyMessage(" ")))
+            spaceKey.setOnTouchListener(SpaceKeyTouchListener(context))
             commaQuestionDotExclamationKey.setOnTouchListener(
                 CrossKeyTouchListener(
                     context,

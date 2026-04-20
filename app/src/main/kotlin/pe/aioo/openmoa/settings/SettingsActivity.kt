@@ -9,6 +9,7 @@ import pe.aioo.openmoa.config.HangulInputMode
 import pe.aioo.openmoa.config.KeypadHeight
 import pe.aioo.openmoa.config.LongPressTime
 import pe.aioo.openmoa.config.OneHandMode
+import pe.aioo.openmoa.config.SpaceLongPressAction
 import pe.aioo.openmoa.databinding.ActivitySettingsBinding
 import pe.aioo.openmoa.quickphrase.QuickPhraseKey
 import pe.aioo.openmoa.quickphrase.QuickPhraseRepository
@@ -29,14 +30,18 @@ class SettingsActivity : AppCompatActivity() {
         updateKeypadHeightDisplay()
         updateOneHandModeDisplay()
         updateLongPressTimeDisplay()
+        updateSpaceLongPressActionDisplay()
         updateKeyPreviewDisplay()
+        updateAutoSpacePeriodDisplay()
         updateQuickPhraseDisplays()
 
         binding.hangulInputModeItem.setOnClickListener { showInputModeDialog() }
         binding.keypadHeightItem.setOnClickListener { showKeypadHeightDialog() }
         binding.oneHandModeItem.setOnClickListener { showOneHandModeDialog() }
         binding.longPressTimeItem.setOnClickListener { showLongPressTimeDialog() }
+        binding.spaceLongPressActionItem.setOnClickListener { showSpaceLongPressActionDialog() }
         binding.keyPreviewItem.setOnClickListener { toggleKeyPreview() }
+        binding.autoSpacePeriodItem.setOnClickListener { toggleAutoSpacePeriod() }
         binding.quickPhraseKieukItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.KIEUK) }
         binding.quickPhraseTieutItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.TIEUT) }
         binding.quickPhraseChieutItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.CHIEUT) }
@@ -130,6 +135,37 @@ class SettingsActivity : AppCompatActivity() {
         val newValue = !SettingsPreferences.getKeyPreviewEnabled(this)
         SettingsPreferences.setKeyPreviewEnabled(this, newValue)
         binding.keyPreviewSwitch.isChecked = newValue
+    }
+
+    private fun updateSpaceLongPressActionDisplay() {
+        binding.spaceLongPressActionValue.text =
+            getString(SettingsPreferences.getSpaceLongPressAction(this).labelResId)
+    }
+
+    private fun showSpaceLongPressActionDialog() {
+        val options = SpaceLongPressAction.values()
+        val labels = options.map { getString(it.labelResId) }.toTypedArray()
+        val currentIndex = options.indexOf(SettingsPreferences.getSpaceLongPressAction(this))
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.settings_space_long_press_title)
+            .setSingleChoiceItems(labels, currentIndex) { dialog, which ->
+                SettingsPreferences.save(this, SettingsPreferences.KEY_SPACE_LONG_PRESS_ACTION, options[which].name)
+                updateSpaceLongPressActionDisplay()
+                dialog.dismiss()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun updateAutoSpacePeriodDisplay() {
+        binding.autoSpacePeriodSwitch.isChecked = SettingsPreferences.getAutoSpacePeriod(this)
+    }
+
+    private fun toggleAutoSpacePeriod() {
+        val newValue = !SettingsPreferences.getAutoSpacePeriod(this)
+        SettingsPreferences.setAutoSpacePeriod(this, newValue)
+        binding.autoSpacePeriodSwitch.isChecked = newValue
     }
 
     private fun showInputModeDialog() {

@@ -97,6 +97,12 @@
     <string name="settings_long_press_time_1000">1.0초</string>
     <string name="settings_long_press_time_1500">1.5초</string>
     <string name="settings_key_preview_title">키 입력 미리보기</string>
+    <string name="settings_space_long_press_title">스페이스 롱키 기능</string>
+    <string name="settings_space_long_press_ime_picker">키보드 선택 팝업(기본)</string>
+    <string name="settings_space_long_press_switch_language">언어 전환</string>
+    <string name="settings_space_long_press_none">없음</string>
+    <string name="settings_auto_space_period_title">자동 마침표 입력</string>
+    <string name="settings_auto_space_period_description">스페이스 바를 두 번 눌러 마침표를 자동으로 입력합니다</string>
 
     <string name="settings_quick_phrase_section">상용구</string>
     <string name="settings_quick_phrase_kieuk_label">ㅋ 상용구</string>

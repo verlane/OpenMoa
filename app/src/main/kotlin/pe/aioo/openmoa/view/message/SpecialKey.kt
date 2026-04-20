@@ -27,4 +27,5 @@ enum class SpecialKey {
     SELECT_ARROW_DOWN,
     SELECT_END,
     SELECT_HOME,
+    SHOW_IME_PICKER,
 }

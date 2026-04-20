@@ -11,6 +11,7 @@ import pe.aioo.openmoa.view.keytouchlistener.FunctionalKeyTouchListener
 import pe.aioo.openmoa.view.message.SpecialKey
 import pe.aioo.openmoa.view.keytouchlistener.RepeatKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.SimpleKeyTouchListener
+import pe.aioo.openmoa.view.keytouchlistener.SpaceKeyTouchListener
 import pe.aioo.openmoa.view.message.SpecialKeyMessage
 import pe.aioo.openmoa.view.message.StringKeyMessage
 
@@ -137,7 +138,7 @@ class ArrowView : ConstraintLayout {
                     context, SpecialKeyMessage(SpecialKey.HANJA_NUMBER_PUNCTUATION)
                 )
             )
-            spaceKey.setOnTouchListener(SimpleKeyTouchListener(context, StringKeyMessage(" ")))
+            spaceKey.setOnTouchListener(SpaceKeyTouchListener(context))
             enterKey.setOnTouchListener(
                 SimpleKeyTouchListener(context, SpecialKeyMessage(SpecialKey.ENTER))
             )

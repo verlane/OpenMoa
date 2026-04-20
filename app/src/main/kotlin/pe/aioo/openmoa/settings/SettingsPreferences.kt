@@ -5,6 +5,7 @@ import pe.aioo.openmoa.config.HangulInputMode
 import pe.aioo.openmoa.config.KeypadHeight
 import pe.aioo.openmoa.config.LongPressTime
 import pe.aioo.openmoa.config.OneHandMode
+import pe.aioo.openmoa.config.SpaceLongPressAction
 
 object SettingsPreferences {
 
@@ -14,6 +15,8 @@ object SettingsPreferences {
     const val KEY_ONE_HAND_MODE = "one_hand_mode"
     const val KEY_KEY_PREVIEW = "key_preview_enabled"
     const val KEY_LONG_PRESS_TIME = "long_press_time"
+    const val KEY_SPACE_LONG_PRESS_ACTION = "space_long_press_action"
+    const val KEY_AUTO_SPACE_PERIOD = "auto_space_period"
 
     fun getKeyPreviewEnabled(context: Context): Boolean {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -49,6 +52,24 @@ object SettingsPreferences {
         val value = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .getString(KEY_ONE_HAND_MODE, null)
         return OneHandMode.fromString(value)
+    }
+
+    fun getSpaceLongPressAction(context: Context): SpaceLongPressAction {
+        val value = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getString(KEY_SPACE_LONG_PRESS_ACTION, null)
+        return SpaceLongPressAction.fromString(value)
+    }
+
+    fun getAutoSpacePeriod(context: Context): Boolean {
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getBoolean(KEY_AUTO_SPACE_PERIOD, false)
+    }
+
+    fun setAutoSpacePeriod(context: Context, enabled: Boolean) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(KEY_AUTO_SPACE_PERIOD, enabled)
+            .apply()
     }
 
     fun save(context: Context, key: String, value: String) {
