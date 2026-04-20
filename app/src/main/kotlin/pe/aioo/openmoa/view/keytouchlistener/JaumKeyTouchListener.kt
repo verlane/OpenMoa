@@ -65,7 +65,7 @@ class JaumKeyTouchListener(
                 hasMoved = false
                 isLongPressed = false
                 moeumGestureProcessor.clear()
-                if (quickPhraseKey == null) previewController?.show(view, key)
+                previewController?.show(view, key)
                 if (quickPhraseKey != null || numberChar != null) {
                     handler.postDelayed(longPressRunnable, config.longPressThresholdTime)
                 }
@@ -127,11 +127,8 @@ class JaumKeyTouchListener(
                     } else if (numberChar != null) {
                         sendKeyMessage(StringKeyMessage(numberChar))
                     }
-                } else if (!hasMoved && quickPhraseKey != null) {
-                    val phrase = QuickPhraseRepository.getPhrase(context, quickPhraseKey)
-                    sendKeyMessage(StringKeyMessage(phrase))
                 } else {
-                    // numberChar 키 탭(롱프레스 없이 놓음)도 여기서 처리 — 자음만 전송
+                    // 탭 또는 제스처 종료: 자음 + 합성 모음 전송 (모든 자음 키 공통)
                     sendKeyMessage(StringKeyMessage(key))
                     moeumGestureProcessor.resolveMoeumList()?.let {
                         sendKeyMessage(StringKeyMessage(it))
