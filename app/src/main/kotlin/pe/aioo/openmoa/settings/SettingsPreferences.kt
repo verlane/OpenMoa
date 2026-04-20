@@ -11,6 +11,19 @@ object SettingsPreferences {
     const val KEY_HANGUL_INPUT_MODE = "hangul_input_mode"
     const val KEY_KEYPAD_HEIGHT = "keypad_height"
     const val KEY_ONE_HAND_MODE = "one_hand_mode"
+    const val KEY_KEY_PREVIEW = "key_preview_enabled"
+
+    fun getKeyPreviewEnabled(context: Context): Boolean {
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getBoolean(KEY_KEY_PREVIEW, true)
+    }
+
+    fun setKeyPreviewEnabled(context: Context, enabled: Boolean) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(KEY_KEY_PREVIEW, enabled)
+            .apply()
+    }
 
     fun getHangulInputMode(context: Context): HangulInputMode {
         val value = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)

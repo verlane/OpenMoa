@@ -6,4 +6,5 @@ data class Config (
     val gestureThreshold: Float = 50f,
     val hapticFeedback: Boolean = true,
     val maxSuggestionCount: Int = 10,
+    val keyPreviewEnabled: Boolean = true,
 )

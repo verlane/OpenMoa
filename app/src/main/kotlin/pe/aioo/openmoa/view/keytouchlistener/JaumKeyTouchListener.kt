@@ -4,13 +4,16 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.view.MotionEvent
 import android.view.View
+import pe.aioo.openmoa.hangul.HangulPreviewComposer
 import pe.aioo.openmoa.hangul.MoeumGestureProcessor
 import pe.aioo.openmoa.view.message.StringKeyMessage
+import pe.aioo.openmoa.view.preview.KeyPreviewController
 import kotlin.math.*
 
 class JaumKeyTouchListener(
     context: Context,
     private val key: String,
+    private val previewController: KeyPreviewController? = null,
 ) : BaseKeyTouchListener(context) {
 
     private var startX: Float = 0f
@@ -24,6 +27,7 @@ class JaumKeyTouchListener(
                 startX = motionEvent.x
                 startY = motionEvent.y
                 moeumGestureProcessor.clear()
+                previewController?.show(view, key)
             }
             MotionEvent.ACTION_MOVE -> {
                 val currentX = motionEvent.x
@@ -46,13 +50,19 @@ class JaumKeyTouchListener(
                     } else if (abs(degree) <= 179.999f) {
                         moeumGestureProcessor.appendMoeum("ㅓ")
                     }
+                    val moeum = moeumGestureProcessor.resolveMoeumList()
+                    previewController?.update(view, HangulPreviewComposer.compose(key, moeum))
                 }
             }
             MotionEvent.ACTION_UP -> {
+                previewController?.hide()
                 sendKeyMessage(StringKeyMessage(key))
                 moeumGestureProcessor.resolveMoeumList()?.let {
                     sendKeyMessage(StringKeyMessage(it))
                 }
+            }
+            MotionEvent.ACTION_CANCEL -> {
+                previewController?.hide()
             }
         }
         return super.onTouch(view, motionEvent)

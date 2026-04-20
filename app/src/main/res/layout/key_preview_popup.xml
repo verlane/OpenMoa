@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/previewText"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:minWidth="52dp"
+    android:minHeight="52dp"
+    android:gravity="center"
+    android:textSize="32sp"
+    android:textColor="@color/key_foreground"
+    android:background="@drawable/key_preview_background"
+    android:elevation="4dp"
+    android:alpha="0.9"
+    android:padding="8dp" />

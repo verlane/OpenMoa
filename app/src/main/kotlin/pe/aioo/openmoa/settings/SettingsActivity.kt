@@ -24,10 +24,12 @@ class SettingsActivity : AppCompatActivity() {
         updateInputModeDisplay()
         updateKeypadHeightDisplay()
         updateOneHandModeDisplay()
+        updateKeyPreviewDisplay()
 
         binding.hangulInputModeItem.setOnClickListener { showInputModeDialog() }
         binding.keypadHeightItem.setOnClickListener { showKeypadHeightDialog() }
         binding.oneHandModeItem.setOnClickListener { showOneHandModeDialog() }
+        binding.keyPreviewItem.setOnClickListener { toggleKeyPreview() }
     }
 
     private fun updateInputModeDisplay() {
@@ -43,6 +45,16 @@ class SettingsActivity : AppCompatActivity() {
     private fun updateOneHandModeDisplay() {
         binding.oneHandModeValue.text =
             getString(SettingsPreferences.getOneHandMode(this).labelResId)
+    }
+
+    private fun updateKeyPreviewDisplay() {
+        binding.keyPreviewSwitch.isChecked = SettingsPreferences.getKeyPreviewEnabled(this)
+    }
+
+    private fun toggleKeyPreview() {
+        val newValue = !SettingsPreferences.getKeyPreviewEnabled(this)
+        SettingsPreferences.setKeyPreviewEnabled(this, newValue)
+        binding.keyPreviewSwitch.isChecked = newValue
     }
 
     private fun showInputModeDialog() {

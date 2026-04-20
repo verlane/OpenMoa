@@ -90,5 +90,6 @@
     <string name="settings_one_hand_mode_left">왼손 사용</string>
     <string name="settings_one_hand_mode_right">오른손 사용</string>
     <string name="settings_one_hand_mode_center">가운데 정렬</string>
+    <string name="settings_key_preview_title">키 입력 미리보기</string>
 
 </resources>
