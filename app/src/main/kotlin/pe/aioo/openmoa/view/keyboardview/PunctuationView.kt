@@ -4,7 +4,10 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import androidx.constraintlayout.widget.ConstraintLayout
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import pe.aioo.openmoa.R
+import pe.aioo.openmoa.config.Config
 import pe.aioo.openmoa.databinding.PunctuationViewBinding
 import pe.aioo.openmoa.view.message.SpecialKey
 import pe.aioo.openmoa.view.keytouchlistener.FunctionalKeyTouchListener
@@ -12,8 +15,11 @@ import pe.aioo.openmoa.view.keytouchlistener.RepeatKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.SimpleKeyTouchListener
 import pe.aioo.openmoa.view.message.SpecialKeyMessage
 import pe.aioo.openmoa.view.message.StringKeyMessage
+import pe.aioo.openmoa.view.preview.KeyPreviewController
 
-class PunctuationView : ConstraintLayout {
+class PunctuationView : ConstraintLayout, KoinComponent {
+
+    private val config: Config by inject()
 
     constructor(context: Context) : super(context) {
         init()
@@ -30,6 +36,7 @@ class PunctuationView : ConstraintLayout {
     }
 
     private lateinit var binding: PunctuationViewBinding
+    private val previewController by lazy { KeyPreviewController(config.keyPreviewEnabled) }
     private var page = 0
 
     private fun init() {
@@ -37,6 +44,11 @@ class PunctuationView : ConstraintLayout {
         binding = PunctuationViewBinding.bind(this)
         setPageOrNextPage(0, true)
         setOnTouchListeners()
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        previewController.hide()
     }
 
     fun setPageOrNextPage(newPage: Int? = null, isInitialize: Boolean = false) {
@@ -68,7 +80,7 @@ class PunctuationView : ConstraintLayout {
             binding.nKey, binding.mKey,
         ).map {
             it.apply {
-                setOnTouchListener(FunctionalKeyTouchListener(context) {
+                setOnTouchListener(FunctionalKeyTouchListener(context, previewController = previewController) {
                     StringKeyMessage(text.toString())
                 })
             }

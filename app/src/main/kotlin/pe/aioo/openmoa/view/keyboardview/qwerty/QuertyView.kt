@@ -5,7 +5,10 @@ import android.content.Context
 import android.util.AttributeSet
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import pe.aioo.openmoa.R
+import pe.aioo.openmoa.config.Config
 import pe.aioo.openmoa.view.message.SpecialKey
 import pe.aioo.openmoa.databinding.QuertyViewBinding
 import pe.aioo.openmoa.view.keytouchlistener.CrossKeyTouchListener
@@ -14,8 +17,11 @@ import pe.aioo.openmoa.view.keytouchlistener.RepeatKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.SimpleKeyTouchListener
 import pe.aioo.openmoa.view.message.SpecialKeyMessage
 import pe.aioo.openmoa.view.message.StringKeyMessage
+import pe.aioo.openmoa.view.preview.KeyPreviewController
 
-class QuertyView : ConstraintLayout {
+class QuertyView : ConstraintLayout, KoinComponent {
+
+    private val config: Config by inject()
 
     constructor(context: Context) : super(context) {
         init()
@@ -33,12 +39,18 @@ class QuertyView : ConstraintLayout {
 
     private var shiftKeyStatus = ShiftKeyStatus.DISABLED
     private lateinit var binding: QuertyViewBinding
+    private val previewController by lazy { KeyPreviewController(config.keyPreviewEnabled) }
 
     private fun init() {
         inflate(context, R.layout.querty_view, this)
         binding = QuertyViewBinding.bind(this)
         setShiftStatus(ShiftKeyStatus.DISABLED, true)
         setOnTouchListeners()
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        previewController.hide()
     }
 
     private fun setShiftStatus(status: ShiftKeyStatus, isInitialize: Boolean = false) {
@@ -90,7 +102,7 @@ class QuertyView : ConstraintLayout {
             binding.nKey, binding.mKey,
         ).map {
             it.apply {
-                setOnTouchListener(FunctionalKeyTouchListener(context) {
+                setOnTouchListener(FunctionalKeyTouchListener(context, previewController = previewController) {
                     val key = text.toString()
                     setShiftStatus(
                         when (shiftKeyStatus) {
@@ -104,7 +116,7 @@ class QuertyView : ConstraintLayout {
         }
         binding.apply {
             shiftKey.setOnTouchListener(
-                FunctionalKeyTouchListener(context, false) {
+                FunctionalKeyTouchListener(context, triggerWhenActionUp = false) {
                     setShiftStatus(
                         when (shiftKeyStatus) {
                             ShiftKeyStatus.DISABLED -> ShiftKeyStatus.ENABLED
@@ -137,6 +149,7 @@ class QuertyView : ConstraintLayout {
                         StringKeyMessage("."),
                         StringKeyMessage("?"),
                     ),
+                    previewController,
                 )
             )
             enterKey.setOnTouchListener(
