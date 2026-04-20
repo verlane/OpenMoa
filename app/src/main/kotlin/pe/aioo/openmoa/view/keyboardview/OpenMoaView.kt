@@ -83,12 +83,22 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
 
     private fun updateQuickPhraseBadges() {
         twoHandBinding?.apply {
+            ssangbieupBadge.text = QuickPhraseRepository.getFirstChar(context, QuickPhraseKey.SSANGBIEUP)
+            ssangjieutBadge.text = QuickPhraseRepository.getFirstChar(context, QuickPhraseKey.SSANGJIEUT)
+            ssangdigeutBadge.text = QuickPhraseRepository.getFirstChar(context, QuickPhraseKey.SSANGDIGEUT)
+            ssanggiyeokBadge.text = QuickPhraseRepository.getFirstChar(context, QuickPhraseKey.SSANGGIYEOK)
+            ssangsiotBadge.text = QuickPhraseRepository.getFirstChar(context, QuickPhraseKey.SSANGSIOT)
             kieukBadge.text = QuickPhraseRepository.getFirstChar(context, QuickPhraseKey.KIEUK)
             tieutBadge.text = QuickPhraseRepository.getFirstChar(context, QuickPhraseKey.TIEUT)
             chieutBadge.text = QuickPhraseRepository.getFirstChar(context, QuickPhraseKey.CHIEUT)
             pieupBadge.text = QuickPhraseRepository.getFirstChar(context, QuickPhraseKey.PIEUP)
         }
         moakeyBinding?.apply {
+            ssangbieupBadge.text = QuickPhraseRepository.getFirstChar(context, QuickPhraseKey.SSANGBIEUP)
+            ssangjieutBadge.text = QuickPhraseRepository.getFirstChar(context, QuickPhraseKey.SSANGJIEUT)
+            ssangdigeutBadge.text = QuickPhraseRepository.getFirstChar(context, QuickPhraseKey.SSANGDIGEUT)
+            ssanggiyeokBadge.text = QuickPhraseRepository.getFirstChar(context, QuickPhraseKey.SSANGGIYEOK)
+            ssangsiotBadge.text = QuickPhraseRepository.getFirstChar(context, QuickPhraseKey.SSANGSIOT)
             kieukBadge.text = QuickPhraseRepository.getFirstChar(context, QuickPhraseKey.KIEUK)
             tieutBadge.text = QuickPhraseRepository.getFirstChar(context, QuickPhraseKey.TIEUT)
             chieutBadge.text = QuickPhraseRepository.getFirstChar(context, QuickPhraseKey.CHIEUT)
@@ -107,11 +117,11 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
         val quickPhraseMenuPopup = QuickPhraseMenuPopup(context)
         b.apply {
             tildeKey.setOnTouchListener(SimpleKeyTouchListener(context, StringKeyMessage("~")))
-            ssangbieupKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅃ", previewController))
-            ssangjieutKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅉ", previewController))
-            ssangdigeutKey.setOnTouchListener(JaumKeyTouchListener(context, "ㄸ", previewController))
-            ssanggiyeokKey.setOnTouchListener(JaumKeyTouchListener(context, "ㄲ", previewController))
-            ssangsiotKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅆ", previewController))
+            ssangbieupKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅃ", previewController, QuickPhraseKey.SSANGBIEUP, quickPhraseMenuPopup))
+            ssangjieutKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅉ", previewController, QuickPhraseKey.SSANGJIEUT, quickPhraseMenuPopup))
+            ssangdigeutKey.setOnTouchListener(JaumKeyTouchListener(context, "ㄸ", previewController, QuickPhraseKey.SSANGDIGEUT, quickPhraseMenuPopup))
+            ssanggiyeokKey.setOnTouchListener(JaumKeyTouchListener(context, "ㄲ", previewController, QuickPhraseKey.SSANGGIYEOK, quickPhraseMenuPopup))
+            ssangsiotKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅆ", previewController, QuickPhraseKey.SSANGSIOT, quickPhraseMenuPopup))
             emojiKey.setOnTouchListener(
                 SimpleKeyTouchListener(context, SpecialKeyMessage(SpecialKey.EMOJI))
             )
@@ -169,11 +179,11 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
         val quickPhraseMenuPopup = QuickPhraseMenuPopup(context)
         b.apply {
             tildeKey.setOnTouchListener(SimpleKeyTouchListener(context, StringKeyMessage("~")))
-            ssangbieupKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅃ", previewController))
-            ssangjieutKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅉ", previewController))
-            ssangdigeutKey.setOnTouchListener(JaumKeyTouchListener(context, "ㄸ", previewController))
-            ssanggiyeokKey.setOnTouchListener(JaumKeyTouchListener(context, "ㄲ", previewController))
-            ssangsiotKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅆ", previewController))
+            ssangbieupKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅃ", previewController, QuickPhraseKey.SSANGBIEUP, quickPhraseMenuPopup))
+            ssangjieutKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅉ", previewController, QuickPhraseKey.SSANGJIEUT, quickPhraseMenuPopup))
+            ssangdigeutKey.setOnTouchListener(JaumKeyTouchListener(context, "ㄸ", previewController, QuickPhraseKey.SSANGDIGEUT, quickPhraseMenuPopup))
+            ssanggiyeokKey.setOnTouchListener(JaumKeyTouchListener(context, "ㄲ", previewController, QuickPhraseKey.SSANGGIYEOK, quickPhraseMenuPopup))
+            ssangsiotKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅆ", previewController, QuickPhraseKey.SSANGSIOT, quickPhraseMenuPopup))
             exclamationKey.setOnTouchListener(
                 SimpleKeyTouchListener(context, StringKeyMessage("!"))
             )

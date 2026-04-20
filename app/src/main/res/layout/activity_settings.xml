@@ -278,6 +278,141 @@
 
         </LinearLayout>
 
+        <LinearLayout
+            android:id="@+id/quickPhraseSsangbieupItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_quick_phrase_ssangbieup_label"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/quickPhraseSsangbieupValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/key_foreground_muted"
+                android:paddingTop="2dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/quickPhraseSsangjieutItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_quick_phrase_ssangjieut_label"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/quickPhraseSsangjieutValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/key_foreground_muted"
+                android:paddingTop="2dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/quickPhraseSsangdigeutItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_quick_phrase_ssangdigeut_label"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/quickPhraseSsangdigeutValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/key_foreground_muted"
+                android:paddingTop="2dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/quickPhraseSsanggiyeokItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_quick_phrase_ssanggiyeok_label"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/quickPhraseSsanggiyeokValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/key_foreground_muted"
+                android:paddingTop="2dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/quickPhraseSsangsiotItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_quick_phrase_ssangsiot_label"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/quickPhraseSsangsiotValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/key_foreground_muted"
+                android:paddingTop="2dp" />
+
+        </LinearLayout>
+
     </LinearLayout>
 
 </ScrollView>

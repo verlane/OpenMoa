@@ -335,6 +335,83 @@
         app:layout_constraintLeft_toRightOf="@+id/euKey"
         app:layout_constraintRight_toRightOf="parent" />
 
+    <!-- Quick phrase badges for first line keys -->
+
+    <TextView
+        android:id="@+id/ssangbieupBadge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="9sp"
+        android:textColor="@color/key_foreground"
+        android:alpha="0.6"
+        android:clickable="false"
+        android:focusable="false"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toTopOf="@id/ssangbieupKey"
+        app:layout_constraintEnd_toEndOf="@id/ssangbieupKey"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="3dp" />
+
+    <TextView
+        android:id="@+id/ssangjieutBadge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="9sp"
+        android:textColor="@color/key_foreground"
+        android:alpha="0.6"
+        android:clickable="false"
+        android:focusable="false"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toTopOf="@id/ssangjieutKey"
+        app:layout_constraintEnd_toEndOf="@id/ssangjieutKey"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="3dp" />
+
+    <TextView
+        android:id="@+id/ssangdigeutBadge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="9sp"
+        android:textColor="@color/key_foreground"
+        android:alpha="0.6"
+        android:clickable="false"
+        android:focusable="false"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toTopOf="@id/ssangdigeutKey"
+        app:layout_constraintEnd_toEndOf="@id/ssangdigeutKey"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="3dp" />
+
+    <TextView
+        android:id="@+id/ssanggiyeokBadge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="9sp"
+        android:textColor="@color/key_foreground"
+        android:alpha="0.6"
+        android:clickable="false"
+        android:focusable="false"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toTopOf="@id/ssanggiyeokKey"
+        app:layout_constraintEnd_toEndOf="@id/ssanggiyeokKey"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="3dp" />
+
+    <TextView
+        android:id="@+id/ssangsiotBadge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="9sp"
+        android:textColor="@color/key_foreground"
+        android:alpha="0.6"
+        android:clickable="false"
+        android:focusable="false"
+        android:importantForAccessibility="no"
+        app:layout_constraintTop_toTopOf="@id/ssangsiotKey"
+        app:layout_constraintEnd_toEndOf="@id/ssangsiotKey"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="3dp" />
+
     <!-- Quick phrase badges for fourth line keys -->
 
     <TextView

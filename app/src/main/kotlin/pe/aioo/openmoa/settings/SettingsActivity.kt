@@ -38,6 +38,11 @@ class SettingsActivity : AppCompatActivity() {
         binding.quickPhraseTieutItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.TIEUT) }
         binding.quickPhraseChieutItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.CHIEUT) }
         binding.quickPhrasePieupItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.PIEUP) }
+        binding.quickPhraseSsangbieupItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.SSANGBIEUP) }
+        binding.quickPhraseSsangjieutItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.SSANGJIEUT) }
+        binding.quickPhraseSsangdigeutItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.SSANGDIGEUT) }
+        binding.quickPhraseSsanggiyeokItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.SSANGGIYEOK) }
+        binding.quickPhraseSsangsiotItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.SSANGSIOT) }
     }
 
     private fun updateQuickPhraseDisplays() {
@@ -45,6 +50,11 @@ class SettingsActivity : AppCompatActivity() {
         binding.quickPhraseTieutValue.text = QuickPhraseRepository.getPhrase(this, QuickPhraseKey.TIEUT)
         binding.quickPhraseChieutValue.text = QuickPhraseRepository.getPhrase(this, QuickPhraseKey.CHIEUT)
         binding.quickPhrasePieupValue.text = QuickPhraseRepository.getPhrase(this, QuickPhraseKey.PIEUP)
+        binding.quickPhraseSsangbieupValue.text = QuickPhraseRepository.getPhrase(this, QuickPhraseKey.SSANGBIEUP)
+        binding.quickPhraseSsangjieutValue.text = QuickPhraseRepository.getPhrase(this, QuickPhraseKey.SSANGJIEUT)
+        binding.quickPhraseSsangdigeutValue.text = QuickPhraseRepository.getPhrase(this, QuickPhraseKey.SSANGDIGEUT)
+        binding.quickPhraseSsanggiyeokValue.text = QuickPhraseRepository.getPhrase(this, QuickPhraseKey.SSANGGIYEOK)
+        binding.quickPhraseSsangsiotValue.text = QuickPhraseRepository.getPhrase(this, QuickPhraseKey.SSANGSIOT)
     }
 
     private fun showQuickPhraseEditDialog(key: QuickPhraseKey) {

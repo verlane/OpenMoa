@@ -97,6 +97,11 @@
     <string name="settings_quick_phrase_tieut_label">ㅌ 상용구</string>
     <string name="settings_quick_phrase_chieut_label">ㅊ 상용구</string>
     <string name="settings_quick_phrase_pieup_label">ㅍ 상용구</string>
+    <string name="settings_quick_phrase_ssangbieup_label">ㅃ 상용구</string>
+    <string name="settings_quick_phrase_ssangjieut_label">ㅉ 상용구</string>
+    <string name="settings_quick_phrase_ssangdigeut_label">ㄸ 상용구</string>
+    <string name="settings_quick_phrase_ssanggiyeok_label">ㄲ 상용구</string>
+    <string name="settings_quick_phrase_ssangsiot_label">ㅆ 상용구</string>
     <string name="settings_quick_phrase_edit_hint">상용구를 입력하세요</string>
     <string name="settings_quick_phrase_reset">기본값으로 초기화</string>
     <string name="quick_phrase_menu_edit">수정</string>
