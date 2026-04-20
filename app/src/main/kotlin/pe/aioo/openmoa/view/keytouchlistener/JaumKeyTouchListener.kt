@@ -23,7 +23,14 @@ class JaumKeyTouchListener(
     private val previewController: KeyPreviewController? = null,
     private val quickPhraseKey: QuickPhraseKey? = null,
     private val quickPhraseMenuPopup: QuickPhraseMenuPopup? = null,
+    private val numberChar: String? = null,
 ) : BaseKeyTouchListener(context) {
+
+    init {
+        require(quickPhraseKey == null || numberChar == null) {
+            "quickPhraseKey and numberChar cannot both be set"
+        }
+    }
 
     private var startX = 0f
     private var startY = 0f
@@ -36,11 +43,15 @@ class JaumKeyTouchListener(
 
     private val longPressRunnable = Runnable {
         val view = anchorView ?: return@Runnable
-        val phraseKey = quickPhraseKey ?: return@Runnable
         isLongPressed = true
-        previewController?.hide()
-        val phrase = QuickPhraseRepository.getPhrase(context, phraseKey)
-        quickPhraseMenuPopup?.show(view, phrase)
+        val phraseKey = quickPhraseKey
+        if (phraseKey != null) {
+            previewController?.hide()
+            val phrase = QuickPhraseRepository.getPhrase(context, phraseKey)
+            quickPhraseMenuPopup?.show(view, phrase)
+        } else if (numberChar != null) {
+            previewController?.update(view, numberChar)
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -55,11 +66,14 @@ class JaumKeyTouchListener(
                 isLongPressed = false
                 moeumGestureProcessor.clear()
                 if (quickPhraseKey == null) previewController?.show(view, key)
-                if (quickPhraseKey != null) {
+                if (quickPhraseKey != null || numberChar != null) {
                     handler.postDelayed(longPressRunnable, config.longPressThresholdTime)
                 }
             }
             MotionEvent.ACTION_MOVE -> {
+                if (isLongPressed && numberChar != null) {
+                    return true
+                }
                 val currentX = motionEvent.x
                 val currentY = motionEvent.y
                 val distance = sqrt((currentX - startX).pow(2) + (currentY - startY).pow(2))
@@ -85,7 +99,7 @@ class JaumKeyTouchListener(
                     val moeum = moeumGestureProcessor.resolveMoeumList()
                     previewController?.update(view, HangulPreviewComposer.compose(key, moeum))
                 }
-                if (isLongPressed) {
+                if (isLongPressed && quickPhraseKey != null) {
                     val dx = motionEvent.x - longPressStartX
                     quickPhraseMenuPopup?.updateSelectionByDelta(dx, view.width)
                 }
@@ -110,11 +124,14 @@ class JaumKeyTouchListener(
                             }
                             else -> Unit
                         }
+                    } else if (numberChar != null) {
+                        sendKeyMessage(StringKeyMessage(numberChar))
                     }
                 } else if (!hasMoved && quickPhraseKey != null) {
                     val phrase = QuickPhraseRepository.getPhrase(context, quickPhraseKey)
                     sendKeyMessage(StringKeyMessage(phrase))
                 } else {
+                    // numberChar 키 탭(롱프레스 없이 놓음)도 여기서 처리 — 자음만 전송
                     sendKeyMessage(StringKeyMessage(key))
                     moeumGestureProcessor.resolveMoeumList()?.let {
                         sendKeyMessage(StringKeyMessage(it))
