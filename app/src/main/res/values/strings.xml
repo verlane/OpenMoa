@@ -90,6 +90,12 @@
     <string name="settings_one_hand_mode_left">왼손 사용</string>
     <string name="settings_one_hand_mode_right">오른손 사용</string>
     <string name="settings_one_hand_mode_center">가운데 정렬</string>
+    <string name="settings_long_press_time_title">롱키 시간 설정</string>
+    <string name="settings_long_press_time_200">0.2초</string>
+    <string name="settings_long_press_time_300">0.3초</string>
+    <string name="settings_long_press_time_500">0.5초(기본)</string>
+    <string name="settings_long_press_time_1000">1.0초</string>
+    <string name="settings_long_press_time_1500">1.5초</string>
     <string name="settings_key_preview_title">키 입력 미리보기</string>
 
     <string name="settings_quick_phrase_section">상용구</string>

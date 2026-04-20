@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import pe.aioo.openmoa.R
 import pe.aioo.openmoa.config.HangulInputMode
 import pe.aioo.openmoa.config.KeypadHeight
+import pe.aioo.openmoa.config.LongPressTime
 import pe.aioo.openmoa.config.OneHandMode
 import pe.aioo.openmoa.databinding.ActivitySettingsBinding
 import pe.aioo.openmoa.quickphrase.QuickPhraseKey
@@ -27,12 +28,14 @@ class SettingsActivity : AppCompatActivity() {
         updateInputModeDisplay()
         updateKeypadHeightDisplay()
         updateOneHandModeDisplay()
+        updateLongPressTimeDisplay()
         updateKeyPreviewDisplay()
         updateQuickPhraseDisplays()
 
         binding.hangulInputModeItem.setOnClickListener { showInputModeDialog() }
         binding.keypadHeightItem.setOnClickListener { showKeypadHeightDialog() }
         binding.oneHandModeItem.setOnClickListener { showOneHandModeDialog() }
+        binding.longPressTimeItem.setOnClickListener { showLongPressTimeDialog() }
         binding.keyPreviewItem.setOnClickListener { toggleKeyPreview() }
         binding.quickPhraseKieukItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.KIEUK) }
         binding.quickPhraseTieutItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.TIEUT) }
@@ -96,6 +99,27 @@ class SettingsActivity : AppCompatActivity() {
     private fun updateOneHandModeDisplay() {
         binding.oneHandModeValue.text =
             getString(SettingsPreferences.getOneHandMode(this).labelResId)
+    }
+
+    private fun updateLongPressTimeDisplay() {
+        binding.longPressTimeValue.text =
+            getString(SettingsPreferences.getLongPressTime(this).labelResId)
+    }
+
+    private fun showLongPressTimeDialog() {
+        val options = LongPressTime.values()
+        val labels = options.map { getString(it.labelResId) }.toTypedArray()
+        val currentIndex = options.indexOf(SettingsPreferences.getLongPressTime(this))
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.settings_long_press_time_title)
+            .setSingleChoiceItems(labels, currentIndex) { dialog, which ->
+                SettingsPreferences.save(this, SettingsPreferences.KEY_LONG_PRESS_TIME, options[which].name)
+                updateLongPressTimeDisplay()
+                dialog.dismiss()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
 
     private fun updateKeyPreviewDisplay() {

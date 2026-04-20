@@ -8,7 +8,8 @@ import pe.aioo.openmoa.settings.SettingsPreferences
 val configModule = module {
     single {
         Config(
-            keyPreviewEnabled = SettingsPreferences.getKeyPreviewEnabled(androidContext())
+            keyPreviewEnabled = SettingsPreferences.getKeyPreviewEnabled(androidContext()),
+            longPressThresholdTime = SettingsPreferences.getLongPressTime(androidContext()).millis
         )
     }
 }
