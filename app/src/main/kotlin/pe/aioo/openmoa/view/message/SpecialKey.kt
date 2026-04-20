@@ -18,6 +18,7 @@ enum class SpecialKey {
     HANJA_NUMBER_PUNCTUATION,
     HOME,
     LANGUAGE,
+    OPEN_SETTINGS,
     PASTE,
     SELECT_ALL,
     SELECT_ARROW_UP,

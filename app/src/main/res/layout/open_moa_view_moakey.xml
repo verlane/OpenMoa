@@ -74,14 +74,14 @@
         app:layout_constraintTop_toTopOf="@+id/tildeKey"
         app:layout_constraintBottom_toBottomOf="@+id/tildeKey"
         app:layout_constraintLeft_toRightOf="@+id/ssanggiyeokKey"
-        app:layout_constraintRight_toLeftOf="@+id/emojiKey" />
+        app:layout_constraintRight_toLeftOf="@+id/exclamationKey" />
 
     <TextView
-        android:id="@+id/emojiKey"
+        android:id="@+id/exclamationKey"
         style="@style/KeyStyle"
-        android:text="@string/key_emoji"
+        android:text="@string/key_exclamation"
         app:layout_constraintHorizontal_chainStyle="spread"
-        app:layout_constraintHorizontal_weight="1"
+        app:layout_constraintHorizontal_weight="0.5"
         app:layout_constraintTop_toTopOf="@+id/tildeKey"
         app:layout_constraintBottom_toBottomOf="@+id/tildeKey"
         app:layout_constraintLeft_toRightOf="@+id/ssangsiotKey"
@@ -98,7 +98,7 @@
         app:layout_constraintHorizontal_weight="0.5"
         app:layout_constraintVertical_weight="1"
         app:layout_constraintTop_toBottomOf="@+id/tildeKey"
-        app:layout_constraintBottom_toBottomOf="@+id/semicolonKey"
+        app:layout_constraintBottom_toTopOf="@+id/semicolonKey"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toLeftOf="@+id/bieupKey" />
 
@@ -152,17 +152,17 @@
         android:text="@string/key_siot"
         app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintHorizontal_weight="1"
-        app:layout_constraintTop_toTopOf="@+id/giyeokKey"
-        app:layout_constraintBottom_toBottomOf="@+id/backspaceKey"
+        app:layout_constraintTop_toTopOf="@+id/caretKey"
+        app:layout_constraintBottom_toBottomOf="@+id/caretKey"
         app:layout_constraintLeft_toRightOf="@+id/giyeokKey"
-        app:layout_constraintRight_toLeftOf="@+id/backspaceKey" />
+        app:layout_constraintRight_toLeftOf="@+id/questionKey" />
 
     <TextView
-        android:id="@+id/backspaceKey"
+        android:id="@+id/questionKey"
         style="@style/KeyStyle"
-        android:text="@string/key_backspace"
+        android:text="@string/key_question"
         app:layout_constraintHorizontal_chainStyle="spread"
-        app:layout_constraintHorizontal_weight="1"
+        app:layout_constraintHorizontal_weight="0.5"
         app:layout_constraintTop_toTopOf="@+id/caretKey"
         app:layout_constraintBottom_toBottomOf="@+id/caretKey"
         app:layout_constraintLeft_toRightOf="@+id/siotKey"
@@ -181,7 +181,7 @@
         app:layout_constraintTop_toBottomOf="@+id/caretKey"
         app:layout_constraintBottom_toTopOf="@+id/asteriskKey"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/bieupKey" />
+        app:layout_constraintRight_toLeftOf="@+id/mieumKey" />
 
     <TextView
         android:id="@+id/mieumKey"
@@ -230,25 +230,20 @@
     <TextView
         android:id="@+id/hieutKey"
         style="@style/KeyStyle"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
         android:text="@string/key_hieut"
-        android:textStyle="bold"
-        android:textAlignment="center"
-        android:gravity="center"
         app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintHorizontal_weight="1"
         app:layout_constraintTop_toTopOf="@+id/semicolonKey"
         app:layout_constraintBottom_toBottomOf="@+id/semicolonKey"
         app:layout_constraintLeft_toRightOf="@+id/rieulKey"
-        app:layout_constraintRight_toLeftOf="@+id/iKey" />
+        app:layout_constraintRight_toLeftOf="@+id/dotKey" />
 
     <TextView
-        android:id="@+id/iKey"
+        android:id="@+id/dotKey"
         style="@style/KeyStyle"
-        android:text="@string/key_i"
+        android:text="@string/key_dot"
         app:layout_constraintHorizontal_chainStyle="spread"
-        app:layout_constraintHorizontal_weight="1"
+        app:layout_constraintHorizontal_weight="0.5"
         app:layout_constraintTop_toTopOf="@+id/semicolonKey"
         app:layout_constraintBottom_toBottomOf="@+id/semicolonKey"
         app:layout_constraintLeft_toRightOf="@+id/hieutKey"
@@ -265,7 +260,7 @@
         app:layout_constraintHorizontal_weight="0.5"
         app:layout_constraintVertical_weight="1"
         app:layout_constraintTop_toBottomOf="@+id/semicolonKey"
-        app:layout_constraintBottom_toTopOf="@+id/languageKey"
+        app:layout_constraintBottom_toTopOf="@+id/emojiKey"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toLeftOf="@+id/kieukKey" />
 
@@ -311,31 +306,33 @@
         app:layout_constraintTop_toTopOf="@+id/asteriskKey"
         app:layout_constraintBottom_toBottomOf="@+id/asteriskKey"
         app:layout_constraintLeft_toRightOf="@+id/chieutKey"
-        app:layout_constraintRight_toLeftOf="@+id/euKey" />
+        app:layout_constraintRight_toLeftOf="@+id/backspaceKey" />
 
     <TextView
-        android:id="@+id/euKey"
+        android:id="@+id/backspaceKey"
         style="@style/KeyStyle"
-        android:text="@string/key_eu"
+        android:text="@string/key_backspace"
         app:layout_constraintHorizontal_chainStyle="spread"
-        app:layout_constraintHorizontal_weight="1"
+        app:layout_constraintHorizontal_weight="1.5"
         app:layout_constraintTop_toTopOf="@+id/asteriskKey"
         app:layout_constraintBottom_toBottomOf="@+id/asteriskKey"
         app:layout_constraintLeft_toRightOf="@+id/pieupKey"
-        app:layout_constraintRight_toLeftOf="@+id/araeaKey" />
-
-    <TextView
-        android:id="@+id/araeaKey"
-        style="@style/KeyStyle"
-        android:text="@string/key_araea"
-        app:layout_constraintHorizontal_chainStyle="spread"
-        app:layout_constraintHorizontal_weight="1"
-        app:layout_constraintTop_toTopOf="@+id/asteriskKey"
-        app:layout_constraintBottom_toBottomOf="@+id/asteriskKey"
-        app:layout_constraintLeft_toRightOf="@+id/euKey"
         app:layout_constraintRight_toRightOf="parent" />
 
     <!-- Fifth Line -->
+
+    <TextView
+        android:id="@+id/emojiKey"
+        style="@style/KeyStyle"
+        android:text="@string/key_emoji"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintVertical_chainStyle="spread"
+        app:layout_constraintHorizontal_weight="0.583"
+        app:layout_constraintVertical_weight="1"
+        app:layout_constraintTop_toBottomOf="@+id/asteriskKey"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/languageKey" />
 
     <LinearLayout
         android:id="@+id/languageKey"
@@ -347,12 +344,10 @@
         android:clickable="true"
         android:hapticFeedbackEnabled="true"
         app:layout_constraintHorizontal_chainStyle="spread"
-        app:layout_constraintVertical_chainStyle="spread"
         app:layout_constraintHorizontal_weight="1"
-        app:layout_constraintVertical_weight="1"
-        app:layout_constraintTop_toBottomOf="@+id/asteriskKey"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/emojiKey"
+        app:layout_constraintBottom_toBottomOf="@+id/emojiKey"
+        app:layout_constraintLeft_toRightOf="@+id/emojiKey"
         app:layout_constraintRight_toLeftOf="@+id/hanjaNumberPunctuationKey">
 
         <TextView
@@ -383,8 +378,8 @@
         android:hapticFeedbackEnabled="true"
         app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintHorizontal_weight="1"
-        app:layout_constraintTop_toTopOf="@+id/languageKey"
-        app:layout_constraintBottom_toBottomOf="@+id/languageKey"
+        app:layout_constraintTop_toTopOf="@+id/emojiKey"
+        app:layout_constraintBottom_toBottomOf="@+id/emojiKey"
         app:layout_constraintLeft_toRightOf="@+id/languageKey"
         app:layout_constraintRight_toLeftOf="@+id/spaceKey">
 
@@ -410,21 +405,21 @@
         style="@style/KeyStyle"
         android:text="@string/key_space"
         app:layout_constraintHorizontal_chainStyle="spread"
-        app:layout_constraintHorizontal_weight="2.5"
-        app:layout_constraintTop_toTopOf="@+id/languageKey"
-        app:layout_constraintBottom_toBottomOf="@+id/languageKey"
+        app:layout_constraintHorizontal_weight="2.417"
+        app:layout_constraintTop_toTopOf="@+id/emojiKey"
+        app:layout_constraintBottom_toBottomOf="@+id/emojiKey"
         app:layout_constraintLeft_toRightOf="@+id/hanjaNumberPunctuationKey"
-        app:layout_constraintRight_toLeftOf="@+id/commaQuestionDotExclamationKey" />
+        app:layout_constraintRight_toLeftOf="@+id/moeumKey" />
 
     <TextView
-        android:id="@+id/commaQuestionDotExclamationKey"
+        android:id="@+id/moeumKey"
         style="@style/KeyStyle"
-        android:text="@string/key_comma_question_dot_exclamation"
-        android:textSize="14sp"
+        android:text="@string/key_moeum"
+        android:textSize="12sp"
         app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintHorizontal_weight="1"
-        app:layout_constraintTop_toTopOf="@+id/languageKey"
-        app:layout_constraintBottom_toBottomOf="@+id/languageKey"
+        app:layout_constraintTop_toTopOf="@+id/emojiKey"
+        app:layout_constraintBottom_toBottomOf="@+id/emojiKey"
         app:layout_constraintLeft_toRightOf="@+id/spaceKey"
         app:layout_constraintRight_toLeftOf="@+id/enterKey" />
 
@@ -434,9 +429,9 @@
         android:text="@string/key_enter"
         app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintHorizontal_weight="1"
-        app:layout_constraintTop_toTopOf="@+id/languageKey"
-        app:layout_constraintBottom_toBottomOf="@+id/languageKey"
-        app:layout_constraintLeft_toRightOf="@+id/commaQuestionDotExclamationKey"
+        app:layout_constraintTop_toTopOf="@+id/emojiKey"
+        app:layout_constraintBottom_toBottomOf="@+id/emojiKey"
+        app:layout_constraintLeft_toRightOf="@+id/moeumKey"
         app:layout_constraintRight_toRightOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

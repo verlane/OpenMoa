@@ -27,7 +27,8 @@
     <string name="key_five">5</string>
     <string name="key_four">4</string>
     <string name="key_giyeok">ㄱ</string>
-    <string name="key_hanja_number_punctuation">漢\n12/기</string>
+    <string name="key_hanja_number_punctuation">12/기</string>
+    <string name="key_hanja_hint">漢</string>
     <string name="key_hieut">ㅎ</string>
     <string name="key_home">처음으로</string>
     <string name="key_i">ㅣ</string>
@@ -67,5 +68,27 @@
     <string name="key_two">2</string>
     <string name="key_up">▲</string>
     <string name="key_zero">0</string>
+
+    <string name="key_exclamation">!</string>
+    <string name="key_question">?</string>
+    <string name="key_moeum">ㅣ·ㅡ</string>
+
+    <string name="key_language_settings_hint">설정</string>
+    <string name="settings_title">오픈모아 통합키보드 설정</string>
+    <string name="settings_hangul_section">한글설정</string>
+    <string name="settings_hangul_input_mode_title">한글 입력 방식 선택</string>
+    <string name="settings_input_mode_moakey">모아키</string>
+    <string name="settings_input_mode_two_hand_moakey">양손 모아키</string>
+
+    <string name="settings_keyboard_section">키보드 옵션</string>
+    <string name="settings_keypad_height_title">키패드 높이 조절</string>
+    <string name="settings_keypad_height_normal">사용안함(기본)</string>
+    <string name="settings_keypad_height_low">낮게</string>
+    <string name="settings_keypad_height_very_low">아주 낮게</string>
+    <string name="settings_one_hand_mode_title">한손 입력모드 설정</string>
+    <string name="settings_one_hand_mode_none">사용안함(기본)</string>
+    <string name="settings_one_hand_mode_left">왼손 사용</string>
+    <string name="settings_one_hand_mode_right">오른손 사용</string>
+    <string name="settings_one_hand_mode_center">가운데 정렬</string>
 
 </resources>

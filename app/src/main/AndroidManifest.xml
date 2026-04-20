@@ -29,6 +29,11 @@
 
         </service>
 
+        <activity
+            android:name="pe.aioo.openmoa.settings.SettingsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.OpenMoa.Settings" />
+
     </application>
 
 </manifest>

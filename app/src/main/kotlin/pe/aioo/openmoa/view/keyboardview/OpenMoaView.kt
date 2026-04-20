@@ -14,10 +14,14 @@ import org.koin.core.component.inject
 import pe.aioo.openmoa.OpenMoaIME
 import pe.aioo.openmoa.R
 import pe.aioo.openmoa.config.Config
+import pe.aioo.openmoa.config.HangulInputMode
+import pe.aioo.openmoa.settings.SettingsPreferences
 import pe.aioo.openmoa.view.message.SpecialKey
 import pe.aioo.openmoa.databinding.OpenMoaViewBinding
+import pe.aioo.openmoa.databinding.OpenMoaViewMoakeyBinding
 import pe.aioo.openmoa.view.keytouchlistener.CrossKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.JaumKeyTouchListener
+import pe.aioo.openmoa.view.keytouchlistener.LanguageKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.RepeatKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.SimpleKeyTouchListener
 import pe.aioo.openmoa.view.message.SpecialKeyMessage
@@ -42,7 +46,10 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
     }
 
     private val broadcastManager = LocalBroadcastManager.getInstance(context)
-    private lateinit var binding: OpenMoaViewBinding
+    internal var isMoakeyMode = false
+        private set
+    private var twoHandBinding: OpenMoaViewBinding? = null
+    private var moakeyBinding: OpenMoaViewMoakeyBinding? = null
     private var touchedMoeum: String? = null
     private val backgrounds = listOf(
         ContextCompat.getDrawable(context, R.drawable.key_background_pressed),
@@ -50,14 +57,23 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
     )
 
     private fun init() {
-        inflate(context, R.layout.open_moa_view, this)
-        binding = OpenMoaViewBinding.bind(this)
-        setOnTouchListeners()
+        val mode = SettingsPreferences.getHangulInputMode(context)
+        isMoakeyMode = mode == HangulInputMode.MOAKEY
+        if (isMoakeyMode) {
+            inflate(context, R.layout.open_moa_view_moakey, this)
+            moakeyBinding = OpenMoaViewMoakeyBinding.bind(this)
+            setMoakeyTouchListeners()
+        } else {
+            inflate(context, R.layout.open_moa_view, this)
+            twoHandBinding = OpenMoaViewBinding.bind(this)
+            setTwoHandTouchListeners()
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    private fun setOnTouchListeners() {
-        binding.apply {
+    private fun setTwoHandTouchListeners() {
+        val b = twoHandBinding ?: return
+        b.apply {
             tildeKey.setOnTouchListener(SimpleKeyTouchListener(context, StringKeyMessage("~")))
             ssangbieupKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅃ"))
             ssangjieutKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅉ"))
@@ -91,9 +107,7 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
             tieutKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅌ"))
             chieutKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅊ"))
             pieupKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅍ"))
-            languageKey.setOnTouchListener(
-                SimpleKeyTouchListener(context, SpecialKeyMessage(SpecialKey.LANGUAGE))
-            )
+            languageKey.setOnTouchListener(LanguageKeyTouchListener(context))
             hanjaNumberPunctuationKey.setOnTouchListener(
                 SimpleKeyTouchListener(
                     context, SpecialKeyMessage(SpecialKey.HANJA_NUMBER_PUNCTUATION)
@@ -117,86 +131,157 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
+    private fun setMoakeyTouchListeners() {
+        val b = moakeyBinding ?: return
+        b.apply {
+            tildeKey.setOnTouchListener(SimpleKeyTouchListener(context, StringKeyMessage("~")))
+            ssangbieupKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅃ"))
+            ssangjieutKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅉ"))
+            ssangdigeutKey.setOnTouchListener(JaumKeyTouchListener(context, "ㄸ"))
+            ssanggiyeokKey.setOnTouchListener(JaumKeyTouchListener(context, "ㄲ"))
+            ssangsiotKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅆ"))
+            exclamationKey.setOnTouchListener(
+                SimpleKeyTouchListener(context, StringKeyMessage("!"))
+            )
+            caretKey.setOnTouchListener(SimpleKeyTouchListener(context, StringKeyMessage("^")))
+            bieupKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅂ"))
+            jieutKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅈ"))
+            digeutKey.setOnTouchListener(JaumKeyTouchListener(context, "ㄷ"))
+            giyeokKey.setOnTouchListener(JaumKeyTouchListener(context, "ㄱ"))
+            siotKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅅ"))
+            questionKey.setOnTouchListener(
+                SimpleKeyTouchListener(context, StringKeyMessage("?"))
+            )
+            semicolonKey.setOnTouchListener(
+                SimpleKeyTouchListener(context, StringKeyMessage(";"))
+            )
+            mieumKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅁ"))
+            nieunKey.setOnTouchListener(JaumKeyTouchListener(context, "ㄴ"))
+            ieungKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅇ"))
+            rieulKey.setOnTouchListener(JaumKeyTouchListener(context, "ㄹ"))
+            hieutKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅎ"))
+            dotKey.setOnTouchListener(SimpleKeyTouchListener(context, StringKeyMessage(".")))
+            asteriskKey.setOnTouchListener(
+                SimpleKeyTouchListener(context, StringKeyMessage("*"))
+            )
+            kieukKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅋ"))
+            tieutKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅌ"))
+            chieutKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅊ"))
+            pieupKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅍ"))
+            backspaceKey.setOnTouchListener(
+                RepeatKeyTouchListener(context, SpecialKeyMessage(SpecialKey.BACKSPACE))
+            )
+            emojiKey.setOnTouchListener(
+                SimpleKeyTouchListener(context, SpecialKeyMessage(SpecialKey.EMOJI))
+            )
+            languageKey.setOnTouchListener(LanguageKeyTouchListener(context))
+            hanjaNumberPunctuationKey.setOnTouchListener(
+                SimpleKeyTouchListener(
+                    context, SpecialKeyMessage(SpecialKey.HANJA_NUMBER_PUNCTUATION)
+                )
+            )
+            spaceKey.setOnTouchListener(SimpleKeyTouchListener(context, StringKeyMessage(" ")))
+            moeumKey.setOnTouchListener(
+                CrossKeyTouchListener(
+                    context,
+                    listOf(
+                        StringKeyMessage("ᆢ"),
+                        StringKeyMessage("ㅡ"),
+                        StringKeyMessage("ㆍ"),
+                        StringKeyMessage("ㅣ"),
+                    ),
+                )
+            )
+            enterKey.setOnTouchListener(
+                SimpleKeyTouchListener(context, SpecialKeyMessage(SpecialKey.ENTER))
+            )
+        }
+    }
+
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        touchedMoeum.let { moeum ->
-            when (ev.action) {
-                MotionEvent.ACTION_DOWN,
-                MotionEvent.ACTION_MOVE -> {
-                    if (ev.action == MotionEvent.ACTION_DOWN ||
-                        (ev.action == MotionEvent.ACTION_MOVE && touchedMoeum != null)
-                    ) {
-                        binding.iKey.apply {
-                            if (ev.x in x..x + width && ev.y in y..y + height) {
-                                if (moeum != "ㅣ") {
-                                    background = backgrounds[0]
-                                    binding.euKey.background = backgrounds[1]
-                                    binding.araeaKey.background = backgrounds[1]
-                                    if (config.hapticFeedback) {
-                                        performHapticFeedback(
-                                            HapticFeedbackConstants.KEYBOARD_PRESS
-                                        )
+        if (!isMoakeyMode) {
+            val b = twoHandBinding ?: return super.dispatchTouchEvent(ev)
+            touchedMoeum.let { moeum ->
+                when (ev.action) {
+                    MotionEvent.ACTION_DOWN,
+                    MotionEvent.ACTION_MOVE -> {
+                        if (ev.action == MotionEvent.ACTION_DOWN ||
+                            (ev.action == MotionEvent.ACTION_MOVE && touchedMoeum != null)
+                        ) {
+                            b.iKey.apply {
+                                if (ev.x in x..x + width && ev.y in y..y + height) {
+                                    if (moeum != "ㅣ") {
+                                        background = backgrounds[0]
+                                        b.euKey.background = backgrounds[1]
+                                        b.araeaKey.background = backgrounds[1]
+                                        if (config.hapticFeedback) {
+                                            performHapticFeedback(
+                                                HapticFeedbackConstants.KEYBOARD_PRESS
+                                            )
+                                        }
+                                        if (moeum != null) {
+                                            sendKeyMessage(StringKeyMessage(moeum))
+                                        }
                                     }
-                                    if (moeum != null) {
-                                        sendKeyMessage(StringKeyMessage(moeum))
-                                    }
+                                    touchedMoeum = "ㅣ"
+                                    return true
                                 }
-                                touchedMoeum = "ㅣ"
-                                return true
+                            }
+                            b.euKey.apply {
+                                if (ev.x in x..x + width && ev.y in y..y + height) {
+                                    if (moeum != "ㅡ") {
+                                        background = backgrounds[0]
+                                        b.iKey.background = backgrounds[1]
+                                        b.araeaKey.background = backgrounds[1]
+                                        if (config.hapticFeedback) {
+                                            performHapticFeedback(
+                                                HapticFeedbackConstants.KEYBOARD_PRESS
+                                            )
+                                        }
+                                        if (moeum != null) {
+                                            sendKeyMessage(StringKeyMessage(moeum))
+                                        }
+                                    }
+                                    touchedMoeum = "ㅡ"
+                                    return true
+                                }
+                            }
+                            b.araeaKey.apply {
+                                if (ev.x in x..x + width && ev.y in y..y + height) {
+                                    if (moeum != "ㆍ") {
+                                        background = backgrounds[0]
+                                        b.iKey.background = backgrounds[1]
+                                        b.euKey.background = backgrounds[1]
+                                        if (config.hapticFeedback) {
+                                            performHapticFeedback(
+                                                HapticFeedbackConstants.KEYBOARD_PRESS
+                                            )
+                                        }
+                                        if (moeum != null) {
+                                            sendKeyMessage(StringKeyMessage(moeum))
+                                        }
+                                    }
+                                    touchedMoeum = "ㆍ"
+                                    return true
+                                }
                             }
                         }
-                        binding.euKey.apply {
-                            if (ev.x in x..x + width && ev.y in y..y + height) {
-                                if (moeum != "ㅡ") {
-                                    background = backgrounds[0]
-                                    binding.iKey.background = backgrounds[1]
-                                    binding.araeaKey.background = backgrounds[1]
-                                    if (config.hapticFeedback) {
-                                        performHapticFeedback(
-                                            HapticFeedbackConstants.KEYBOARD_PRESS
-                                        )
-                                    }
-                                    if (moeum != null) {
-                                        sendKeyMessage(StringKeyMessage(moeum))
-                                    }
-                                }
-                                touchedMoeum = "ㅡ"
-                                return true
-                            }
-                        }
-                        binding.araeaKey.apply {
-                            if (ev.x in x..x + width && ev.y in y..y + height) {
-                                if (moeum != "ㆍ") {
-                                    background = backgrounds[0]
-                                    binding.iKey.background = backgrounds[1]
-                                    binding.euKey.background = backgrounds[1]
-                                    if (config.hapticFeedback) {
-                                        performHapticFeedback(
-                                            HapticFeedbackConstants.KEYBOARD_PRESS
-                                        )
-                                    }
-                                    if (moeum != null) {
-                                        sendKeyMessage(StringKeyMessage(moeum))
-                                    }
-                                }
-                                touchedMoeum = "ㆍ"
-                                return true
-                            }
-                        }
+                        Unit
                     }
-                    Unit
-                }
-                MotionEvent.ACTION_UP -> {
-                    if (moeum != null) {
-                        binding.iKey.background = backgrounds[1]
-                        binding.euKey.background = backgrounds[1]
-                        binding.araeaKey.background = backgrounds[1]
-                        sendKeyMessage(StringKeyMessage(moeum))
-                        touchedMoeum = null
-                        return true
+                    MotionEvent.ACTION_UP -> {
+                        if (moeum != null) {
+                            b.iKey.background = backgrounds[1]
+                            b.euKey.background = backgrounds[1]
+                            b.araeaKey.background = backgrounds[1]
+                            sendKeyMessage(StringKeyMessage(moeum))
+                            touchedMoeum = null
+                            return true
+                        }
+                        Unit
                     }
-                    Unit
+                    else -> Unit
                 }
-                else -> Unit
             }
         }
         return super.dispatchTouchEvent(ev)
