@@ -2,40 +2,72 @@ package pe.aioo.openmoa.view.keytouchlistener
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
+import android.os.Handler
+import android.os.Looper
 import android.view.MotionEvent
 import android.view.View
 import pe.aioo.openmoa.hangul.HangulPreviewComposer
 import pe.aioo.openmoa.hangul.MoeumGestureProcessor
+import pe.aioo.openmoa.quickphrase.QuickPhraseKey
+import pe.aioo.openmoa.quickphrase.QuickPhraseRepository
+import pe.aioo.openmoa.settings.QuickPhraseEditActivity
 import pe.aioo.openmoa.view.message.StringKeyMessage
 import pe.aioo.openmoa.view.preview.KeyPreviewController
+import pe.aioo.openmoa.view.preview.QuickPhraseMenuPopup
 import kotlin.math.*
 
 class JaumKeyTouchListener(
-    context: Context,
+    private val context: Context,
     private val key: String,
     private val previewController: KeyPreviewController? = null,
+    private val quickPhraseKey: QuickPhraseKey? = null,
+    private val quickPhraseMenuPopup: QuickPhraseMenuPopup? = null,
 ) : BaseKeyTouchListener(context) {
 
-    private var startX: Float = 0f
-    private var startY: Float = 0f
+    private var startX = 0f
+    private var startY = 0f
+    private var longPressStartX = 0f
+    private var hasMoved = false
+    private var isLongPressed = false
     private val moeumGestureProcessor = MoeumGestureProcessor()
+    private val handler = Handler(Looper.getMainLooper())
+    private var anchorView: View? = null
+
+    private val longPressRunnable = Runnable {
+        val view = anchorView ?: return@Runnable
+        val phraseKey = quickPhraseKey ?: return@Runnable
+        isLongPressed = true
+        previewController?.hide()
+        val phrase = QuickPhraseRepository.getPhrase(context, phraseKey)
+        quickPhraseMenuPopup?.show(view, phrase)
+    }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
         when (motionEvent.action) {
             MotionEvent.ACTION_DOWN -> {
+                anchorView = view
                 startX = motionEvent.x
                 startY = motionEvent.y
+                longPressStartX = motionEvent.x
+                hasMoved = false
+                isLongPressed = false
                 moeumGestureProcessor.clear()
-                previewController?.show(view, key)
+                if (quickPhraseKey == null) previewController?.show(view, key)
+                if (quickPhraseKey != null) {
+                    handler.postDelayed(longPressRunnable, config.longPressThresholdTime)
+                }
             }
             MotionEvent.ACTION_MOVE -> {
                 val currentX = motionEvent.x
                 val currentY = motionEvent.y
-                val distance = sqrt(
-                    (currentX - startX).pow(2) + (currentY - startY).pow(2)
-                )
+                val distance = sqrt((currentX - startX).pow(2) + (currentY - startY).pow(2))
                 if (distance > config.gestureThreshold) {
+                    if (!hasMoved) {
+                        hasMoved = true
+                        handler.removeCallbacks(longPressRunnable)
+                    }
                     val degree = (atan2(currentY - startY, currentX - startX) * 180f) / PI
                     startX = currentX
                     startY = currentY
@@ -53,19 +85,49 @@ class JaumKeyTouchListener(
                     val moeum = moeumGestureProcessor.resolveMoeumList()
                     previewController?.update(view, HangulPreviewComposer.compose(key, moeum))
                 }
+                if (isLongPressed) {
+                    val dx = motionEvent.x - longPressStartX
+                    quickPhraseMenuPopup?.updateSelectionByDelta(dx, view.width)
+                }
             }
             MotionEvent.ACTION_UP -> {
+                handler.removeCallbacks(longPressRunnable)
                 previewController?.hide()
-                sendKeyMessage(StringKeyMessage(key))
-                moeumGestureProcessor.resolveMoeumList()?.let {
-                    sendKeyMessage(StringKeyMessage(it))
+                if (isLongPressed) {
+                    isLongPressed = false
+                    val phraseKey = quickPhraseKey
+                    if (phraseKey != null) {
+                        when (quickPhraseMenuPopup?.confirmAndDismiss()) {
+                            QuickPhraseMenuPopup.MenuItem.PHRASE_PREVIEW -> {
+                                sendKeyMessage(StringKeyMessage(QuickPhraseRepository.getPhrase(context, phraseKey)))
+                            }
+                            QuickPhraseMenuPopup.MenuItem.EDIT -> {
+                                val intent = Intent(context, QuickPhraseEditActivity::class.java).apply {
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    putExtra(QuickPhraseEditActivity.EXTRA_KEY, phraseKey.name)
+                                }
+                                context.startActivity(intent)
+                            }
+                            else -> Unit
+                        }
+                    }
+                } else if (!hasMoved && quickPhraseKey != null) {
+                    val phrase = QuickPhraseRepository.getPhrase(context, quickPhraseKey)
+                    sendKeyMessage(StringKeyMessage(phrase))
+                } else {
+                    sendKeyMessage(StringKeyMessage(key))
+                    moeumGestureProcessor.resolveMoeumList()?.let {
+                        sendKeyMessage(StringKeyMessage(it))
+                    }
                 }
             }
             MotionEvent.ACTION_CANCEL -> {
+                handler.removeCallbacks(longPressRunnable)
                 previewController?.hide()
+                quickPhraseMenuPopup?.dismiss()
+                isLongPressed = false
             }
         }
         return super.onTouch(view, motionEvent)
     }
-
 }

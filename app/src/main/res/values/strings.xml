@@ -92,4 +92,17 @@
     <string name="settings_one_hand_mode_center">가운데 정렬</string>
     <string name="settings_key_preview_title">키 입력 미리보기</string>
 
+    <string name="settings_quick_phrase_section">상용구</string>
+    <string name="settings_quick_phrase_kieuk_label">ㅋ 상용구</string>
+    <string name="settings_quick_phrase_tieut_label">ㅌ 상용구</string>
+    <string name="settings_quick_phrase_chieut_label">ㅊ 상용구</string>
+    <string name="settings_quick_phrase_pieup_label">ㅍ 상용구</string>
+    <string name="settings_quick_phrase_edit_hint">상용구를 입력하세요</string>
+    <string name="settings_quick_phrase_reset">기본값으로 초기화</string>
+    <string name="quick_phrase_menu_edit">수정</string>
+    <string name="quick_phrase_menu_cancel">취소</string>
+    <string name="quick_phrase_edit_title">상용구 수정</string>
+    <string name="quick_phrase_edit_key_label">단축키</string>
+    <string name="quick_phrase_edit_content_label">내용</string>
+
 </resources>

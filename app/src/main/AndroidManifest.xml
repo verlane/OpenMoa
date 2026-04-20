@@ -34,6 +34,11 @@
             android:exported="false"
             android:theme="@style/Theme.OpenMoa.Settings" />
 
+        <activity
+            android:name="pe.aioo.openmoa.settings.QuickPhraseEditActivity"
+            android:exported="false"
+            android:theme="@style/Theme.OpenMoa.QuickPhraseEdit" />
+
     </application>
 
 </manifest>

@@ -457,6 +457,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         super.onStartInputView(info, restarting)
         finishComposing()
         refreshOpenMoaViewIfNeeded()
+        (keyboardViews[IMEMode.IME_KO] as? OpenMoaView)?.refreshQuickPhraseBadges()
         applyKeyboardLayout()
         when ((info?.inputType ?: 0) and InputType.TYPE_MASK_CLASS) {
             InputType.TYPE_CLASS_NUMBER -> {
