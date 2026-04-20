@@ -74,6 +74,33 @@
             android:layout_marginBottom="4dp" />
 
         <LinearLayout
+            android:id="@+id/keyboardSkinItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_keyboard_skin_title"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/keyboardSkinValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/key_foreground_muted"
+                android:paddingTop="2dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/keypadHeightItem"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -10,9 +10,11 @@ import pe.aioo.openmoa.view.keytouchlistener.FunctionalKeyTouchListener
 import pe.aioo.openmoa.view.message.SpecialKey
 import pe.aioo.openmoa.view.keytouchlistener.RepeatKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.SimpleKeyTouchListener
+import pe.aioo.openmoa.settings.SettingsPreferences
 import pe.aioo.openmoa.view.keytouchlistener.SpaceKeyTouchListener
 import pe.aioo.openmoa.view.message.SpecialKeyMessage
 import pe.aioo.openmoa.view.message.StringKeyMessage
+import pe.aioo.openmoa.view.skin.SkinApplier
 
 class PhoneView : ConstraintLayout {
 
@@ -38,6 +40,7 @@ class PhoneView : ConstraintLayout {
         binding = PhoneViewBinding.bind(this)
         setPageOrNextPage(0, true)
         setOnTouchListeners()
+        SkinApplier.apply(this, SettingsPreferences.getKeyboardSkin(context))
     }
 
     fun setPageOrNextPage(newPage: Int? = null, isInitialize: Boolean = false) {

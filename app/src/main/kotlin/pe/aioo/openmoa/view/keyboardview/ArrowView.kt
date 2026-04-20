@@ -4,16 +4,18 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContextCompat
 import pe.aioo.openmoa.R
+import pe.aioo.openmoa.config.KeyboardSkin
 import pe.aioo.openmoa.databinding.ArrowViewBinding
 import pe.aioo.openmoa.view.keytouchlistener.FunctionalKeyTouchListener
 import pe.aioo.openmoa.view.message.SpecialKey
 import pe.aioo.openmoa.view.keytouchlistener.RepeatKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.SimpleKeyTouchListener
+import pe.aioo.openmoa.settings.SettingsPreferences
 import pe.aioo.openmoa.view.keytouchlistener.SpaceKeyTouchListener
 import pe.aioo.openmoa.view.message.SpecialKeyMessage
 import pe.aioo.openmoa.view.message.StringKeyMessage
+import pe.aioo.openmoa.view.skin.SkinApplier
 
 class ArrowView : ConstraintLayout {
 
@@ -33,26 +35,27 @@ class ArrowView : ConstraintLayout {
 
     private lateinit var binding: ArrowViewBinding
     private var isSelecting = false
+    private var currentSkin: KeyboardSkin = KeyboardSkin.DEFAULT
 
     private fun init() {
         inflate(context, R.layout.arrow_view, this)
         binding = ArrowViewBinding.bind(this)
         setOnTouchListeners()
+        currentSkin = SettingsPreferences.getKeyboardSkin(context)
+        SkinApplier.apply(this, currentSkin)
     }
 
     fun setSelectingOrToggleSelecting(selecting: Boolean? = null) {
         isSelecting = selecting ?: !isSelecting
+        val color = if (isSelecting) {
+            SkinApplier.fgAccentColor(context, currentSkin)
+        } else {
+            SkinApplier.fgColor(context, currentSkin)
+        }
         listOf(
             binding.areaSelectKey, binding.homeKey, binding.endKey,
             binding.upKey, binding.downKey, binding.leftKey, binding.rightKey,
-        ).map {
-            it.setTextColor(
-                ContextCompat.getColor(
-                    context,
-                    if (isSelecting) R.color.key_foreground_locked else R.color.key_foreground
-                )
-            )
-        }
+        ).forEach { it.setTextColor(color) }
     }
 
     @SuppressLint("ClickableViewAccessibility")

@@ -6,6 +6,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import pe.aioo.openmoa.R
 import pe.aioo.openmoa.config.HangulInputMode
+import pe.aioo.openmoa.config.KeyboardSkin
 import pe.aioo.openmoa.config.KeypadHeight
 import pe.aioo.openmoa.config.LongPressTime
 import pe.aioo.openmoa.config.OneHandMode
@@ -27,6 +28,7 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun setupViews() {
         updateInputModeDisplay()
+        updateKeyboardSkinDisplay()
         updateKeypadHeightDisplay()
         updateOneHandModeDisplay()
         updateLongPressTimeDisplay()
@@ -36,6 +38,7 @@ class SettingsActivity : AppCompatActivity() {
         updateQuickPhraseDisplays()
 
         binding.hangulInputModeItem.setOnClickListener { showInputModeDialog() }
+        binding.keyboardSkinItem.setOnClickListener { showKeyboardSkinDialog() }
         binding.keypadHeightItem.setOnClickListener { showKeypadHeightDialog() }
         binding.oneHandModeItem.setOnClickListener { showOneHandModeDialog() }
         binding.longPressTimeItem.setOnClickListener { showLongPressTimeDialog() }
@@ -86,6 +89,27 @@ class SettingsActivity : AppCompatActivity() {
             .setNeutralButton(R.string.settings_quick_phrase_reset) { _, _ ->
                 QuickPhraseRepository.setPhrase(this, key, key.defaultPhrase)
                 updateQuickPhraseDisplays()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun updateKeyboardSkinDisplay() {
+        binding.keyboardSkinValue.text =
+            getString(SettingsPreferences.getKeyboardSkin(this).labelResId)
+    }
+
+    private fun showKeyboardSkinDialog() {
+        val options = KeyboardSkin.values()
+        val labels = options.map { getString(it.labelResId) }.toTypedArray()
+        val currentIndex = options.indexOf(SettingsPreferences.getKeyboardSkin(this))
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.settings_keyboard_skin_title)
+            .setSingleChoiceItems(labels, currentIndex) { dialog, which ->
+                SettingsPreferences.save(this, SettingsPreferences.KEY_KEYBOARD_SKIN, options[which].name)
+                updateKeyboardSkinDisplay()
+                dialog.dismiss()
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()

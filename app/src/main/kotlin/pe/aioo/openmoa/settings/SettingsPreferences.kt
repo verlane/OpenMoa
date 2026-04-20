@@ -2,6 +2,7 @@ package pe.aioo.openmoa.settings
 
 import android.content.Context
 import pe.aioo.openmoa.config.HangulInputMode
+import pe.aioo.openmoa.config.KeyboardSkin
 import pe.aioo.openmoa.config.KeypadHeight
 import pe.aioo.openmoa.config.LongPressTime
 import pe.aioo.openmoa.config.OneHandMode
@@ -17,6 +18,7 @@ object SettingsPreferences {
     const val KEY_LONG_PRESS_TIME = "long_press_time"
     const val KEY_SPACE_LONG_PRESS_ACTION = "space_long_press_action"
     const val KEY_AUTO_SPACE_PERIOD = "auto_space_period"
+    const val KEY_KEYBOARD_SKIN = "keyboard_skin"
 
     fun getKeyPreviewEnabled(context: Context): Boolean {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -58,6 +60,12 @@ object SettingsPreferences {
         val value = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .getString(KEY_SPACE_LONG_PRESS_ACTION, null)
         return SpaceLongPressAction.fromString(value)
+    }
+
+    fun getKeyboardSkin(context: Context): KeyboardSkin {
+        val value = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getString(KEY_KEYBOARD_SKIN, null)
+        return KeyboardSkin.fromString(value)
     }
 
     fun getAutoSpacePeriod(context: Context): Boolean {

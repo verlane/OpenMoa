@@ -8,13 +8,18 @@ import android.view.ViewGroup
 import android.widget.PopupWindow
 import android.widget.TextView
 import pe.aioo.openmoa.R
+import pe.aioo.openmoa.config.KeyboardSkin
+import pe.aioo.openmoa.view.skin.SkinApplier
 
-class KeyPreviewPopup(context: Context) {
+class KeyPreviewPopup(context: Context, skin: KeyboardSkin) {
 
     private val popupView: View = LayoutInflater.from(context).inflate(
         R.layout.key_preview_popup, null
     )
-    private val previewText: TextView = popupView.findViewById(R.id.previewText)
+    private val previewText: TextView = popupView.findViewById<TextView>(R.id.previewText).apply {
+        setTextColor(SkinApplier.fgColor(context, skin))
+        background = SkinApplier.buildPreviewBackground(context, skin)
+    }
     private val popup = PopupWindow(
         popupView,
         ViewGroup.LayoutParams.WRAP_CONTENT,

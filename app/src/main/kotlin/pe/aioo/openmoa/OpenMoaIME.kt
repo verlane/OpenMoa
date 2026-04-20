@@ -36,6 +36,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import pe.aioo.openmoa.config.Config
 import pe.aioo.openmoa.config.HangulInputMode
+import pe.aioo.openmoa.config.KeyboardSkin
 import pe.aioo.openmoa.config.OneHandMode
 import pe.aioo.openmoa.databinding.OpenMoaImeBinding
 import pe.aioo.openmoa.hangul.HangulAssembler
@@ -44,6 +45,7 @@ import pe.aioo.openmoa.settings.SettingsPreferences
 import pe.aioo.openmoa.view.keyboardview.*
 import pe.aioo.openmoa.view.keyboardview.qwerty.QuertyView
 import pe.aioo.openmoa.view.message.SpecialKey
+import pe.aioo.openmoa.view.skin.SkinApplier
 import java.io.Serializable
 import kotlin.math.roundToInt
 
@@ -58,6 +60,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     private var previousImeMode = IMEMode.IME_KO
     private var composingText = ""
     private var lastSpaceTime = 0L
+    private var lastAppliedSkin: KeyboardSkin = KeyboardSkin.DEFAULT
 
     private fun finishComposing() {
         currentInputConnection?.finishComposingText()
@@ -424,30 +427,22 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     @SuppressLint("InflateParams")
     override fun onCreateInputView(): View {
         super.onCreateInputView()
-        window.window?.apply {
-            navigationBarColor =
-                ContextCompat.getColor(this@OpenMoaIME, R.color.keyboard_background)
-            when (resources.configuration.uiMode.and(Configuration.UI_MODE_NIGHT_MASK)) {
-                Configuration.UI_MODE_NIGHT_YES -> {
-                    insetsController?.apply {
-                        setSystemBarsAppearance(0, APPEARANCE_LIGHT_NAVIGATION_BARS)
-                    }
-                }
-                Configuration.UI_MODE_NIGHT_NO, Configuration.UI_MODE_NIGHT_UNDEFINED -> {
-                    insetsController?.apply {
-                        setSystemBarsAppearance(
-                            APPEARANCE_LIGHT_NAVIGATION_BARS, APPEARANCE_LIGHT_NAVIGATION_BARS
-                        )
-                    }
-                }
-            }
-        }
+        lastAppliedSkin = SettingsPreferences.getKeyboardSkin(this)
+        keyboardViews = buildKeyboardViews()
+        val view = layoutInflater.inflate(R.layout.open_moa_ime, null)
+        binding = OpenMoaImeBinding.bind(view)
+        applyKeyboardLayout()
+        setKeyboard(imeMode)
+        return view
+    }
+
+    private fun buildKeyboardViews(): MutableMap<IMEMode, View> {
         val punctuationView = PunctuationView(this)
         val numberView = NumberView(this)
         val arrowView = ArrowView(this)
         val phoneView = PhoneView(this)
         val emojiView = EmojiView(this)
-        keyboardViews = mutableMapOf(
+        return mutableMapOf(
             IMEMode.IME_KO to OpenMoaView(this),
             IMEMode.IME_EN to QuertyView(this),
             IMEMode.IME_KO_PUNCTUATION to punctuationView,
@@ -460,11 +455,13 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
             IMEMode.IME_EN_PHONE to phoneView,
             IMEMode.IME_EMOJI to emojiView,
         )
-        val view = layoutInflater.inflate(R.layout.open_moa_ime, null)
-        binding = OpenMoaImeBinding.bind(view)
-        applyKeyboardLayout()
-        setKeyboard(imeMode)
-        return view
+    }
+
+    private fun refreshSkinIfNeeded() {
+        val currentSkin = SettingsPreferences.getKeyboardSkin(this)
+        if (currentSkin == lastAppliedSkin) return
+        lastAppliedSkin = currentSkin
+        keyboardViews = buildKeyboardViews()
     }
 
     private fun refreshOpenMoaViewIfNeeded() {
@@ -478,6 +475,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
         super.onStartInputView(info, restarting)
         finishComposing()
+        refreshSkinIfNeeded()
         refreshOpenMoaViewIfNeeded()
         (keyboardViews[IMEMode.IME_KO] as? OpenMoaView)?.refreshQuickPhraseBadges()
         applyKeyboardLayout()
@@ -627,6 +625,18 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     }
 
     private fun applyKeyboardLayout() {
+        val skin = SettingsPreferences.getKeyboardSkin(this)
+        val bgColor = SkinApplier.keyboardBgColor(this, skin)
+        binding.root.setBackgroundColor(bgColor)
+        binding.keyboardContainer.setBackgroundColor(bgColor)
+        window.window?.apply {
+            navigationBarColor = bgColor
+            val isLightBg = Color.luminance(bgColor) > 0.5f
+            insetsController?.setSystemBarsAppearance(
+                if (isLightBg) APPEARANCE_LIGHT_NAVIGATION_BARS else 0,
+                APPEARANCE_LIGHT_NAVIGATION_BARS,
+            )
+        }
         val oneHandMode = SettingsPreferences.getOneHandMode(this)
         val displayWidth = resources.displayMetrics.widthPixels
         val keyboardWidth = if (oneHandMode.isReduced) {

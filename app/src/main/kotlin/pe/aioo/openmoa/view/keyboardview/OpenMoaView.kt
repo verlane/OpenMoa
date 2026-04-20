@@ -7,7 +7,6 @@ import android.util.AttributeSet
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContextCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -31,6 +30,8 @@ import pe.aioo.openmoa.quickphrase.QuickPhraseKey
 import pe.aioo.openmoa.quickphrase.QuickPhraseRepository
 import pe.aioo.openmoa.view.preview.KeyPreviewController
 import pe.aioo.openmoa.view.preview.QuickPhraseMenuPopup
+import pe.aioo.openmoa.config.KeyboardSkin
+import pe.aioo.openmoa.view.skin.SkinApplier
 
 class OpenMoaView : ConstraintLayout, KoinComponent {
 
@@ -56,14 +57,13 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
     private var twoHandBinding: OpenMoaViewBinding? = null
     private var moakeyBinding: OpenMoaViewMoakeyBinding? = null
     private var touchedMoeum: String? = null
-    private val backgrounds = listOf(
-        ContextCompat.getDrawable(context, R.drawable.key_background_pressed),
-        ContextCompat.getDrawable(context, R.drawable.key_background),
-    )
+    private var moeumKeyBgPressed: android.graphics.drawable.Drawable? = null
+    private var moeumKeyBgNormal: android.graphics.drawable.Drawable? = null
     private lateinit var previewController: KeyPreviewController
 
     private fun init() {
-        previewController = KeyPreviewController(config.keyPreviewEnabled)
+        val skin = SettingsPreferences.getKeyboardSkin(context)
+        previewController = KeyPreviewController(config.keyPreviewEnabled, skin)
         val mode = SettingsPreferences.getHangulInputMode(context)
         isMoakeyMode = mode == HangulInputMode.MOAKEY
         if (isMoakeyMode) {
@@ -76,6 +76,9 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
             setTwoHandTouchListeners()
         }
         updateQuickPhraseBadges()
+        SkinApplier.apply(this, skin)
+        moeumKeyBgPressed = SkinApplier.buildKeyDrawable(context, skin, pressed = true)
+        moeumKeyBgNormal = SkinApplier.buildKeyDrawable(context, skin, pressed = false)
     }
 
     fun refreshQuickPhraseBadges() {
@@ -258,9 +261,9 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
                             b.iKey.apply {
                                 if (ev.x in x..x + width && ev.y in y..y + height) {
                                     if (moeum != "ㅣ") {
-                                        background = backgrounds[0]
-                                        b.euKey.background = backgrounds[1]
-                                        b.araeaKey.background = backgrounds[1]
+                                        background = moeumKeyBgPressed
+                                        b.euKey.background = moeumKeyBgNormal
+                                        b.araeaKey.background = moeumKeyBgNormal
                                         if (config.hapticFeedback) {
                                             performHapticFeedback(
                                                 HapticFeedbackConstants.KEYBOARD_PRESS
@@ -277,9 +280,9 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
                             b.euKey.apply {
                                 if (ev.x in x..x + width && ev.y in y..y + height) {
                                     if (moeum != "ㅡ") {
-                                        background = backgrounds[0]
-                                        b.iKey.background = backgrounds[1]
-                                        b.araeaKey.background = backgrounds[1]
+                                        background = moeumKeyBgPressed
+                                        b.iKey.background = moeumKeyBgNormal
+                                        b.araeaKey.background = moeumKeyBgNormal
                                         if (config.hapticFeedback) {
                                             performHapticFeedback(
                                                 HapticFeedbackConstants.KEYBOARD_PRESS
@@ -296,9 +299,9 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
                             b.araeaKey.apply {
                                 if (ev.x in x..x + width && ev.y in y..y + height) {
                                     if (moeum != "ㆍ") {
-                                        background = backgrounds[0]
-                                        b.iKey.background = backgrounds[1]
-                                        b.euKey.background = backgrounds[1]
+                                        background = moeumKeyBgPressed
+                                        b.iKey.background = moeumKeyBgNormal
+                                        b.euKey.background = moeumKeyBgNormal
                                         if (config.hapticFeedback) {
                                             performHapticFeedback(
                                                 HapticFeedbackConstants.KEYBOARD_PRESS
@@ -317,9 +320,9 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
                     }
                     MotionEvent.ACTION_UP -> {
                         if (moeum != null) {
-                            b.iKey.background = backgrounds[1]
-                            b.euKey.background = backgrounds[1]
-                            b.araeaKey.background = backgrounds[1]
+                            b.iKey.background = moeumKeyBgNormal
+                            b.euKey.background = moeumKeyBgNormal
+                            b.araeaKey.background = moeumKeyBgNormal
                             sendKeyMessage(StringKeyMessage(moeum))
                             touchedMoeum = null
                             return true

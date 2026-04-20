@@ -9,9 +9,11 @@ import pe.aioo.openmoa.databinding.NumberViewBinding
 import pe.aioo.openmoa.view.message.SpecialKey
 import pe.aioo.openmoa.view.keytouchlistener.RepeatKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.SimpleKeyTouchListener
+import pe.aioo.openmoa.settings.SettingsPreferences
 import pe.aioo.openmoa.view.keytouchlistener.SpaceKeyTouchListener
 import pe.aioo.openmoa.view.message.SpecialKeyMessage
 import pe.aioo.openmoa.view.message.StringKeyMessage
+import pe.aioo.openmoa.view.skin.SkinApplier
 
 class NumberView : ConstraintLayout {
 
@@ -35,6 +37,7 @@ class NumberView : ConstraintLayout {
         inflate(context, R.layout.number_view, this)
         binding = NumberViewBinding.bind(this)
         setOnTouchListeners()
+        SkinApplier.apply(this, SettingsPreferences.getKeyboardSkin(context))
     }
 
     @SuppressLint("ClickableViewAccessibility")

@@ -101,6 +101,12 @@
     <string name="settings_space_long_press_ime_picker">키보드 선택 팝업(기본)</string>
     <string name="settings_space_long_press_switch_language">언어 전환</string>
     <string name="settings_space_long_press_none">없음</string>
+    <string name="settings_keyboard_skin_title">키보드 스킨</string>
+    <string name="settings_keyboard_skin_white">화이트</string>
+    <string name="settings_keyboard_skin_dark_gray">다크그레이(기본)</string>
+    <string name="settings_keyboard_skin_black">블랙</string>
+    <string name="settings_keyboard_skin_blue">블루</string>
+    <string name="settings_keyboard_skin_green">그린</string>
     <string name="settings_auto_space_period_title">자동 마침표 입력</string>
     <string name="settings_auto_space_period_description">스페이스 바를 두 번 눌러 마침표를 자동으로 입력합니다</string>
 

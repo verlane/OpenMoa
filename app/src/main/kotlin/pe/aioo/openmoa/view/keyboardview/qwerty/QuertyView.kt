@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContextCompat
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import pe.aioo.openmoa.R
@@ -18,7 +17,10 @@ import pe.aioo.openmoa.view.keytouchlistener.SimpleKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.SpaceKeyTouchListener
 import pe.aioo.openmoa.view.message.SpecialKeyMessage
 import pe.aioo.openmoa.view.message.StringKeyMessage
+import pe.aioo.openmoa.config.KeyboardSkin
+import pe.aioo.openmoa.settings.SettingsPreferences
 import pe.aioo.openmoa.view.preview.KeyPreviewController
+import pe.aioo.openmoa.view.skin.SkinApplier
 
 class QuertyView : ConstraintLayout, KoinComponent {
 
@@ -40,13 +42,16 @@ class QuertyView : ConstraintLayout, KoinComponent {
 
     private var shiftKeyStatus = ShiftKeyStatus.DISABLED
     private lateinit var binding: QuertyViewBinding
-    private val previewController by lazy { KeyPreviewController(config.keyPreviewEnabled) }
+    private val previewController by lazy { KeyPreviewController(config.keyPreviewEnabled, currentSkin) }
+    private var currentSkin: KeyboardSkin = KeyboardSkin.DEFAULT
 
     private fun init() {
         inflate(context, R.layout.querty_view, this)
         binding = QuertyViewBinding.bind(this)
+        currentSkin = SettingsPreferences.getKeyboardSkin(context)
         setShiftStatus(ShiftKeyStatus.DISABLED, true)
         setOnTouchListeners()
+        SkinApplier.apply(this, currentSkin)
     }
 
     override fun onDetachedFromWindow() {
@@ -71,14 +76,11 @@ class QuertyView : ConstraintLayout, KoinComponent {
                 view.text = KEY_LIST[if (isShiftEnabled) 1 else 0][index]
             }
             binding.shiftKey.setTextColor(
-                ContextCompat.getColor(
-                    context,
-                    if (isShiftEnabled) {
-                        R.color.key_foreground_locked
-                    } else {
-                        R.color.key_foreground
-                    },
-                )
+                if (isShiftEnabled) {
+                    SkinApplier.fgAccentColor(context, currentSkin)
+                } else {
+                    SkinApplier.fgColor(context, currentSkin)
+                }
             )
         }
         binding.shiftKey.text = if (status == ShiftKeyStatus.LOCKED) "⬆︎" else "⇧"
