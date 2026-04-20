@@ -47,6 +47,7 @@ class QuickPhraseMenuPopup(context: Context) {
     }
 
     fun updateSelectionByDelta(dx: Float, anchorWidth: Int) {
+        if (selectedItem == MenuItem.PHRASE_PREVIEW && dx < 0) return
         val threshold = anchorWidth / 3f
         selectedItem = when {
             dx < -threshold -> MenuItem.PHRASE_PREVIEW
