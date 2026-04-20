@@ -79,6 +79,10 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
         SkinApplier.apply(this, skin)
         moeumKeyBgPressed = SkinApplier.buildKeyDrawable(context, skin, pressed = true)
         moeumKeyBgNormal = SkinApplier.buildKeyDrawable(context, skin, pressed = false)
+        if (SettingsPreferences.getOneHandMode(context).isReduced) {
+            twoHandBinding?.emojiKey?.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 16f)
+            moakeyBinding?.emojiKey?.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 16f)
+        }
     }
 
     fun refreshQuickPhraseBadges() {
