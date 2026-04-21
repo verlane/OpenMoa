@@ -307,6 +307,7 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
                                         if (moeum != null) {
                                             sendKeyMessage(StringKeyMessage(moeum))
                                         }
+                                        previewController.show(this, "ㅣ")
                                     }
                                     touchedMoeum = "ㅣ"
                                     return true
@@ -326,6 +327,7 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
                                         if (moeum != null) {
                                             sendKeyMessage(StringKeyMessage(moeum))
                                         }
+                                        previewController.show(this, "ㅡ")
                                     }
                                     touchedMoeum = "ㅡ"
                                     return true
@@ -345,6 +347,7 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
                                         if (moeum != null) {
                                             sendKeyMessage(StringKeyMessage(moeum))
                                         }
+                                        previewController.show(this, "ㆍ")
                                     }
                                     touchedMoeum = "ㆍ"
                                     return true
@@ -360,7 +363,19 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
                             b.araeaKey.background = moeumKeyBgNormal
                             sendKeyMessage(StringKeyMessage(moeum))
                             touchedMoeum = null
+                            previewController.hide()
                             return true
+                        }
+                        Unit
+                    }
+                    MotionEvent.ACTION_CANCEL -> {
+                        if (moeum != null) {
+                            b.iKey.background = moeumKeyBgNormal
+                            b.euKey.background = moeumKeyBgNormal
+                            b.araeaKey.background = moeumKeyBgNormal
+                            sendKeyMessage(StringKeyMessage(moeum))
+                            touchedMoeum = null
+                            previewController.cancel()
                         }
                         Unit
                     }
