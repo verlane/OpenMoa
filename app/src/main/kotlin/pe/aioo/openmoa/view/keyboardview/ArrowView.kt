@@ -45,6 +45,19 @@ class ArrowView : ConstraintLayout {
         SkinApplier.apply(this, currentSkin)
     }
 
+    fun refreshOneHandMode() {
+        val isReduced = SettingsPreferences.getOneHandMode(context).isReduced
+        binding.copyAllKey.setText(
+            if (isReduced) R.string.key_copy_all_two_line else R.string.key_copy_all
+        )
+        binding.selectAllKey.setText(
+            if (isReduced) R.string.key_select_all_two_line else R.string.key_select_all
+        )
+        binding.cutAllKey.setText(
+            if (isReduced) R.string.key_cut_all_two_line else R.string.key_cut_all
+        )
+    }
+
     fun setSelectingOrToggleSelecting(selecting: Boolean? = null) {
         isSelecting = selecting ?: !isSelecting
         val color = if (isSelecting) {

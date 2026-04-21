@@ -389,7 +389,10 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
             when (it) {
                 is PunctuationView -> it.setPageOrNextPage(0)
                 is PhoneView -> it.setPageOrNextPage(0)
-                is ArrowView -> it.setSelectingOrToggleSelecting(false)
+                is ArrowView -> {
+                    it.setSelectingOrToggleSelecting(false)
+                    it.refreshOneHandMode()
+                }
             }
             binding.keyboardFrameLayout.setKeyboardView(it)
         }

@@ -12,8 +12,10 @@
     <string name="key_comma_question_dot_exclamation">,\n? . !</string>
     <string name="key_copy">복사</string>
     <string name="key_copy_all">전체 복사</string>
+    <string name="key_copy_all_two_line">전체\n복사</string>
     <string name="key_cut">자르기</string>
     <string name="key_cut_all">전체 자르기</string>
+    <string name="key_cut_all_two_line">전체\n자르기</string>
     <string name="key_delete">지우기</string>
     <string name="key_digeut">ㄷ</string>
     <string name="key_dot">.</string>
@@ -51,6 +53,7 @@
     <string name="key_rieul">ㄹ</string>
     <string name="key_right">▶</string>
     <string name="key_select_all">전체 선택</string>
+    <string name="key_select_all_two_line">전체\n선택</string>
     <string name="key_semicolon">;</string>
     <string name="key_seven">7</string>
     <string name="key_siot">ㅅ</string>
