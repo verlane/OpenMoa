@@ -57,6 +57,8 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
     private val broadcastManager = LocalBroadcastManager.getInstance(context)
     internal var isMoakeyMode = false
         private set
+    internal var moeumKeyVisible = true
+        private set
     private var twoHandBinding: OpenMoaViewBinding? = null
     private var moakeyBinding: OpenMoaViewMoakeyBinding? = null
     private var touchedMoeum: String? = null
@@ -73,6 +75,7 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
         previewController = KeyPreviewController({ config.keyPreviewEnabled }, skin)
         val mode = SettingsPreferences.getHangulInputMode(context)
         isMoakeyMode = mode == HangulInputMode.MOAKEY
+        moeumKeyVisible = SettingsPreferences.getMoeumKeyVisible(context)
         if (isMoakeyMode) {
             inflate(context, R.layout.open_moa_view_moakey, this)
             moakeyBinding = OpenMoaViewMoakeyBinding.bind(this)
@@ -213,9 +216,26 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
         }
     }
 
+    private fun applyMoeumKeyVisibility() {
+        val b = moakeyBinding ?: return
+        if (config.moeumKeyVisible) return
+        b.moeumKey.visibility = android.view.View.GONE
+        val parent = b.moeumKey.parent as? androidx.constraintlayout.widget.ConstraintLayout ?: return
+        val cs = androidx.constraintlayout.widget.ConstraintSet()
+        cs.clone(parent)
+        cs.clear(R.id.moeumKey, androidx.constraintlayout.widget.ConstraintSet.LEFT)
+        cs.clear(R.id.moeumKey, androidx.constraintlayout.widget.ConstraintSet.RIGHT)
+        cs.setHorizontalWeight(R.id.moeumKey, 0f)
+        cs.connect(R.id.spaceKey, androidx.constraintlayout.widget.ConstraintSet.RIGHT, R.id.enterKey, androidx.constraintlayout.widget.ConstraintSet.LEFT)
+        cs.connect(R.id.enterKey, androidx.constraintlayout.widget.ConstraintSet.LEFT, R.id.spaceKey, androidx.constraintlayout.widget.ConstraintSet.RIGHT)
+        cs.setHorizontalWeight(R.id.enterKey, 2f)
+        cs.applyTo(parent)
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     private fun setMoakeyTouchListeners() {
         val b = moakeyBinding ?: return
+        applyMoeumKeyVisibility()
         val quickPhraseMenuPopup = QuickPhraseMenuPopup(context)
         val resolver: (String) -> String = ::resolveJaumPreview
         b.apply {

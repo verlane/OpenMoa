@@ -115,6 +115,8 @@
     <string name="settings_auto_space_period_description">스페이스 바를 두 번 눌러 마침표를 자동으로 입력합니다</string>
     <string name="settings_auto_capitalize_english_title">영문 자동 대문자</string>
     <string name="settings_auto_capitalize_english_description">영문 키보드에서 문장 첫 글자를 자동으로 대문자로 입력합니다</string>
+    <string name="settings_moeum_key_visible_title">ㅣ·ㅡ 모음 키 표시</string>
+    <string name="settings_moeum_key_visible_description">모아키 전용. 끄면 엔터 키가 넓어집니다.</string>
     <string name="settings_enter_long_press_title">엔터 길게 누름 기능</string>
     <string name="settings_enter_long_press_arrow">방향키 레이아웃 표시(기본)</string>
     <string name="settings_enter_long_press_ime_picker">키보드 선택</string>

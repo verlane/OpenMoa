@@ -23,6 +23,7 @@ object SettingsPreferences {
     const val KEY_KEYBOARD_SKIN = "keyboard_skin"
     const val KEY_AUTO_CAPITALIZE_ENGLISH = "auto_capitalize_english"
     const val KEY_ENTER_LONG_PRESS_ACTION = "enter_long_press_action"
+    const val KEY_MOEUM_KEY_VISIBLE = "moeum_key_visible"
 
     val ALL_KEYS = setOf(
         KEY_HANGUL_INPUT_MODE,
@@ -35,6 +36,7 @@ object SettingsPreferences {
         KEY_KEYBOARD_SKIN,
         KEY_AUTO_CAPITALIZE_ENGLISH,
         KEY_ENTER_LONG_PRESS_ACTION,
+        KEY_MOEUM_KEY_VISIBLE,
     ) + UserCharKey.values().map { it.prefKey }.toSet()
 
     fun getKeyPreviewEnabled(context: Context): Boolean {
@@ -113,6 +115,18 @@ object SettingsPreferences {
         val value = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .getString(KEY_ENTER_LONG_PRESS_ACTION, null)
         return EnterLongPressAction.fromString(value)
+    }
+
+    fun getMoeumKeyVisible(context: Context): Boolean {
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getBoolean(KEY_MOEUM_KEY_VISIBLE, true)
+    }
+
+    fun setMoeumKeyVisible(context: Context, enabled: Boolean) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(KEY_MOEUM_KEY_VISIBLE, enabled)
+            .apply()
     }
 
     fun save(context: Context, key: String, value: String) {

@@ -14,4 +14,6 @@ class Config(private val context: Context) {
         get() = SettingsPreferences.getKeyPreviewEnabled(context)
     val autoCapitalizeEnglish: Boolean
         get() = SettingsPreferences.getAutoCapitalizeEnglish(context)
+    val moeumKeyVisible: Boolean
+        get() = SettingsPreferences.getMoeumKeyVisible(context)
 }
