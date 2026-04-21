@@ -51,6 +51,12 @@ class LanguageKeyTouchListener(context: Context) : BaseKeyTouchListener(context)
         return super.onTouch(view, motionEvent)
     }
 
+    fun cancel() {
+        timer?.cancel()
+        timer = null
+        longPressTriggered = false
+    }
+
     companion object {
         private const val LONG_PRESS_THRESHOLD_MS = 300L
     }

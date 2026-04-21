@@ -10,7 +10,9 @@ import pe.aioo.openmoa.R
 import pe.aioo.openmoa.config.Config
 import pe.aioo.openmoa.databinding.PunctuationViewBinding
 import pe.aioo.openmoa.view.message.SpecialKey
+import pe.aioo.openmoa.view.keytouchlistener.EnterKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.FunctionalKeyTouchListener
+import pe.aioo.openmoa.view.keytouchlistener.LanguageKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.RepeatKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.SimpleKeyTouchListener
 import pe.aioo.openmoa.settings.SettingsPreferences
@@ -40,6 +42,8 @@ class PunctuationView : ConstraintLayout, KoinComponent {
 
     private lateinit var binding: PunctuationViewBinding
     private var previewController: KeyPreviewController? = null
+    private var enterKeyListener: EnterKeyTouchListener? = null
+    private var languageKeyListener: LanguageKeyTouchListener? = null
     private var page = 0
 
     private fun init() {
@@ -54,6 +58,8 @@ class PunctuationView : ConstraintLayout, KoinComponent {
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         previewController?.cancel()
+        enterKeyListener?.cancel()
+        languageKeyListener?.cancel()
     }
 
     fun setPageOrNextPage(newPage: Int? = null, isInitialize: Boolean = false) {
@@ -100,9 +106,9 @@ class PunctuationView : ConstraintLayout, KoinComponent {
             backspaceKey.setOnTouchListener(
                 RepeatKeyTouchListener(context, SpecialKeyMessage(SpecialKey.BACKSPACE))
             )
-            languageKey.setOnTouchListener(
-                SimpleKeyTouchListener(context, SpecialKeyMessage(SpecialKey.LANGUAGE))
-            )
+            languageKeyListener?.cancel()
+            languageKeyListener = LanguageKeyTouchListener(context)
+            languageKey.setOnTouchListener(languageKeyListener)
             hanjaNumberPunctuationKey.setOnTouchListener(
                 SimpleKeyTouchListener(
                     context, SpecialKeyMessage(SpecialKey.HANJA_NUMBER_PUNCTUATION)
@@ -112,9 +118,9 @@ class PunctuationView : ConstraintLayout, KoinComponent {
             arrowKey.setOnTouchListener(
                 SimpleKeyTouchListener(context, SpecialKeyMessage(SpecialKey.ARROW))
             )
-            enterKey.setOnTouchListener(
-                SimpleKeyTouchListener(context, SpecialKeyMessage(SpecialKey.ENTER))
-            )
+            enterKeyListener?.cancel()
+            enterKeyListener = EnterKeyTouchListener(context)
+            enterKey.setOnTouchListener(enterKeyListener)
         }
     }
 

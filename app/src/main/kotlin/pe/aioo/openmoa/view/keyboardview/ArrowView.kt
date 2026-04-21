@@ -7,7 +7,9 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import pe.aioo.openmoa.R
 import pe.aioo.openmoa.config.KeyboardSkin
 import pe.aioo.openmoa.databinding.ArrowViewBinding
+import pe.aioo.openmoa.view.keytouchlistener.EnterKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.FunctionalKeyTouchListener
+import pe.aioo.openmoa.view.keytouchlistener.LanguageKeyTouchListener
 import pe.aioo.openmoa.view.message.SpecialKey
 import pe.aioo.openmoa.view.keytouchlistener.RepeatKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.SimpleKeyTouchListener
@@ -36,6 +38,8 @@ class ArrowView : ConstraintLayout {
     private lateinit var binding: ArrowViewBinding
     private var isSelecting = false
     private var currentSkin: KeyboardSkin = KeyboardSkin.DEFAULT
+    private var enterKeyListener: EnterKeyTouchListener? = null
+    private var languageKeyListener: LanguageKeyTouchListener? = null
 
     private fun init() {
         inflate(context, R.layout.arrow_view, this)
@@ -146,19 +150,25 @@ class ArrowView : ConstraintLayout {
             backspaceKey.setOnTouchListener(
                 RepeatKeyTouchListener(context, SpecialKeyMessage(SpecialKey.BACKSPACE))
             )
-            languageKey.setOnTouchListener(
-                SimpleKeyTouchListener(context, SpecialKeyMessage(SpecialKey.LANGUAGE))
-            )
+            languageKeyListener?.cancel()
+            languageKeyListener = LanguageKeyTouchListener(context)
+            languageKey.setOnTouchListener(languageKeyListener)
             hanjaNumberPunctuationKey.setOnTouchListener(
                 SimpleKeyTouchListener(
                     context, SpecialKeyMessage(SpecialKey.HANJA_NUMBER_PUNCTUATION)
                 )
             )
             spaceKey.setOnTouchListener(SpaceKeyTouchListener(context))
-            enterKey.setOnTouchListener(
-                SimpleKeyTouchListener(context, SpecialKeyMessage(SpecialKey.ENTER))
-            )
+            enterKeyListener?.cancel()
+            enterKeyListener = EnterKeyTouchListener(context)
+            enterKey.setOnTouchListener(enterKeyListener)
         }
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        enterKeyListener?.cancel()
+        languageKeyListener?.cancel()
     }
 
 }

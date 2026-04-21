@@ -16,6 +16,7 @@ import pe.aioo.openmoa.quickphrase.QwertyLongKeyRepository
 import pe.aioo.openmoa.view.keytouchlistener.CrossKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.EnterKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.FunctionalKeyTouchListener
+import pe.aioo.openmoa.view.keytouchlistener.LanguageKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.QwertyKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.RepeatKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.SimpleKeyTouchListener
@@ -54,6 +55,7 @@ class QuertyView : ConstraintLayout, KoinComponent {
     private var currentSkin: KeyboardSkin = KeyboardSkin.DEFAULT
     private val configurableLongKeyListeners = mutableListOf<QwertyKeyTouchListener>()
     private var enterKeyListener: EnterKeyTouchListener? = null
+    private var languageKeyListener: LanguageKeyTouchListener? = null
     private val prefs by lazy {
         context.getSharedPreferences(SettingsPreferences.PREFS_NAME, Context.MODE_PRIVATE)
     }
@@ -91,6 +93,7 @@ class QuertyView : ConstraintLayout, KoinComponent {
         previewController?.cancel()
         configurableLongKeyListeners.forEach { it.cancel() }
         enterKeyListener?.cancel()
+        languageKeyListener?.cancel()
     }
 
     override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
@@ -177,9 +180,9 @@ class QuertyView : ConstraintLayout, KoinComponent {
             backspaceKey.setOnTouchListener(
                 RepeatKeyTouchListener(context, SpecialKeyMessage(SpecialKey.BACKSPACE))
             )
-            languageKey.setOnTouchListener(
-                SimpleKeyTouchListener(context, SpecialKeyMessage(SpecialKey.LANGUAGE))
-            )
+            languageKeyListener?.cancel()
+            languageKeyListener = LanguageKeyTouchListener(context)
+            languageKey.setOnTouchListener(languageKeyListener)
             hanjaNumberPunctuationKey.setOnTouchListener(
                 SimpleKeyTouchListener(
                     context, SpecialKeyMessage(SpecialKey.HANJA_NUMBER_PUNCTUATION)

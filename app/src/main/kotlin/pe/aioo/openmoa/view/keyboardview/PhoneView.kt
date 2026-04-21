@@ -6,6 +6,7 @@ import android.util.AttributeSet
 import androidx.constraintlayout.widget.ConstraintLayout
 import pe.aioo.openmoa.R
 import pe.aioo.openmoa.databinding.PhoneViewBinding
+import pe.aioo.openmoa.view.keytouchlistener.EnterKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.FunctionalKeyTouchListener
 import pe.aioo.openmoa.view.message.SpecialKey
 import pe.aioo.openmoa.view.keytouchlistener.RepeatKeyTouchListener
@@ -34,6 +35,7 @@ class PhoneView : ConstraintLayout {
 
     private lateinit var binding: PhoneViewBinding
     private var page = 0
+    private var enterKeyListener: EnterKeyTouchListener? = null
 
     private fun init() {
         inflate(context, R.layout.phone_view, this)
@@ -85,10 +87,14 @@ class PhoneView : ConstraintLayout {
                 }
             )
             spaceKey.setOnTouchListener(SpaceKeyTouchListener(context))
-            enterKey.setOnTouchListener(
-                SimpleKeyTouchListener(context, SpecialKeyMessage(SpecialKey.ENTER))
-            )
+            enterKeyListener = EnterKeyTouchListener(context)
+            enterKey.setOnTouchListener(enterKeyListener)
         }
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        enterKeyListener?.cancel()
     }
 
     companion object {
