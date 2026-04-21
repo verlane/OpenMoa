@@ -7,6 +7,7 @@ import pe.aioo.openmoa.config.KeypadHeight
 import pe.aioo.openmoa.config.LongPressTime
 import pe.aioo.openmoa.config.OneHandMode
 import pe.aioo.openmoa.config.SpaceLongPressAction
+import pe.aioo.openmoa.quickphrase.UserCharKey
 
 object SettingsPreferences {
 
@@ -19,6 +20,17 @@ object SettingsPreferences {
     const val KEY_SPACE_LONG_PRESS_ACTION = "space_long_press_action"
     const val KEY_AUTO_SPACE_PERIOD = "auto_space_period"
     const val KEY_KEYBOARD_SKIN = "keyboard_skin"
+
+    val ALL_KEYS = setOf(
+        KEY_HANGUL_INPUT_MODE,
+        KEY_KEYPAD_HEIGHT,
+        KEY_ONE_HAND_MODE,
+        KEY_KEY_PREVIEW,
+        KEY_LONG_PRESS_TIME,
+        KEY_SPACE_LONG_PRESS_ACTION,
+        KEY_AUTO_SPACE_PERIOD,
+        KEY_KEYBOARD_SKIN,
+    ) + UserCharKey.values().map { it.prefKey }.toSet()
 
     fun getKeyPreviewEnabled(context: Context): Boolean {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)

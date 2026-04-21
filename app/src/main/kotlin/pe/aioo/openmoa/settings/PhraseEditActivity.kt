@@ -10,6 +10,7 @@ import pe.aioo.openmoa.databinding.ActivityPhraseEditBinding
 import pe.aioo.openmoa.quickphrase.PhraseKey
 import pe.aioo.openmoa.quickphrase.QuickPhraseKey
 import pe.aioo.openmoa.quickphrase.QwertyLongKey
+import pe.aioo.openmoa.quickphrase.UserCharKey
 
 class PhraseEditActivity : AppCompatActivity() {
 
@@ -18,25 +19,31 @@ class PhraseEditActivity : AppCompatActivity() {
         const val EXTRA_KEY = "extra_key"
         const val TYPE_KOREAN = "KOREAN"
         const val TYPE_ENGLISH = "ENGLISH"
+        const val TYPE_USER_CHAR = "USER_CHAR"
     }
 
     private lateinit var binding: ActivityPhraseEditBinding
     private lateinit var keys: Array<out PhraseKey>
+    private lateinit var type: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPhraseEditBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val type = intent.getStringExtra(EXTRA_TYPE) ?: TYPE_KOREAN
+        type = intent.getStringExtra(EXTRA_TYPE) ?: TYPE_KOREAN
         val initialKeyName = intent.getStringExtra(EXTRA_KEY)
 
         keys = when (type) {
             TYPE_ENGLISH -> QwertyLongKey.values()
+            TYPE_USER_CHAR -> UserCharKey.values()
             else -> QuickPhraseKey.values()
         }
 
-        binding.editTitle.text = getString(R.string.quick_phrase_edit_title)
+        binding.editTitle.text = when (type) {
+            TYPE_USER_CHAR -> getString(R.string.user_char_edit_title)
+            else -> getString(R.string.quick_phrase_edit_title)
+        }
 
         setupSpinner(initialKeyName)
         setupButtons()
@@ -62,7 +69,12 @@ class PhraseEditActivity : AppCompatActivity() {
     private fun setupButtons() {
         binding.confirmButton.setOnClickListener {
             val key = keys[binding.keySpinner.selectedItemPosition]
-            val content = binding.contentEditText.text.toString().trim()
+            val raw = binding.contentEditText.text.toString().trim()
+            val content = if (type == TYPE_USER_CHAR && raw.isNotEmpty()) {
+                raw.substring(0, raw.offsetByCodePoints(0, 1))
+            } else {
+                raw
+            }
             key.setPhrase(this, content.ifEmpty { key.defaultPhrase })
             finish()
         }
