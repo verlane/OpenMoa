@@ -2,8 +2,10 @@ package pe.aioo.openmoa.settings
 
 import android.os.Bundle
 import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import org.json.JSONObject
 import pe.aioo.openmoa.R
 import pe.aioo.openmoa.config.HangulInputMode
 import pe.aioo.openmoa.config.KeyboardSkin
@@ -14,6 +16,9 @@ import pe.aioo.openmoa.config.SpaceLongPressAction
 import pe.aioo.openmoa.databinding.ActivitySettingsBinding
 import pe.aioo.openmoa.quickphrase.QuickPhraseKey
 import pe.aioo.openmoa.quickphrase.QuickPhraseRepository
+import pe.aioo.openmoa.quickphrase.QwertyLongKey
+import pe.aioo.openmoa.quickphrase.QwertyLongKeyRepository
+import java.io.File
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -27,16 +32,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun setupViews() {
-        updateInputModeDisplay()
-        updateKeyboardSkinDisplay()
-        updateKeypadHeightDisplay()
-        updateOneHandModeDisplay()
-        updateLongPressTimeDisplay()
-        updateSpaceLongPressActionDisplay()
-        updateKeyPreviewDisplay()
-        updateAutoSpacePeriodDisplay()
-        updateQuickPhraseDisplays()
-
+        refreshAllDisplays()
         binding.hangulInputModeItem.setOnClickListener { showInputModeDialog() }
         binding.keyboardSkinItem.setOnClickListener { showKeyboardSkinDialog() }
         binding.keypadHeightItem.setOnClickListener { showKeypadHeightDialog() }
@@ -54,6 +50,16 @@ class SettingsActivity : AppCompatActivity() {
         binding.quickPhraseSsangdigeutItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.SSANGDIGEUT) }
         binding.quickPhraseSsanggiyeokItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.SSANGGIYEOK) }
         binding.quickPhraseSsangsiotItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.SSANGSIOT) }
+        binding.qwertyLongKeyZItem.setOnClickListener { showQwertyLongKeyEditDialog(QwertyLongKey.Z) }
+        binding.qwertyLongKeyXItem.setOnClickListener { showQwertyLongKeyEditDialog(QwertyLongKey.X) }
+        binding.qwertyLongKeyCItem.setOnClickListener { showQwertyLongKeyEditDialog(QwertyLongKey.C) }
+        binding.qwertyLongKeyVItem.setOnClickListener { showQwertyLongKeyEditDialog(QwertyLongKey.V) }
+        binding.qwertyLongKeyBItem.setOnClickListener { showQwertyLongKeyEditDialog(QwertyLongKey.B) }
+        binding.qwertyLongKeyNItem.setOnClickListener { showQwertyLongKeyEditDialog(QwertyLongKey.N) }
+        binding.qwertyLongKeyMItem.setOnClickListener { showQwertyLongKeyEditDialog(QwertyLongKey.M) }
+        binding.settingsDataExportItem.setOnClickListener { exportSettings() }
+        binding.settingsDataImportItem.setOnClickListener { importSettings() }
+        binding.settingsDataResetItem.setOnClickListener { showResetConfirmDialog() }
     }
 
     private fun updateQuickPhraseDisplays() {
@@ -77,7 +83,7 @@ class SettingsActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle("${key.jaum} ${getString(R.string.settings_quick_phrase_edit_hint)}")
             .setView(editText)
-            .setPositiveButton(android.R.string.ok) { _, _ ->
+            .setPositiveButton(R.string.settings_qwerty_long_key_save) { _, _ ->
                 val input = editText.text.toString().trim()
                 if (input.isNotEmpty()) {
                     QuickPhraseRepository.setPhrase(this, key, input)
@@ -90,7 +96,43 @@ class SettingsActivity : AppCompatActivity() {
                 QuickPhraseRepository.setPhrase(this, key, key.defaultPhrase)
                 updateQuickPhraseDisplays()
             }
-            .setNegativeButton(android.R.string.cancel, null)
+            .setNegativeButton(R.string.settings_qwerty_long_key_cancel, null)
+            .show()
+    }
+
+    private fun updateQwertyLongKeyDisplays() {
+        binding.qwertyLongKeyZValue.text = QwertyLongKeyRepository.getPhrase(this, QwertyLongKey.Z)
+        binding.qwertyLongKeyXValue.text = QwertyLongKeyRepository.getPhrase(this, QwertyLongKey.X)
+        binding.qwertyLongKeyCValue.text = QwertyLongKeyRepository.getPhrase(this, QwertyLongKey.C)
+        binding.qwertyLongKeyVValue.text = QwertyLongKeyRepository.getPhrase(this, QwertyLongKey.V)
+        binding.qwertyLongKeyBValue.text = QwertyLongKeyRepository.getPhrase(this, QwertyLongKey.B)
+        binding.qwertyLongKeyNValue.text = QwertyLongKeyRepository.getPhrase(this, QwertyLongKey.N)
+        binding.qwertyLongKeyMValue.text = QwertyLongKeyRepository.getPhrase(this, QwertyLongKey.M)
+    }
+
+    private fun showQwertyLongKeyEditDialog(key: QwertyLongKey) {
+        val editText = EditText(this).apply {
+            setText(QwertyLongKeyRepository.getPhrase(this@SettingsActivity, key))
+            hint = getString(R.string.settings_qwerty_long_key_edit_hint)
+            setSingleLine(true)
+        }
+        AlertDialog.Builder(this)
+            .setTitle("${key.letter} ${getString(R.string.settings_qwerty_long_key_edit_hint)}")
+            .setView(editText)
+            .setPositiveButton(R.string.settings_qwerty_long_key_save) { _, _ ->
+                val input = editText.text.toString().trim()
+                if (input.isNotEmpty()) {
+                    QwertyLongKeyRepository.setPhrase(this, key, input)
+                } else {
+                    QwertyLongKeyRepository.setPhrase(this, key, key.defaultPhrase)
+                }
+                updateQwertyLongKeyDisplays()
+            }
+            .setNeutralButton(R.string.settings_qwerty_long_key_reset) { _, _ ->
+                QwertyLongKeyRepository.setPhrase(this, key, key.defaultPhrase)
+                updateQwertyLongKeyDisplays()
+            }
+            .setNegativeButton(R.string.settings_qwerty_long_key_cancel, null)
             .show()
     }
 
@@ -238,5 +280,91 @@ class SettingsActivity : AppCompatActivity() {
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
+    }
+
+    private fun getSettingsFile(): File {
+        val dir = getExternalFilesDir(null) ?: filesDir
+        return File(dir, "openmoa_settings.json")
+    }
+
+    private fun exportSettings() {
+        try {
+            val prefs = getSharedPreferences(SettingsPreferences.PREFS_NAME, MODE_PRIVATE)
+            val json = JSONObject()
+            // prefs 파일 하나에 SettingsPreferences, QuickPhraseRepository, QwertyLongKeyRepository 가 함께 저장됨
+            prefs.all.forEach { (key, value) ->
+                when (value) {
+                    is Boolean -> json.put(key, value)
+                    is String -> json.put(key, value)
+                    is Int -> json.put(key, value)
+                    is Long -> json.put(key, value)
+                    is Float -> json.put(key, value.toDouble())
+                    // Set<String> 등 미지원 타입은 내보내지 않음
+                }
+            }
+            getSettingsFile().writeText(json.toString(2))
+            Toast.makeText(this, R.string.settings_data_export_success, Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Toast.makeText(this, R.string.settings_data_export_fail, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun importSettings() {
+        try {
+            val file = getSettingsFile()
+            if (!file.exists()) {
+                Toast.makeText(this, R.string.settings_data_import_fail, Toast.LENGTH_SHORT).show()
+                return
+            }
+            val json = JSONObject(file.readText())
+            val allowedKeys = buildSet {
+                addAll(SettingsPreferences.ALL_KEYS)
+                QuickPhraseKey.values().forEach { add(it.prefKey) }
+                QwertyLongKey.values().forEach { add(it.prefKey) }
+            }
+            val editor = getSharedPreferences(SettingsPreferences.PREFS_NAME, MODE_PRIVATE).edit()
+            json.keys().forEach { key ->
+                if (key !in allowedKeys) return@forEach
+                when (val value = json.get(key)) {
+                    is Boolean -> editor.putBoolean(key, value)
+                    is String -> editor.putString(key, value)
+                    is Int -> editor.putInt(key, value)
+                    is Long -> editor.putLong(key, value)
+                    is Double -> editor.putFloat(key, value.toFloat())
+                }
+            }
+            editor.commit()
+            refreshAllDisplays()
+            Toast.makeText(this, R.string.settings_data_import_success, Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Toast.makeText(this, R.string.settings_data_import_fail, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun showResetConfirmDialog() {
+        AlertDialog.Builder(this)
+            .setMessage(R.string.settings_data_reset_confirm)
+            .setPositiveButton(android.R.string.ok) { _, _ -> resetAllSettings() }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun resetAllSettings() {
+        getSharedPreferences(SettingsPreferences.PREFS_NAME, MODE_PRIVATE).edit().clear().commit()
+        refreshAllDisplays()
+        Toast.makeText(this, R.string.settings_data_reset_success, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun refreshAllDisplays() {
+        updateInputModeDisplay()
+        updateKeyboardSkinDisplay()
+        updateKeypadHeightDisplay()
+        updateOneHandModeDisplay()
+        updateLongPressTimeDisplay()
+        updateSpaceLongPressActionDisplay()
+        updateKeyPreviewDisplay()
+        updateAutoSpacePeriodDisplay()
+        updateQuickPhraseDisplays()
+        updateQwertyLongKeyDisplays()
     }
 }

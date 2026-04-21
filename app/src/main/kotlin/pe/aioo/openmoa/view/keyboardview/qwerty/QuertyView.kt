@@ -10,16 +10,22 @@ import pe.aioo.openmoa.R
 import pe.aioo.openmoa.config.Config
 import pe.aioo.openmoa.view.message.SpecialKey
 import pe.aioo.openmoa.databinding.QuertyViewBinding
+import pe.aioo.openmoa.quickphrase.QwertyLongKey
+import pe.aioo.openmoa.quickphrase.QwertyLongKeyRepository
 import pe.aioo.openmoa.view.keytouchlistener.CrossKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.FunctionalKeyTouchListener
+import pe.aioo.openmoa.view.keytouchlistener.QwertyKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.RepeatKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.SimpleKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.SpaceKeyTouchListener
 import pe.aioo.openmoa.view.message.SpecialKeyMessage
 import pe.aioo.openmoa.view.message.StringKeyMessage
 import pe.aioo.openmoa.config.KeyboardSkin
+import android.content.Intent
+import pe.aioo.openmoa.settings.PhraseEditActivity
 import pe.aioo.openmoa.settings.SettingsPreferences
 import pe.aioo.openmoa.view.preview.KeyPreviewController
+import pe.aioo.openmoa.view.preview.QuickPhraseMenuPopup
 import pe.aioo.openmoa.view.skin.SkinApplier
 
 class QuertyView : ConstraintLayout, KoinComponent {
@@ -42,13 +48,14 @@ class QuertyView : ConstraintLayout, KoinComponent {
 
     private var shiftKeyStatus = ShiftKeyStatus.DISABLED
     private lateinit var binding: QuertyViewBinding
-    private val previewController by lazy { KeyPreviewController(config.keyPreviewEnabled, currentSkin) }
+    private var previewController: KeyPreviewController? = null
     private var currentSkin: KeyboardSkin = KeyboardSkin.DEFAULT
 
     private fun init() {
         inflate(context, R.layout.querty_view, this)
         binding = QuertyViewBinding.bind(this)
         currentSkin = SettingsPreferences.getKeyboardSkin(context)
+        previewController = KeyPreviewController({ config.keyPreviewEnabled }, currentSkin)
         setShiftStatus(ShiftKeyStatus.DISABLED, true)
         setOnTouchListeners()
         SkinApplier.apply(this, currentSkin)
@@ -56,7 +63,7 @@ class QuertyView : ConstraintLayout, KoinComponent {
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        previewController.hide()
+        previewController?.cancel()
     }
 
     private fun setShiftStatus(status: ShiftKeyStatus, isInitialize: Boolean = false) {
@@ -98,11 +105,6 @@ class QuertyView : ConstraintLayout, KoinComponent {
         listOf(
             binding.oneKey, binding.twoKey, binding.threeKey, binding.fourKey, binding.fiveKey,
             binding.sixKey, binding.sevenKey, binding.eightKey, binding.nineKey, binding.zeroKey,
-            binding.qKey, binding.wKey, binding.eKey, binding.rKey, binding.tKey, binding.yKey,
-            binding.uKey, binding.iKey, binding.oKey, binding.pKey, binding.aKey, binding.sKey,
-            binding.dKey, binding.fKey, binding.gKey, binding.hKey, binding.jKey, binding.kKey,
-            binding.lKey, binding.zKey, binding.xKey, binding.cKey, binding.vKey, binding.bKey,
-            binding.nKey, binding.mKey,
         ).map {
             it.apply {
                 setOnTouchListener(FunctionalKeyTouchListener(context, previewController = previewController) {
@@ -117,6 +119,7 @@ class QuertyView : ConstraintLayout, KoinComponent {
                 })
             }
         }
+        setAlphaKeyTouchListeners()
         binding.apply {
             shiftKey.setOnTouchListener(
                 FunctionalKeyTouchListener(context, triggerWhenActionUp = false) {
@@ -158,6 +161,70 @@ class QuertyView : ConstraintLayout, KoinComponent {
             enterKey.setOnTouchListener(
                 SimpleKeyTouchListener(context, SpecialKeyMessage(SpecialKey.ENTER))
             )
+        }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private fun setAlphaKeyTouchListeners() {
+        val fixedLongKeyPairs = listOf(
+            binding.qKey to "#", binding.wKey to "&", binding.eKey to "%",
+            binding.rKey to "+", binding.tKey to "=", binding.yKey to "_",
+            binding.uKey to "\\", binding.iKey to "|", binding.oKey to "<", binding.pKey to ">",
+            binding.aKey to "-", binding.sKey to "@", binding.dKey to "*",
+            binding.fKey to "^", binding.gKey to ":", binding.hKey to ";",
+            binding.jKey to "(", binding.kKey to ")", binding.lKey to "~",
+        )
+        val configurableLongKeyPairs = listOf(
+            binding.zKey to QwertyLongKey.Z, binding.xKey to QwertyLongKey.X,
+            binding.cKey to QwertyLongKey.C, binding.vKey to QwertyLongKey.V,
+            binding.bKey to QwertyLongKey.B, binding.nKey to QwertyLongKey.N,
+            binding.mKey to QwertyLongKey.M,
+        )
+        val popup = QuickPhraseMenuPopup(context)
+        fixedLongKeyPairs.forEach { (view, longKey) ->
+            view.apply {
+                keyHint = longKey
+                setOnTouchListener(QwertyKeyTouchListener(
+                    context,
+                    previewController,
+                    { longKey },
+                    onTap = {
+                        val key = text.toString()
+                        setShiftStatus(when (shiftKeyStatus) {
+                            ShiftKeyStatus.ENABLED -> ShiftKeyStatus.DISABLED
+                            else -> shiftKeyStatus
+                        })
+                        StringKeyMessage(key)
+                    }
+                ))
+            }
+        }
+        configurableLongKeyPairs.forEach { (view, longKeyEnum) ->
+            view.apply {
+                keyHint = QwertyLongKeyRepository.getPhrase(context, longKeyEnum)
+                setOnTouchListener(QwertyKeyTouchListener(
+                    context,
+                    previewController,
+                    { QwertyLongKeyRepository.getPhrase(context, longKeyEnum) },
+                    onTap = {
+                        val key = text.toString()
+                        setShiftStatus(when (shiftKeyStatus) {
+                            ShiftKeyStatus.ENABLED -> ShiftKeyStatus.DISABLED
+                            else -> shiftKeyStatus
+                        })
+                        StringKeyMessage(key)
+                    },
+                    quickPhraseMenuPopup = popup,
+                    onEdit = {
+                        val intent = Intent(context, PhraseEditActivity::class.java).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            putExtra(PhraseEditActivity.EXTRA_TYPE, PhraseEditActivity.TYPE_ENGLISH)
+                            putExtra(PhraseEditActivity.EXTRA_KEY, longKeyEnum.name)
+                        }
+                        context.startActivity(intent)
+                    }
+                ))
+            }
         }
     }
 

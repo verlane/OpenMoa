@@ -11,7 +11,7 @@ import pe.aioo.openmoa.hangul.HangulPreviewComposer
 import pe.aioo.openmoa.hangul.MoeumGestureProcessor
 import pe.aioo.openmoa.quickphrase.QuickPhraseKey
 import pe.aioo.openmoa.quickphrase.QuickPhraseRepository
-import pe.aioo.openmoa.settings.QuickPhraseEditActivity
+import pe.aioo.openmoa.settings.PhraseEditActivity
 import pe.aioo.openmoa.view.message.StringKeyMessage
 import pe.aioo.openmoa.view.preview.KeyPreviewController
 import pe.aioo.openmoa.view.preview.QuickPhraseMenuPopup
@@ -116,9 +116,10 @@ class JaumKeyTouchListener(
                                 sendKeyMessage(StringKeyMessage(QuickPhraseRepository.getPhrase(context, phraseKey)))
                             }
                             QuickPhraseMenuPopup.MenuItem.EDIT -> {
-                                val intent = Intent(context, QuickPhraseEditActivity::class.java).apply {
+                                val intent = Intent(context, PhraseEditActivity::class.java).apply {
                                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    putExtra(QuickPhraseEditActivity.EXTRA_KEY, phraseKey.name)
+                                    putExtra(PhraseEditActivity.EXTRA_TYPE, PhraseEditActivity.TYPE_KOREAN)
+                                    putExtra(PhraseEditActivity.EXTRA_KEY, phraseKey.name)
                                 }
                                 context.startActivity(intent)
                             }

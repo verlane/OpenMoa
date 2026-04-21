@@ -9,6 +9,6 @@ enum class KeypadHeight(val labelResId: Int, val heightScale: Float) {
 
     companion object {
         fun fromString(value: String?): KeypadHeight =
-            values().find { it.name == value } ?: NORMAL
+            values().find { it.name == value } ?: LOW
     }
 }
