@@ -447,7 +447,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         val phoneView = PhoneView(this)
         val emojiView = EmojiView(this)
         return mutableMapOf(
-            IMEMode.IME_KO to OpenMoaView(this),
+            IMEMode.IME_KO to OpenMoaView(this).also { it.jaumPreviewResolver = hangulAssembler::previewWithAppended },
             IMEMode.IME_EN to QuertyView(this),
             IMEMode.IME_KO_PUNCTUATION to punctuationView,
             IMEMode.IME_EN_PUNCTUATION to punctuationView,
@@ -472,7 +472,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         val savedIsMoakey = SettingsPreferences.getHangulInputMode(this) == HangulInputMode.MOAKEY
         val currentView = keyboardViews[IMEMode.IME_KO] as? OpenMoaView ?: return
         if (currentView.isMoakeyMode != savedIsMoakey) {
-            keyboardViews[IMEMode.IME_KO] = OpenMoaView(this)
+            keyboardViews[IMEMode.IME_KO] = OpenMoaView(this).also { it.jaumPreviewResolver = hangulAssembler::previewWithAppended }
         }
     }
 

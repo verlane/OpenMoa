@@ -24,6 +24,7 @@ class JaumKeyTouchListener(
     private val quickPhraseKey: QuickPhraseKey? = null,
     private val quickPhraseMenuPopup: QuickPhraseMenuPopup? = null,
     private val numberChar: String? = null,
+    private val jaumPreviewResolver: ((String) -> String)? = null,
 ) : BaseKeyTouchListener(context) {
 
     init {
@@ -65,7 +66,7 @@ class JaumKeyTouchListener(
                 hasMoved = false
                 isLongPressed = false
                 moeumGestureProcessor.clear()
-                previewController?.show(view, key)
+                previewController?.show(view, jaumPreviewResolver?.invoke(key) ?: key)
                 if (quickPhraseKey != null || numberChar != null) {
                     handler.postDelayed(longPressRunnable, config.longPressThresholdTime)
                 }

@@ -208,6 +208,17 @@ class HangulAssembler {
         return resolveJamoList()
     }
 
+    fun previewWithAppended(jamo: String): String {
+        val snapshot = ArrayList(jamoList)
+        return try {
+            appendJamo(jamo)
+            getUnresolved() ?: jamo
+        } finally {
+            jamoList.clear()
+            jamoList.addAll(snapshot)
+        }
+    }
+
     fun getUnresolved(): String? {
         return if (jamoList.isEmpty()) {
             null

@@ -85,4 +85,50 @@ class HangulAssemblerTest {
         Assert.assertEquals("ㄱㆍ", assembler.getUnresolved())
     }
 
+    @Test
+    fun `previewWithAppended - 빈 상태에서 자음 누르면 자음 단독 반환`() {
+        val assembler = HangulAssembler()
+        Assert.assertEquals("ㄴ", assembler.previewWithAppended("ㄴ"))
+        Assert.assertNull(assembler.getUnresolved())
+    }
+
+    @Test
+    fun `previewWithAppended - 고 조합 중 ㅁ 누르면 곰 반환`() {
+        val assembler = HangulAssembler()
+        assembler.appendJamo("ㄱ")
+        assembler.appendJamo("ㅗ")
+        Assert.assertEquals("곰", assembler.previewWithAppended("ㅁ"))
+        Assert.assertEquals("고", assembler.getUnresolved())
+    }
+
+    @Test
+    fun `previewWithAppended - 각 조합 중 ㅅ 누르면 복합 종성 갃 반환`() {
+        val assembler = HangulAssembler()
+        assembler.appendJamo("ㄱ")
+        assembler.appendJamo("ㅏ")
+        assembler.appendJamo("ㄱ")
+        Assert.assertEquals("갃", assembler.previewWithAppended("ㅅ"))
+        Assert.assertEquals("각", assembler.getUnresolved())
+    }
+
+    @Test
+    fun `previewWithAppended - 호출 후 조합 상태가 변경되지 않음`() {
+        val assembler = HangulAssembler()
+        assembler.appendJamo("ㄱ")
+        assembler.appendJamo("ㅗ")
+        assembler.previewWithAppended("ㅁ")
+        Assert.assertEquals("고", assembler.getUnresolved())
+        assembler.previewWithAppended("ㄴ")
+        Assert.assertEquals("고", assembler.getUnresolved())
+    }
+
+    @Test
+    fun `previewWithAppended - 연속 호출해도 매번 동일한 결과 반환`() {
+        val assembler = HangulAssembler()
+        assembler.appendJamo("ㄱ")
+        assembler.appendJamo("ㅗ")
+        Assert.assertEquals("곰", assembler.previewWithAppended("ㅁ"))
+        Assert.assertEquals("곰", assembler.previewWithAppended("ㅁ"))
+    }
+
 }
