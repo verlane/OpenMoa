@@ -37,6 +37,13 @@ class QwertyKeyTouchListener(
         }
     }
 
+    fun cancel() {
+        handler.removeCallbacks(longPressRunnable)
+        quickPhraseMenuPopup?.dismiss()
+        anchorView = null
+        isLongPressed = false
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
         when (motionEvent.action) {

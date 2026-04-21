@@ -322,15 +322,15 @@ class SettingsActivity : AppCompatActivity() {
                 QuickPhraseKey.values().forEach { add(it.prefKey) }
                 QwertyLongKey.values().forEach { add(it.prefKey) }
             }
+            val booleanKeys = setOf(SettingsPreferences.KEY_KEY_PREVIEW, SettingsPreferences.KEY_AUTO_SPACE_PERIOD)
             val editor = getSharedPreferences(SettingsPreferences.PREFS_NAME, MODE_PRIVATE).edit()
             json.keys().forEach { key ->
                 if (key !in allowedKeys) return@forEach
-                when (val value = json.get(key)) {
-                    is Boolean -> editor.putBoolean(key, value)
-                    is String -> editor.putString(key, value)
-                    is Int -> editor.putInt(key, value)
-                    is Long -> editor.putLong(key, value)
-                    is Double -> editor.putFloat(key, value.toFloat())
+                if (key in booleanKeys) {
+                    editor.putBoolean(key, json.optBoolean(key))
+                } else {
+                    val value = json.optString(key, null)
+                    if (value != null) editor.putString(key, value)
                 }
             }
             editor.apply()

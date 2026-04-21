@@ -50,6 +50,7 @@ class QuertyView : ConstraintLayout, KoinComponent {
     private lateinit var binding: QuertyViewBinding
     private var previewController: KeyPreviewController? = null
     private var currentSkin: KeyboardSkin = KeyboardSkin.DEFAULT
+    private val configurableLongKeyListeners = mutableListOf<QwertyKeyTouchListener>()
     private val configurableLongKeyPairs by lazy {
         listOf(
             binding.zKey to QwertyLongKey.Z, binding.xKey to QwertyLongKey.X,
@@ -72,6 +73,7 @@ class QuertyView : ConstraintLayout, KoinComponent {
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         previewController?.cancel()
+        configurableLongKeyListeners.forEach { it.cancel() }
     }
 
     override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
@@ -80,6 +82,8 @@ class QuertyView : ConstraintLayout, KoinComponent {
             configurableLongKeyPairs.forEach { (view, longKeyEnum) ->
                 view.keyHint = QwertyLongKeyRepository.getPhrase(context, longKeyEnum)
             }
+        } else {
+            configurableLongKeyListeners.forEach { it.cancel() }
         }
     }
 
@@ -209,32 +213,35 @@ class QuertyView : ConstraintLayout, KoinComponent {
                 ))
             }
         }
+        configurableLongKeyListeners.clear()
         configurableLongKeyPairs.forEach { (view, longKeyEnum) ->
             val popup = QuickPhraseMenuPopup(context)
+            val listener = QwertyKeyTouchListener(
+                context,
+                previewController,
+                { QwertyLongKeyRepository.getPhrase(context, longKeyEnum) },
+                onTap = {
+                    val key = view.text.toString()
+                    setShiftStatus(when (shiftKeyStatus) {
+                        ShiftKeyStatus.ENABLED -> ShiftKeyStatus.DISABLED
+                        else -> shiftKeyStatus
+                    })
+                    StringKeyMessage(key)
+                },
+                quickPhraseMenuPopup = popup,
+                onEdit = {
+                    val intent = Intent(context, PhraseEditActivity::class.java).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        putExtra(PhraseEditActivity.EXTRA_TYPE, PhraseEditActivity.TYPE_ENGLISH)
+                        putExtra(PhraseEditActivity.EXTRA_KEY, longKeyEnum.name)
+                    }
+                    context.startActivity(intent)
+                }
+            )
+            configurableLongKeyListeners.add(listener)
             view.apply {
                 keyHint = QwertyLongKeyRepository.getPhrase(context, longKeyEnum)
-                setOnTouchListener(QwertyKeyTouchListener(
-                    context,
-                    previewController,
-                    { QwertyLongKeyRepository.getPhrase(context, longKeyEnum) },
-                    onTap = {
-                        val key = text.toString()
-                        setShiftStatus(when (shiftKeyStatus) {
-                            ShiftKeyStatus.ENABLED -> ShiftKeyStatus.DISABLED
-                            else -> shiftKeyStatus
-                        })
-                        StringKeyMessage(key)
-                    },
-                    quickPhraseMenuPopup = popup,
-                    onEdit = {
-                        val intent = Intent(context, PhraseEditActivity::class.java).apply {
-                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            putExtra(PhraseEditActivity.EXTRA_TYPE, PhraseEditActivity.TYPE_ENGLISH)
-                            putExtra(PhraseEditActivity.EXTRA_KEY, longKeyEnum.name)
-                        }
-                        context.startActivity(intent)
-                    }
-                ))
+                setOnTouchListener(listener)
             }
         }
     }
