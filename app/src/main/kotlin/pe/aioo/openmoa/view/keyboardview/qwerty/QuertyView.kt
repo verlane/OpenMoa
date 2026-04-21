@@ -14,6 +14,7 @@ import pe.aioo.openmoa.databinding.QuertyViewBinding
 import pe.aioo.openmoa.quickphrase.QwertyLongKey
 import pe.aioo.openmoa.quickphrase.QwertyLongKeyRepository
 import pe.aioo.openmoa.view.keytouchlistener.CrossKeyTouchListener
+import pe.aioo.openmoa.view.keytouchlistener.EnterKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.FunctionalKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.QwertyKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.RepeatKeyTouchListener
@@ -52,6 +53,7 @@ class QuertyView : ConstraintLayout, KoinComponent {
     private var previewController: KeyPreviewController? = null
     private var currentSkin: KeyboardSkin = KeyboardSkin.DEFAULT
     private val configurableLongKeyListeners = mutableListOf<QwertyKeyTouchListener>()
+    private var enterKeyListener: EnterKeyTouchListener? = null
     private val prefs by lazy {
         context.getSharedPreferences(SettingsPreferences.PREFS_NAME, Context.MODE_PRIVATE)
     }
@@ -88,6 +90,7 @@ class QuertyView : ConstraintLayout, KoinComponent {
         prefs.unregisterOnSharedPreferenceChangeListener(prefChangeListener)
         previewController?.cancel()
         configurableLongKeyListeners.forEach { it.cancel() }
+        enterKeyListener?.cancel()
     }
 
     override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
@@ -195,9 +198,8 @@ class QuertyView : ConstraintLayout, KoinComponent {
                     previewController,
                 )
             )
-            enterKey.setOnTouchListener(
-                SimpleKeyTouchListener(context, SpecialKeyMessage(SpecialKey.ENTER))
-            )
+            enterKeyListener = EnterKeyTouchListener(context)
+            enterKey.setOnTouchListener(enterKeyListener)
         }
     }
 

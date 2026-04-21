@@ -400,6 +400,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     }
 
     private fun setShiftAutomatically() {
+        if (!config.autoCapitalizeEnglish) return
         keyboardViews[imeMode]?.let { view ->
             if (view is QuertyView) {
                 currentInputConnection?.let { inputConnection ->

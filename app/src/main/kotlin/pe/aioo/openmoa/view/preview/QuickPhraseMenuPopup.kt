@@ -47,12 +47,12 @@ class QuickPhraseMenuPopup(context: Context) {
     }
 
     fun updateSelectionByDelta(dx: Float, anchorWidth: Int) {
-        if (selectedItem == MenuItem.PHRASE_PREVIEW && dx < 0) return
-        val threshold = anchorWidth / 3f
+        val editThreshold = anchorWidth * 0.25f
+        val cancelThreshold = anchorWidth * 0.75f
         selectedItem = when {
-            dx < -threshold -> MenuItem.PHRASE_PREVIEW
-            dx > threshold -> MenuItem.CANCEL
-            else -> MenuItem.EDIT
+            dx < editThreshold -> MenuItem.PHRASE_PREVIEW
+            dx < cancelThreshold -> MenuItem.EDIT
+            else -> MenuItem.CANCEL
         }
         updateHighlight()
     }

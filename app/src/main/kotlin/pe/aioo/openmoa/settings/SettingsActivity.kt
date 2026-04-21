@@ -7,6 +7,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import org.json.JSONObject
 import pe.aioo.openmoa.R
+import pe.aioo.openmoa.config.EnterLongPressAction
 import pe.aioo.openmoa.config.HangulInputMode
 import pe.aioo.openmoa.config.KeyboardSkin
 import pe.aioo.openmoa.config.KeypadHeight
@@ -41,6 +42,8 @@ class SettingsActivity : AppCompatActivity() {
         binding.spaceLongPressActionItem.setOnClickListener { showSpaceLongPressActionDialog() }
         binding.keyPreviewItem.setOnClickListener { toggleKeyPreview() }
         binding.autoSpacePeriodItem.setOnClickListener { toggleAutoSpacePeriod() }
+        binding.autoCapitalizeEnglishItem.setOnClickListener { toggleAutoCapitalizeEnglish() }
+        binding.enterLongPressActionItem.setOnClickListener { showEnterLongPressActionDialog() }
         binding.quickPhraseKieukItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.KIEUK) }
         binding.quickPhraseTieutItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.TIEUT) }
         binding.quickPhraseChieutItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.CHIEUT) }
@@ -234,6 +237,37 @@ class SettingsActivity : AppCompatActivity() {
         binding.autoSpacePeriodSwitch.isChecked = newValue
     }
 
+    private fun updateAutoCapitalizeEnglishDisplay() {
+        binding.autoCapitalizeEnglishSwitch.isChecked = SettingsPreferences.getAutoCapitalizeEnglish(this)
+    }
+
+    private fun toggleAutoCapitalizeEnglish() {
+        val newValue = !SettingsPreferences.getAutoCapitalizeEnglish(this)
+        SettingsPreferences.setAutoCapitalizeEnglish(this, newValue)
+        binding.autoCapitalizeEnglishSwitch.isChecked = newValue
+    }
+
+    private fun updateEnterLongPressActionDisplay() {
+        binding.enterLongPressActionValue.text =
+            getString(SettingsPreferences.getEnterLongPressAction(this).labelResId)
+    }
+
+    private fun showEnterLongPressActionDialog() {
+        val options = EnterLongPressAction.values()
+        val labels = options.map { getString(it.labelResId) }.toTypedArray()
+        val currentIndex = options.indexOf(SettingsPreferences.getEnterLongPressAction(this))
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.settings_enter_long_press_title)
+            .setSingleChoiceItems(labels, currentIndex) { dialog, which ->
+                SettingsPreferences.save(this, SettingsPreferences.KEY_ENTER_LONG_PRESS_ACTION, options[which].name)
+                updateEnterLongPressActionDisplay()
+                dialog.dismiss()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
     private fun showInputModeDialog() {
         val modes = HangulInputMode.values()
         val labels = modes.map { getString(it.labelResId) }.toTypedArray()
@@ -322,15 +356,19 @@ class SettingsActivity : AppCompatActivity() {
                 QuickPhraseKey.values().forEach { add(it.prefKey) }
                 QwertyLongKey.values().forEach { add(it.prefKey) }
             }
-            val booleanKeys = setOf(SettingsPreferences.KEY_KEY_PREVIEW, SettingsPreferences.KEY_AUTO_SPACE_PERIOD)
+            val booleanKeys = setOf(
+                SettingsPreferences.KEY_KEY_PREVIEW,
+                SettingsPreferences.KEY_AUTO_SPACE_PERIOD,
+                SettingsPreferences.KEY_AUTO_CAPITALIZE_ENGLISH,
+            )
             val editor = getSharedPreferences(SettingsPreferences.PREFS_NAME, MODE_PRIVATE).edit()
             json.keys().forEach { key ->
                 if (key !in allowedKeys) return@forEach
                 if (key in booleanKeys) {
                     editor.putBoolean(key, json.optBoolean(key))
-                } else {
-                    val value = json.optString(key, null)
-                    if (value != null) editor.putString(key, value)
+                } else if (json.has(key)) {
+                    val value = json.optString(key)
+                    if (value.isNotEmpty()) editor.putString(key, value)
                 }
             }
             editor.apply()
@@ -364,6 +402,8 @@ class SettingsActivity : AppCompatActivity() {
         updateSpaceLongPressActionDisplay()
         updateKeyPreviewDisplay()
         updateAutoSpacePeriodDisplay()
+        updateAutoCapitalizeEnglishDisplay()
+        updateEnterLongPressActionDisplay()
         updateQuickPhraseDisplays()
         updateQwertyLongKeyDisplays()
     }

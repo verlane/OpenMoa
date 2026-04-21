@@ -60,7 +60,7 @@ enum class KeyboardSkin(
     );
 
     companion object {
-        val DEFAULT = DARK_GRAY
+        val DEFAULT = WHITE
 
         fun fromString(value: String?): KeyboardSkin =
             values().firstOrNull { it.name == value } ?: DEFAULT

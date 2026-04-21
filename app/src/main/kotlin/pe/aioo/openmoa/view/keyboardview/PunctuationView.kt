@@ -39,12 +39,13 @@ class PunctuationView : ConstraintLayout, KoinComponent {
     }
 
     private lateinit var binding: PunctuationViewBinding
-    private val previewController by lazy { KeyPreviewController(config.keyPreviewEnabled) }
+    private var previewController: KeyPreviewController? = null
     private var page = 0
 
     private fun init() {
         inflate(context, R.layout.punctuation_view, this)
         binding = PunctuationViewBinding.bind(this)
+        previewController = KeyPreviewController({ config.keyPreviewEnabled })
         setPageOrNextPage(0, true)
         setOnTouchListeners()
         SkinApplier.apply(this, SettingsPreferences.getKeyboardSkin(context))
@@ -52,7 +53,7 @@ class PunctuationView : ConstraintLayout, KoinComponent {
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        previewController.hide()
+        previewController?.cancel()
     }
 
     fun setPageOrNextPage(newPage: Int? = null, isInitialize: Boolean = false) {

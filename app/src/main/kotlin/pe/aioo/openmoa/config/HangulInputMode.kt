@@ -8,6 +8,6 @@ enum class HangulInputMode(val labelResId: Int) {
 
     companion object {
         fun fromString(value: String?): HangulInputMode =
-            values().find { it.name == value } ?: MOAKEY
+            values().find { it.name == value } ?: TWO_HAND_MOAKEY
     }
 }

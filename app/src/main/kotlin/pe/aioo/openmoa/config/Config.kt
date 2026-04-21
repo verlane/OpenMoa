@@ -12,4 +12,6 @@ class Config(private val context: Context) {
     val maxSuggestionCount: Int = 10
     val keyPreviewEnabled: Boolean
         get() = SettingsPreferences.getKeyPreviewEnabled(context)
+    val autoCapitalizeEnglish: Boolean
+        get() = SettingsPreferences.getAutoCapitalizeEnglish(context)
 }

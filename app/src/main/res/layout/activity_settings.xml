@@ -209,6 +209,33 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/enterLongPressActionItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_enter_long_press_title"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/enterLongPressActionValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/key_foreground_muted"
+                android:paddingTop="2dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/keyPreviewItem"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -272,6 +299,49 @@
 
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/autoSpacePeriodSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clickable="false"
+                android:focusable="false" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/autoCapitalizeEnglishItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:gravity="center_vertical"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_auto_capitalize_english_title"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_auto_capitalize_english_description"
+                    android:textSize="12sp"
+                    android:textColor="@color/key_foreground_muted"
+                    android:paddingTop="2dp" />
+
+            </LinearLayout>
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/autoCapitalizeEnglishSwitch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:clickable="false"
@@ -532,6 +602,306 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="14sp"
+                android:textColor="@color/key_foreground_muted"
+                android:paddingTop="2dp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_qwerty_long_key_section"
+            android:textSize="14sp"
+            android:textColor="@color/key_foreground_locked"
+            android:paddingTop="16dp"
+            android:paddingBottom="8dp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/keyboard_background"
+            android:layout_marginBottom="4dp" />
+
+        <LinearLayout
+            android:id="@+id/qwertyLongKeyZItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_qwerty_long_key_z_label"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/qwertyLongKeyZValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/key_foreground_muted"
+                android:paddingTop="2dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/qwertyLongKeyXItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_qwerty_long_key_x_label"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/qwertyLongKeyXValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/key_foreground_muted"
+                android:paddingTop="2dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/qwertyLongKeyCItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_qwerty_long_key_c_label"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/qwertyLongKeyCValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/key_foreground_muted"
+                android:paddingTop="2dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/qwertyLongKeyVItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_qwerty_long_key_v_label"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/qwertyLongKeyVValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/key_foreground_muted"
+                android:paddingTop="2dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/qwertyLongKeyBItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_qwerty_long_key_b_label"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/qwertyLongKeyBValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/key_foreground_muted"
+                android:paddingTop="2dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/qwertyLongKeyNItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_qwerty_long_key_n_label"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/qwertyLongKeyNValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/key_foreground_muted"
+                android:paddingTop="2dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/qwertyLongKeyMItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_qwerty_long_key_m_label"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/qwertyLongKeyMValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/key_foreground_muted"
+                android:paddingTop="2dp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_data_section"
+            android:textSize="14sp"
+            android:textColor="@color/key_foreground_locked"
+            android:paddingTop="16dp"
+            android:paddingBottom="8dp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/keyboard_background"
+            android:layout_marginBottom="4dp" />
+
+        <LinearLayout
+            android:id="@+id/settingsDataExportItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_data_export_title"
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_data_export_description"
+                android:textSize="12sp"
+                android:textColor="@color/key_foreground_muted"
+                android:paddingTop="2dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/settingsDataImportItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_data_import_title"
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_data_import_description"
+                android:textSize="12sp"
+                android:textColor="@color/key_foreground_muted"
+                android:paddingTop="2dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/settingsDataResetItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_data_reset_title"
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_data_reset_description"
+                android:textSize="12sp"
                 android:textColor="@color/key_foreground_muted"
                 android:paddingTop="2dp" />
 

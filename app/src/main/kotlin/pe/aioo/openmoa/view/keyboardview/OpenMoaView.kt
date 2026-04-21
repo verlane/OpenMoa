@@ -19,6 +19,7 @@ import pe.aioo.openmoa.view.message.SpecialKey
 import pe.aioo.openmoa.databinding.OpenMoaViewBinding
 import pe.aioo.openmoa.databinding.OpenMoaViewMoakeyBinding
 import pe.aioo.openmoa.view.keytouchlistener.CrossKeyTouchListener
+import pe.aioo.openmoa.view.keytouchlistener.EnterKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.JaumKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.LanguageKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.RepeatKeyTouchListener
@@ -62,6 +63,7 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
     private var moeumKeyBgPressed: android.graphics.drawable.Drawable? = null
     private var moeumKeyBgNormal: android.graphics.drawable.Drawable? = null
     private lateinit var previewController: KeyPreviewController
+    private var enterKeyListener: EnterKeyTouchListener? = null
 
     private fun init() {
         val skin = SettingsPreferences.getKeyboardSkin(context)
@@ -142,6 +144,7 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         previewController.cancel()
+        enterKeyListener?.cancel()
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -201,9 +204,8 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
                     previewController,
                 )
             )
-            enterKey.setOnTouchListener(
-                SimpleKeyTouchListener(context, SpecialKeyMessage(SpecialKey.ENTER))
-            )
+            enterKeyListener = EnterKeyTouchListener(context)
+            enterKey.setOnTouchListener(enterKeyListener)
         }
     }
 
@@ -271,9 +273,8 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
                     previewController,
                 )
             )
-            enterKey.setOnTouchListener(
-                SimpleKeyTouchListener(context, SpecialKeyMessage(SpecialKey.ENTER))
-            )
+            enterKeyListener = EnterKeyTouchListener(context)
+            enterKey.setOnTouchListener(enterKeyListener)
         }
     }
 
