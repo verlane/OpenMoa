@@ -148,17 +148,18 @@
 
     <string name="settings_data_section">설정 데이터 저장 및 초기화</string>
     <string name="settings_data_export_title">설정 데이터 내보내기</string>
-    <string name="settings_data_export_description">사용자가 설정한 모아키 설정상태를 단말에 저장합니다.</string>
+    <string name="settings_data_export_description">설정을 다운로드 폴더에 openmoa_settings.json 으로 저장합니다.</string>
     <string name="settings_data_import_title">설정 데이터 가져오기</string>
-    <string name="settings_data_import_description">이전에 사용자가 단말에 저장한 모아키 설정상태로 복구합니다.</string>
+    <string name="settings_data_import_description">다운로드 폴더의 openmoa_settings.json 을 불러와 설정을 복구합니다.</string>
     <string name="settings_data_reset_title">설정 데이터 초기화</string>
     <string name="settings_data_reset_description">모아키 설정상태를 초기설치 상태로 초기화합니다.</string>
     <string name="settings_data_export_success">설정을 저장했습니다.</string>
     <string name="settings_data_export_fail">저장에 실패했습니다.</string>
     <string name="settings_data_import_success">설정을 복구했습니다.</string>
-    <string name="settings_data_import_fail">불러오기에 실패했습니다. 저장된 파일이 없거나 손상되었습니다.</string>
+    <string name="settings_data_import_fail">불러오기에 실패했습니다. 다운로드 폴더에 openmoa_settings.json 파일이 없거나 손상되었습니다.</string>
     <string name="settings_data_reset_confirm">모든 설정을 초기화하시겠습니까?</string>
     <string name="settings_data_reset_success">설정을 초기화했습니다.</string>
+    <string name="dialog_confirm">확인</string>
 
     <string name="quick_phrase_menu_edit">수정</string>
     <string name="quick_phrase_menu_cancel">취소</string>

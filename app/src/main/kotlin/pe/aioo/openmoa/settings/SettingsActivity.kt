@@ -1,6 +1,8 @@
 package pe.aioo.openmoa.settings
 
+import android.content.ContentValues
 import android.os.Bundle
+import android.provider.MediaStore
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -19,9 +21,12 @@ import pe.aioo.openmoa.quickphrase.QuickPhraseKey
 import pe.aioo.openmoa.quickphrase.QuickPhraseRepository
 import pe.aioo.openmoa.quickphrase.QwertyLongKey
 import pe.aioo.openmoa.quickphrase.QwertyLongKeyRepository
-import java.io.File
 
 class SettingsActivity : AppCompatActivity() {
+
+    companion object {
+        private const val SETTINGS_FILE_NAME = "openmoa_settings.json"
+    }
 
     private lateinit var binding: ActivitySettingsBinding
 
@@ -316,11 +321,6 @@ class SettingsActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun getSettingsFile(): File {
-        val dir = getExternalFilesDir(null) ?: filesDir
-        return File(dir, "openmoa_settings.json")
-    }
-
     private fun exportSettings() {
         try {
             val prefs = getSharedPreferences(SettingsPreferences.PREFS_NAME, MODE_PRIVATE)
@@ -333,10 +333,35 @@ class SettingsActivity : AppCompatActivity() {
                     is Int -> json.put(key, value)
                     is Long -> json.put(key, value)
                     is Float -> json.put(key, value.toDouble())
-                    // Set<String> 등 미지원 타입은 내보내지 않음
                 }
             }
-            getSettingsFile().writeText(json.toString(2))
+            val jsonText = json.toString(2)
+            val resolver = contentResolver
+            val existing = resolver.query(
+                MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+                arrayOf(MediaStore.Downloads._ID),
+                "${MediaStore.Downloads.DISPLAY_NAME} = ?",
+                arrayOf(SETTINGS_FILE_NAME),
+                null
+            )
+            existing?.use { cursor ->
+                while (cursor.moveToNext()) {
+                    val id = cursor.getLong(0)
+                    resolver.delete(
+                        MediaStore.Downloads.EXTERNAL_CONTENT_URI.buildUpon().appendPath(id.toString()).build(),
+                        null, null
+                    )
+                }
+            }
+            val values = ContentValues().apply {
+                put(MediaStore.Downloads.DISPLAY_NAME, SETTINGS_FILE_NAME)
+                put(MediaStore.Downloads.MIME_TYPE, "application/json")
+                put(MediaStore.Downloads.RELATIVE_PATH, "Download/")
+            }
+            val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+                ?: throw Exception("MediaStore insert failed")
+            (resolver.openOutputStream(uri) ?: throw Exception("openOutputStream failed"))
+                .use { it.write(jsonText.toByteArray()) }
             Toast.makeText(this, R.string.settings_data_export_success, Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             Toast.makeText(this, R.string.settings_data_export_fail, Toast.LENGTH_SHORT).show()
@@ -345,12 +370,27 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun importSettings() {
         try {
-            val file = getSettingsFile()
-            if (!file.exists()) {
+            val resolver = contentResolver
+            val cursor = resolver.query(
+                MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+                arrayOf(MediaStore.Downloads._ID),
+                "${MediaStore.Downloads.DISPLAY_NAME} = ?",
+                arrayOf(SETTINGS_FILE_NAME),
+                null
+            )
+            val uri = cursor?.use {
+                if (it.moveToFirst()) {
+                    val id = it.getLong(0)
+                    MediaStore.Downloads.EXTERNAL_CONTENT_URI.buildUpon().appendPath(id.toString()).build()
+                } else null
+            }
+            if (uri == null) {
                 Toast.makeText(this, R.string.settings_data_import_fail, Toast.LENGTH_SHORT).show()
                 return
             }
-            val json = JSONObject(file.readText())
+            val jsonText = resolver.openInputStream(uri)?.use { it.readBytes().toString(Charsets.UTF_8) }
+                ?: throw Exception("openInputStream failed")
+            val json = JSONObject(jsonText)
             val allowedKeys = buildSet {
                 addAll(SettingsPreferences.ALL_KEYS)
                 QuickPhraseKey.values().forEach { add(it.prefKey) }
@@ -382,8 +422,8 @@ class SettingsActivity : AppCompatActivity() {
     private fun showResetConfirmDialog() {
         AlertDialog.Builder(this)
             .setMessage(R.string.settings_data_reset_confirm)
-            .setPositiveButton(android.R.string.ok) { _, _ -> resetAllSettings() }
-            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.dialog_confirm) { _, _ -> resetAllSettings() }
+            .setNegativeButton(R.string.settings_qwerty_long_key_cancel, null)
             .show()
     }
 
