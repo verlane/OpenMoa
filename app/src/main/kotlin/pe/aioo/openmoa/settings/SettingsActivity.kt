@@ -2,6 +2,7 @@ package pe.aioo.openmoa.settings
 
 import android.content.ContentValues
 import android.os.Bundle
+import android.util.Log
 import android.provider.MediaStore
 import android.widget.EditText
 import android.widget.Toast
@@ -375,6 +376,7 @@ class SettingsActivity : AppCompatActivity() {
                 .use { it.write(jsonText.toByteArray()) }
             Toast.makeText(this, R.string.settings_data_export_success, Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
+            Log.e("SettingsActivity", "export failed", e)
             Toast.makeText(this, R.string.settings_data_export_fail, Toast.LENGTH_SHORT).show()
         }
     }
@@ -427,6 +429,7 @@ class SettingsActivity : AppCompatActivity() {
             refreshAllDisplays()
             Toast.makeText(this, R.string.settings_data_import_success, Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
+            Log.e("SettingsActivity", "import failed", e)
             Toast.makeText(this, R.string.settings_data_import_fail, Toast.LENGTH_SHORT).show()
         }
     }

@@ -39,100 +39,59 @@ object SettingsPreferences {
         KEY_MOEUM_KEY_VISIBLE,
     ) + UserCharKey.values().map { it.prefKey }.toSet()
 
-    fun getKeyPreviewEnabled(context: Context): Boolean {
-        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getBoolean(KEY_KEY_PREVIEW, true)
-    }
+    private fun prefs(context: Context) =
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+    fun getKeyPreviewEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_KEY_PREVIEW, true)
 
     fun setKeyPreviewEnabled(context: Context, enabled: Boolean) {
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .edit()
-            .putBoolean(KEY_KEY_PREVIEW, enabled)
-            .apply()
+        prefs(context).edit().putBoolean(KEY_KEY_PREVIEW, enabled).apply()
     }
 
-    fun getHangulInputMode(context: Context): HangulInputMode {
-        val value = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getString(KEY_HANGUL_INPUT_MODE, null)
-        return HangulInputMode.fromString(value)
-    }
+    fun getHangulInputMode(context: Context): HangulInputMode =
+        HangulInputMode.fromString(prefs(context).getString(KEY_HANGUL_INPUT_MODE, null))
 
-    fun getKeypadHeight(context: Context): KeypadHeight {
-        val value = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getString(KEY_KEYPAD_HEIGHT, null)
-        return KeypadHeight.fromString(value)
-    }
+    fun getKeypadHeight(context: Context): KeypadHeight =
+        KeypadHeight.fromString(prefs(context).getString(KEY_KEYPAD_HEIGHT, null))
 
-    fun getLongPressTime(context: Context): LongPressTime {
-        val value = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getString(KEY_LONG_PRESS_TIME, null)
-        return LongPressTime.fromString(value)
-    }
+    fun getLongPressTime(context: Context): LongPressTime =
+        LongPressTime.fromString(prefs(context).getString(KEY_LONG_PRESS_TIME, null))
 
-    fun getOneHandMode(context: Context): OneHandMode {
-        val value = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getString(KEY_ONE_HAND_MODE, null)
-        return OneHandMode.fromString(value)
-    }
+    fun getOneHandMode(context: Context): OneHandMode =
+        OneHandMode.fromString(prefs(context).getString(KEY_ONE_HAND_MODE, null))
 
-    fun getSpaceLongPressAction(context: Context): SpaceLongPressAction {
-        val value = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getString(KEY_SPACE_LONG_PRESS_ACTION, null)
-        return SpaceLongPressAction.fromString(value)
-    }
+    fun getSpaceLongPressAction(context: Context): SpaceLongPressAction =
+        SpaceLongPressAction.fromString(prefs(context).getString(KEY_SPACE_LONG_PRESS_ACTION, null))
 
-    fun getKeyboardSkin(context: Context): KeyboardSkin {
-        val value = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getString(KEY_KEYBOARD_SKIN, null)
-        return KeyboardSkin.fromString(value)
-    }
+    fun getKeyboardSkin(context: Context): KeyboardSkin =
+        KeyboardSkin.fromString(prefs(context).getString(KEY_KEYBOARD_SKIN, null))
 
-    fun getAutoSpacePeriod(context: Context): Boolean {
-        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getBoolean(KEY_AUTO_SPACE_PERIOD, false)
-    }
+    fun getAutoSpacePeriod(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_AUTO_SPACE_PERIOD, false)
 
     fun setAutoSpacePeriod(context: Context, enabled: Boolean) {
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .edit()
-            .putBoolean(KEY_AUTO_SPACE_PERIOD, enabled)
-            .apply()
+        prefs(context).edit().putBoolean(KEY_AUTO_SPACE_PERIOD, enabled).apply()
     }
 
-    fun getAutoCapitalizeEnglish(context: Context): Boolean {
-        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getBoolean(KEY_AUTO_CAPITALIZE_ENGLISH, true)
-    }
+    fun getAutoCapitalizeEnglish(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_AUTO_CAPITALIZE_ENGLISH, true)
 
     fun setAutoCapitalizeEnglish(context: Context, enabled: Boolean) {
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .edit()
-            .putBoolean(KEY_AUTO_CAPITALIZE_ENGLISH, enabled)
-            .apply()
+        prefs(context).edit().putBoolean(KEY_AUTO_CAPITALIZE_ENGLISH, enabled).apply()
     }
 
-    fun getEnterLongPressAction(context: Context): EnterLongPressAction {
-        val value = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getString(KEY_ENTER_LONG_PRESS_ACTION, null)
-        return EnterLongPressAction.fromString(value)
-    }
+    fun getEnterLongPressAction(context: Context): EnterLongPressAction =
+        EnterLongPressAction.fromString(prefs(context).getString(KEY_ENTER_LONG_PRESS_ACTION, null))
 
-    fun getMoeumKeyVisible(context: Context): Boolean {
-        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getBoolean(KEY_MOEUM_KEY_VISIBLE, true)
-    }
+    fun getMoeumKeyVisible(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_MOEUM_KEY_VISIBLE, true)
 
     fun setMoeumKeyVisible(context: Context, enabled: Boolean) {
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .edit()
-            .putBoolean(KEY_MOEUM_KEY_VISIBLE, enabled)
-            .apply()
+        prefs(context).edit().putBoolean(KEY_MOEUM_KEY_VISIBLE, enabled).apply()
     }
 
     fun save(context: Context, key: String, value: String) {
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .edit()
-            .putString(key, value)
-            .apply()
+        prefs(context).edit().putString(key, value).apply()
     }
 }

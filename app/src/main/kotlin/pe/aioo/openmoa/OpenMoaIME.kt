@@ -53,7 +53,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
 
     private lateinit var binding: OpenMoaImeBinding
     private lateinit var broadcastReceiver: BroadcastReceiver
-    private lateinit var keyboardViews: MutableMap<IMEMode, View>
+    private lateinit var keyboardViews: Map<IMEMode, View>
     private val config: Config by inject()
     private val hangulAssembler = HangulAssembler()
     private var imeMode = IMEMode.IME_KO
@@ -466,6 +466,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         if (currentSkin == lastAppliedSkin) return
         lastAppliedSkin = currentSkin
         keyboardViews = buildKeyboardViews()
+        setKeyboard(imeMode)
     }
 
     private fun refreshOpenMoaViewIfNeeded() {
@@ -474,7 +475,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         val currentView = keyboardViews[IMEMode.IME_KO] as? OpenMoaView ?: return
         if (currentView.isMoakeyMode != savedIsMoakey ||
             currentView.moeumKeyVisible != savedMoeumKeyVisible) {
-            keyboardViews[IMEMode.IME_KO] = OpenMoaView(this).also { it.jaumPreviewResolver = hangulAssembler::previewWithAppended }
+            keyboardViews = keyboardViews + (IMEMode.IME_KO to OpenMoaView(this).also { it.jaumPreviewResolver = hangulAssembler::previewWithAppended })
         }
     }
 
