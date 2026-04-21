@@ -2,6 +2,7 @@ package pe.aioo.openmoa.view.keyboardview.qwerty
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.AttributeSet
 import androidx.constraintlayout.widget.ConstraintLayout
 import org.koin.core.component.KoinComponent
@@ -51,6 +52,13 @@ class QuertyView : ConstraintLayout, KoinComponent {
     private var previewController: KeyPreviewController? = null
     private var currentSkin: KeyboardSkin = KeyboardSkin.DEFAULT
     private val configurableLongKeyListeners = mutableListOf<QwertyKeyTouchListener>()
+    private val prefs by lazy {
+        context.getSharedPreferences(SettingsPreferences.PREFS_NAME, Context.MODE_PRIVATE)
+    }
+    private val prefKeySet = QwertyLongKey.values().map { it.prefKey }.toSet()
+    private val prefChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key in prefKeySet && ::binding.isInitialized) updateConfigurableKeyHints()
+    }
     private val configurableLongKeyPairs by lazy {
         listOf(
             binding.zKey to QwertyLongKey.Z, binding.xKey to QwertyLongKey.X,
@@ -70,20 +78,28 @@ class QuertyView : ConstraintLayout, KoinComponent {
         SkinApplier.apply(this, currentSkin)
     }
 
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        prefs.registerOnSharedPreferenceChangeListener(prefChangeListener)
+    }
+
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
+        prefs.unregisterOnSharedPreferenceChangeListener(prefChangeListener)
         previewController?.cancel()
         configurableLongKeyListeners.forEach { it.cancel() }
     }
 
     override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
         super.onWindowFocusChanged(hasWindowFocus)
-        if (hasWindowFocus) {
-            configurableLongKeyPairs.forEach { (view, longKeyEnum) ->
-                view.keyHint = QwertyLongKeyRepository.getPhrase(context, longKeyEnum)
-            }
-        } else {
+        if (!hasWindowFocus) {
             configurableLongKeyListeners.forEach { it.cancel() }
+        }
+    }
+
+    private fun updateConfigurableKeyHints() {
+        configurableLongKeyPairs.forEach { (view, longKeyEnum) ->
+            view.keyHint = QwertyLongKeyRepository.getPhrase(context, longKeyEnum).take(1)
         }
     }
 
@@ -240,7 +256,7 @@ class QuertyView : ConstraintLayout, KoinComponent {
             )
             configurableLongKeyListeners.add(listener)
             view.apply {
-                keyHint = QwertyLongKeyRepository.getPhrase(context, longKeyEnum)
+                keyHint = QwertyLongKeyRepository.getPhrase(context, longKeyEnum).take(1)
                 setOnTouchListener(listener)
             }
         }
