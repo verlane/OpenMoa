@@ -470,11 +470,12 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     }
 
     private fun refreshOpenMoaViewIfNeeded() {
-        val savedIsMoakey = SettingsPreferences.getHangulInputMode(this) == HangulInputMode.MOAKEY
-        val savedMoeumKeyVisible = SettingsPreferences.getMoeumKeyVisible(this)
+        val savedMode = SettingsPreferences.getHangulInputMode(this)
         val currentView = keyboardViews[IMEMode.IME_KO] as? OpenMoaView ?: return
-        if (currentView.isMoakeyMode != savedIsMoakey ||
-            currentView.moeumKeyVisible != savedMoeumKeyVisible) {
+        val currentIsMoakey = currentView.isMoakeyMode
+        val currentShowsMoeumKey = currentView.moeumKeyVisible
+        if (currentIsMoakey != savedMode.isMoakeyLayout ||
+            currentShowsMoeumKey != savedMode.showsMoeumKey) {
             keyboardViews = keyboardViews + (IMEMode.IME_KO to OpenMoaView(this).also { it.jaumPreviewResolver = hangulAssembler::previewWithAppended })
         }
     }

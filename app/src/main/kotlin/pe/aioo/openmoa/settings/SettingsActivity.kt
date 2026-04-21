@@ -50,7 +50,6 @@ class SettingsActivity : AppCompatActivity() {
         binding.autoSpacePeriodItem.setOnClickListener { toggleAutoSpacePeriod() }
         binding.autoCapitalizeEnglishItem.setOnClickListener { toggleAutoCapitalizeEnglish() }
         binding.enterLongPressActionItem.setOnClickListener { showEnterLongPressActionDialog() }
-        binding.moeumKeyVisibleItem.setOnClickListener { toggleMoeumKeyVisible() }
         binding.quickPhraseKieukItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.KIEUK) }
         binding.quickPhraseTieutItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.TIEUT) }
         binding.quickPhraseChieutItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.CHIEUT) }
@@ -254,16 +253,6 @@ class SettingsActivity : AppCompatActivity() {
         binding.autoCapitalizeEnglishSwitch.isChecked = newValue
     }
 
-    private fun updateMoeumKeyVisibleDisplay() {
-        binding.moeumKeyVisibleSwitch.isChecked = SettingsPreferences.getMoeumKeyVisible(this)
-    }
-
-    private fun toggleMoeumKeyVisible() {
-        val newValue = !SettingsPreferences.getMoeumKeyVisible(this)
-        SettingsPreferences.setMoeumKeyVisible(this, newValue)
-        binding.moeumKeyVisibleSwitch.isChecked = newValue
-    }
-
     private fun updateEnterLongPressActionDisplay() {
         binding.enterLongPressActionValue.text =
             getString(SettingsPreferences.getEnterLongPressAction(this).labelResId)
@@ -413,7 +402,6 @@ class SettingsActivity : AppCompatActivity() {
                 SettingsPreferences.KEY_KEY_PREVIEW,
                 SettingsPreferences.KEY_AUTO_SPACE_PERIOD,
                 SettingsPreferences.KEY_AUTO_CAPITALIZE_ENGLISH,
-                SettingsPreferences.KEY_MOEUM_KEY_VISIBLE,
             )
             val editor = getSharedPreferences(SettingsPreferences.PREFS_NAME, MODE_PRIVATE).edit()
             json.keys().forEach { key ->
@@ -459,7 +447,6 @@ class SettingsActivity : AppCompatActivity() {
         updateAutoSpacePeriodDisplay()
         updateAutoCapitalizeEnglishDisplay()
         updateEnterLongPressActionDisplay()
-        updateMoeumKeyVisibleDisplay()
         updateQuickPhraseDisplays()
         updateQwertyLongKeyDisplays()
     }

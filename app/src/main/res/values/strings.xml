@@ -80,8 +80,9 @@
     <string name="settings_title">오픈모아 통합키보드 설정</string>
     <string name="settings_hangul_section">한글설정</string>
     <string name="settings_hangul_input_mode_title">한글 입력 방식 선택</string>
-    <string name="settings_input_mode_moakey">모아키</string>
     <string name="settings_input_mode_two_hand_moakey">양손 모아키(기본)</string>
+    <string name="settings_input_mode_moakey">모아키</string>
+    <string name="settings_input_mode_moakey_plus">모아키+</string>
 
     <string name="settings_keyboard_section">키보드 옵션</string>
     <string name="settings_keypad_height_title">키패드 높이 조절</string>
@@ -115,9 +116,7 @@
     <string name="settings_auto_space_period_description">스페이스 바를 두 번 눌러 마침표를 자동으로 입력합니다</string>
     <string name="settings_auto_capitalize_english_title">영문 자동 대문자</string>
     <string name="settings_auto_capitalize_english_description">영문 키보드에서 문장 첫 글자를 자동으로 대문자로 입력합니다</string>
-    <string name="settings_moeum_key_visible_title">ㅣ·ㅡ 모음 키 표시</string>
-    <string name="settings_moeum_key_visible_description">모아키 전용. 끄면 엔터 키가 넓어집니다.</string>
-    <string name="settings_enter_long_press_title">엔터 길게 누름 기능</string>
+<string name="settings_enter_long_press_title">엔터 길게 누름 기능</string>
     <string name="settings_enter_long_press_arrow">방향키 레이아웃 표시(기본)</string>
     <string name="settings_enter_long_press_ime_picker">키보드 선택</string>
     <string name="settings_enter_long_press_switch_language">언어 전환</string>

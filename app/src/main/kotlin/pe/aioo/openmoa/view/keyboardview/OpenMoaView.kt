@@ -6,7 +6,9 @@ import android.content.Intent
 import android.util.AttributeSet
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
+import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -74,8 +76,8 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
         val skin = SettingsPreferences.getKeyboardSkin(context)
         previewController = KeyPreviewController({ config.keyPreviewEnabled }, skin)
         val mode = SettingsPreferences.getHangulInputMode(context)
-        isMoakeyMode = mode == HangulInputMode.MOAKEY
-        moeumKeyVisible = SettingsPreferences.getMoeumKeyVisible(context)
+        isMoakeyMode = mode.isMoakeyLayout
+        moeumKeyVisible = mode.showsMoeumKey
         if (isMoakeyMode) {
             inflate(context, R.layout.open_moa_view_moakey, this)
             moakeyBinding = OpenMoaViewMoakeyBinding.bind(this)
@@ -218,17 +220,19 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
 
     private fun applyMoeumKeyVisibility() {
         val b = moakeyBinding ?: return
-        if (config.moeumKeyVisible) return
-        b.moeumKey.visibility = android.view.View.GONE
-        val parent = b.moeumKey.parent as? androidx.constraintlayout.widget.ConstraintLayout ?: return
-        val cs = androidx.constraintlayout.widget.ConstraintSet()
+        if (moeumKeyVisible) return
+        b.moeumKey.visibility = View.GONE
+        val parent = b.moeumKey.parent as? ConstraintLayout ?: return
+        val cs = ConstraintSet()
         cs.clone(parent)
-        cs.clear(R.id.moeumKey, androidx.constraintlayout.widget.ConstraintSet.LEFT)
-        cs.clear(R.id.moeumKey, androidx.constraintlayout.widget.ConstraintSet.RIGHT)
+        cs.clear(R.id.moeumKey, ConstraintSet.LEFT)
+        cs.clear(R.id.moeumKey, ConstraintSet.RIGHT)
         cs.setHorizontalWeight(R.id.moeumKey, 0f)
-        cs.connect(R.id.spaceKey, androidx.constraintlayout.widget.ConstraintSet.RIGHT, R.id.enterKey, androidx.constraintlayout.widget.ConstraintSet.LEFT)
-        cs.connect(R.id.enterKey, androidx.constraintlayout.widget.ConstraintSet.LEFT, R.id.spaceKey, androidx.constraintlayout.widget.ConstraintSet.RIGHT)
-        cs.setHorizontalWeight(R.id.enterKey, 2f)
+        cs.connect(R.id.spaceKey, ConstraintSet.RIGHT, R.id.enterKey, ConstraintSet.LEFT)
+        cs.connect(R.id.enterKey, ConstraintSet.LEFT, R.id.spaceKey, ConstraintSet.RIGHT)
+        cs.setHorizontalWeight(R.id.emojiKey, 0.5f)
+        cs.setHorizontalWeight(R.id.spaceKey, 2f)
+        cs.setHorizontalWeight(R.id.enterKey, 1.5f)
         cs.applyTo(parent)
     }
 
