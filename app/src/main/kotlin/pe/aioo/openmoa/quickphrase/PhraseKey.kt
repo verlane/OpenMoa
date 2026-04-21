@@ -4,6 +4,7 @@ import android.content.Context
 import pe.aioo.openmoa.settings.SettingsPreferences
 
 interface PhraseKey {
+    val name: String
     val displayName: String
     val defaultPhrase: String
     val prefKey: String

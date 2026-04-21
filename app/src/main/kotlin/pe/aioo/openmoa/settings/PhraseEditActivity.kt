@@ -36,12 +36,7 @@ class PhraseEditActivity : AppCompatActivity() {
             else -> QuickPhraseKey.values()
         }
 
-        binding.editTitle.text = getString(
-            when (type) {
-                TYPE_ENGLISH -> R.string.settings_qwerty_long_key_edit_title
-                else -> R.string.quick_phrase_edit_title
-            }
-        )
+        binding.editTitle.text = getString(R.string.quick_phrase_edit_title)
 
         setupSpinner(initialKeyName)
         setupButtons()
@@ -52,7 +47,7 @@ class PhraseEditActivity : AppCompatActivity() {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.keySpinner.adapter = adapter
 
-        val initialIndex = keys.indexOfFirst { (it as Enum<*>).name == initialKeyName }.takeIf { it >= 0 } ?: 0
+        val initialIndex = keys.indexOfFirst { it.name == initialKeyName }.takeIf { it >= 0 } ?: 0
         binding.keySpinner.setSelection(initialIndex)
 
         binding.keySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {

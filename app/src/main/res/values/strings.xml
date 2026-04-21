@@ -132,8 +132,7 @@
     <string name="settings_qwerty_long_key_m_label">m 롱키</string>
     <string name="settings_qwerty_long_key_edit_hint">롱키 문자를 입력하세요</string>
     <string name="settings_qwerty_long_key_reset">기본값</string>
-    <string name="settings_qwerty_long_key_edit_title">롱키 수정</string>
-    <string name="settings_qwerty_long_key_save">저장</string>
+<string name="settings_qwerty_long_key_save">저장</string>
     <string name="settings_qwerty_long_key_cancel">취소</string>
 
     <string name="settings_data_section">설정 데이터 저장 및 초기화</string>

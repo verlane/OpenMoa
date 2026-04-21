@@ -50,6 +50,14 @@ class QuertyView : ConstraintLayout, KoinComponent {
     private lateinit var binding: QuertyViewBinding
     private var previewController: KeyPreviewController? = null
     private var currentSkin: KeyboardSkin = KeyboardSkin.DEFAULT
+    private val configurableLongKeyPairs by lazy {
+        listOf(
+            binding.zKey to QwertyLongKey.Z, binding.xKey to QwertyLongKey.X,
+            binding.cKey to QwertyLongKey.C, binding.vKey to QwertyLongKey.V,
+            binding.bKey to QwertyLongKey.B, binding.nKey to QwertyLongKey.N,
+            binding.mKey to QwertyLongKey.M,
+        )
+    }
 
     private fun init() {
         inflate(context, R.layout.querty_view, this)
@@ -64,6 +72,15 @@ class QuertyView : ConstraintLayout, KoinComponent {
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         previewController?.cancel()
+    }
+
+    override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
+        super.onWindowFocusChanged(hasWindowFocus)
+        if (hasWindowFocus) {
+            configurableLongKeyPairs.forEach { (view, longKeyEnum) ->
+                view.keyHint = QwertyLongKeyRepository.getPhrase(context, longKeyEnum)
+            }
+        }
     }
 
     private fun setShiftStatus(status: ShiftKeyStatus, isInitialize: Boolean = false) {
@@ -174,13 +191,6 @@ class QuertyView : ConstraintLayout, KoinComponent {
             binding.fKey to "^", binding.gKey to ":", binding.hKey to ";",
             binding.jKey to "(", binding.kKey to ")", binding.lKey to "~",
         )
-        val configurableLongKeyPairs = listOf(
-            binding.zKey to QwertyLongKey.Z, binding.xKey to QwertyLongKey.X,
-            binding.cKey to QwertyLongKey.C, binding.vKey to QwertyLongKey.V,
-            binding.bKey to QwertyLongKey.B, binding.nKey to QwertyLongKey.N,
-            binding.mKey to QwertyLongKey.M,
-        )
-        val popup = QuickPhraseMenuPopup(context)
         fixedLongKeyPairs.forEach { (view, longKey) ->
             view.apply {
                 keyHint = longKey
@@ -200,6 +210,7 @@ class QuertyView : ConstraintLayout, KoinComponent {
             }
         }
         configurableLongKeyPairs.forEach { (view, longKeyEnum) ->
+            val popup = QuickPhraseMenuPopup(context)
             view.apply {
                 keyHint = QwertyLongKeyRepository.getPhrase(context, longKeyEnum)
                 setOnTouchListener(QwertyKeyTouchListener(

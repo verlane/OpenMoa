@@ -333,7 +333,7 @@ class SettingsActivity : AppCompatActivity() {
                     is Double -> editor.putFloat(key, value.toFloat())
                 }
             }
-            editor.commit()
+            editor.apply()
             refreshAllDisplays()
             Toast.makeText(this, R.string.settings_data_import_success, Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
@@ -350,7 +350,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun resetAllSettings() {
-        getSharedPreferences(SettingsPreferences.PREFS_NAME, MODE_PRIVATE).edit().clear().commit()
+        getSharedPreferences(SettingsPreferences.PREFS_NAME, MODE_PRIVATE).edit().clear().apply()
         refreshAllDisplays()
         Toast.makeText(this, R.string.settings_data_reset_success, Toast.LENGTH_SHORT).show()
     }
