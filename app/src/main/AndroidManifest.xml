@@ -32,6 +32,12 @@
         <activity
             android:name="pe.aioo.openmoa.settings.SettingsActivity"
             android:exported="false"
+            android:label="오픈모아 설정"
+            android:theme="@style/Theme.OpenMoa.Settings" />
+
+        <activity
+            android:name="pe.aioo.openmoa.settings.ShortcutSettingsActivity"
+            android:exported="false"
             android:theme="@style/Theme.OpenMoa.Settings" />
 
         <activity

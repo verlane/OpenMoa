@@ -5,10 +5,13 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.provider.MediaStore
-import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import pe.aioo.openmoa.R
 import pe.aioo.openmoa.config.EnterLongPressAction
@@ -20,9 +23,7 @@ import pe.aioo.openmoa.config.OneHandMode
 import pe.aioo.openmoa.config.SpaceLongPressAction
 import pe.aioo.openmoa.databinding.ActivitySettingsBinding
 import pe.aioo.openmoa.quickphrase.QuickPhraseKey
-import pe.aioo.openmoa.quickphrase.QuickPhraseRepository
 import pe.aioo.openmoa.quickphrase.QwertyLongKey
-import pe.aioo.openmoa.quickphrase.QwertyLongKeyRepository
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -49,6 +50,9 @@ class SettingsActivity : AppCompatActivity() {
         binding.gestureAngleItem.setOnClickListener {
             startActivity(Intent(this, GestureAngleActivity::class.java))
         }
+        binding.shortcutItem.setOnClickListener {
+            startActivity(Intent(this, ShortcutSettingsActivity::class.java))
+        }
         binding.hangulInputModeItem.setOnClickListener { showInputModeDialog() }
         binding.keyboardSkinItem.setOnClickListener { showKeyboardSkinDialog() }
         binding.keypadHeightItem.setOnClickListener { showKeypadHeightDialog() }
@@ -59,99 +63,9 @@ class SettingsActivity : AppCompatActivity() {
         binding.autoSpacePeriodItem.setOnClickListener { toggleAutoSpacePeriod() }
         binding.autoCapitalizeEnglishItem.setOnClickListener { toggleAutoCapitalizeEnglish() }
         binding.enterLongPressActionItem.setOnClickListener { showEnterLongPressActionDialog() }
-        binding.quickPhraseKieukItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.KIEUK) }
-        binding.quickPhraseTieutItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.TIEUT) }
-        binding.quickPhraseChieutItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.CHIEUT) }
-        binding.quickPhrasePieupItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.PIEUP) }
-        binding.quickPhraseSsangbieupItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.SSANGBIEUP) }
-        binding.quickPhraseSsangjieutItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.SSANGJIEUT) }
-        binding.quickPhraseSsangdigeutItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.SSANGDIGEUT) }
-        binding.quickPhraseSsanggiyeokItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.SSANGGIYEOK) }
-        binding.quickPhraseSsangsiotItem.setOnClickListener { showQuickPhraseEditDialog(QuickPhraseKey.SSANGSIOT) }
-        binding.qwertyLongKeyZItem.setOnClickListener { showQwertyLongKeyEditDialog(QwertyLongKey.Z) }
-        binding.qwertyLongKeyXItem.setOnClickListener { showQwertyLongKeyEditDialog(QwertyLongKey.X) }
-        binding.qwertyLongKeyCItem.setOnClickListener { showQwertyLongKeyEditDialog(QwertyLongKey.C) }
-        binding.qwertyLongKeyVItem.setOnClickListener { showQwertyLongKeyEditDialog(QwertyLongKey.V) }
-        binding.qwertyLongKeyBItem.setOnClickListener { showQwertyLongKeyEditDialog(QwertyLongKey.B) }
-        binding.qwertyLongKeyNItem.setOnClickListener { showQwertyLongKeyEditDialog(QwertyLongKey.N) }
-        binding.qwertyLongKeyMItem.setOnClickListener { showQwertyLongKeyEditDialog(QwertyLongKey.M) }
         binding.settingsDataExportItem.setOnClickListener { exportSettings() }
         binding.settingsDataImportItem.setOnClickListener { importSettings() }
         binding.settingsDataResetItem.setOnClickListener { showResetConfirmDialog() }
-    }
-
-    private fun updateQuickPhraseDisplays() {
-        binding.quickPhraseKieukValue.text = QuickPhraseRepository.getPhrase(this, QuickPhraseKey.KIEUK)
-        binding.quickPhraseTieutValue.text = QuickPhraseRepository.getPhrase(this, QuickPhraseKey.TIEUT)
-        binding.quickPhraseChieutValue.text = QuickPhraseRepository.getPhrase(this, QuickPhraseKey.CHIEUT)
-        binding.quickPhrasePieupValue.text = QuickPhraseRepository.getPhrase(this, QuickPhraseKey.PIEUP)
-        binding.quickPhraseSsangbieupValue.text = QuickPhraseRepository.getPhrase(this, QuickPhraseKey.SSANGBIEUP)
-        binding.quickPhraseSsangjieutValue.text = QuickPhraseRepository.getPhrase(this, QuickPhraseKey.SSANGJIEUT)
-        binding.quickPhraseSsangdigeutValue.text = QuickPhraseRepository.getPhrase(this, QuickPhraseKey.SSANGDIGEUT)
-        binding.quickPhraseSsanggiyeokValue.text = QuickPhraseRepository.getPhrase(this, QuickPhraseKey.SSANGGIYEOK)
-        binding.quickPhraseSsangsiotValue.text = QuickPhraseRepository.getPhrase(this, QuickPhraseKey.SSANGSIOT)
-    }
-
-    private fun showQuickPhraseEditDialog(key: QuickPhraseKey) {
-        val editText = EditText(this).apply {
-            setText(QuickPhraseRepository.getPhrase(this@SettingsActivity, key))
-            hint = getString(R.string.settings_quick_phrase_edit_hint)
-            setSingleLine(true)
-        }
-        AlertDialog.Builder(this)
-            .setTitle("${key.jaum} ${getString(R.string.settings_quick_phrase_edit_hint)}")
-            .setView(editText)
-            .setPositiveButton(R.string.settings_qwerty_long_key_save) { _, _ ->
-                val input = editText.text.toString().trim()
-                if (input.isNotEmpty()) {
-                    QuickPhraseRepository.setPhrase(this, key, input)
-                } else {
-                    QuickPhraseRepository.setPhrase(this, key, key.defaultPhrase)
-                }
-                updateQuickPhraseDisplays()
-            }
-            .setNeutralButton(R.string.settings_quick_phrase_reset) { _, _ ->
-                QuickPhraseRepository.setPhrase(this, key, key.defaultPhrase)
-                updateQuickPhraseDisplays()
-            }
-            .setNegativeButton(R.string.settings_qwerty_long_key_cancel, null)
-            .show()
-    }
-
-    private fun updateQwertyLongKeyDisplays() {
-        binding.qwertyLongKeyZValue.text = QwertyLongKeyRepository.getPhrase(this, QwertyLongKey.Z)
-        binding.qwertyLongKeyXValue.text = QwertyLongKeyRepository.getPhrase(this, QwertyLongKey.X)
-        binding.qwertyLongKeyCValue.text = QwertyLongKeyRepository.getPhrase(this, QwertyLongKey.C)
-        binding.qwertyLongKeyVValue.text = QwertyLongKeyRepository.getPhrase(this, QwertyLongKey.V)
-        binding.qwertyLongKeyBValue.text = QwertyLongKeyRepository.getPhrase(this, QwertyLongKey.B)
-        binding.qwertyLongKeyNValue.text = QwertyLongKeyRepository.getPhrase(this, QwertyLongKey.N)
-        binding.qwertyLongKeyMValue.text = QwertyLongKeyRepository.getPhrase(this, QwertyLongKey.M)
-    }
-
-    private fun showQwertyLongKeyEditDialog(key: QwertyLongKey) {
-        val editText = EditText(this).apply {
-            setText(QwertyLongKeyRepository.getPhrase(this@SettingsActivity, key))
-            hint = getString(R.string.settings_qwerty_long_key_edit_hint)
-            setSingleLine(true)
-        }
-        AlertDialog.Builder(this)
-            .setTitle("${key.letter} ${getString(R.string.settings_qwerty_long_key_edit_hint)}")
-            .setView(editText)
-            .setPositiveButton(R.string.settings_qwerty_long_key_save) { _, _ ->
-                val input = editText.text.toString().trim()
-                if (input.isNotEmpty()) {
-                    QwertyLongKeyRepository.setPhrase(this, key, input)
-                } else {
-                    QwertyLongKeyRepository.setPhrase(this, key, key.defaultPhrase)
-                }
-                updateQwertyLongKeyDisplays()
-            }
-            .setNeutralButton(R.string.settings_qwerty_long_key_reset) { _, _ ->
-                QwertyLongKeyRepository.setPhrase(this, key, key.defaultPhrase)
-                updateQwertyLongKeyDisplays()
-            }
-            .setNegativeButton(R.string.settings_qwerty_long_key_cancel, null)
-            .show()
     }
 
     private fun updateKeyboardSkinDisplay() {
@@ -332,102 +246,116 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun exportSettings() {
-        try {
-            val prefs = getSharedPreferences(SettingsPreferences.PREFS_NAME, MODE_PRIVATE)
-            val json = JSONObject()
-            // prefs 파일 하나에 SettingsPreferences, QuickPhraseRepository, QwertyLongKeyRepository 가 함께 저장됨
-            prefs.all.forEach { (key, value) ->
-                when (value) {
-                    is Boolean -> json.put(key, value)
-                    is String -> json.put(key, value)
-                    is Int -> json.put(key, value)
-                    is Long -> json.put(key, value)
-                    is Float -> json.put(key, value.toDouble())
+        val prefs = getSharedPreferences(SettingsPreferences.PREFS_NAME, MODE_PRIVATE)
+        val json = JSONObject()
+        // prefs 파일 하나에 SettingsPreferences, QuickPhraseRepository, QwertyLongKeyRepository 가 함께 저장됨
+        prefs.all.forEach { (key, value) ->
+            when (value) {
+                is Boolean -> json.put(key, value)
+                is String -> json.put(key, value)
+                is Int -> json.put(key, value)
+                is Long -> json.put(key, value)
+                is Float -> json.put(key, value.toDouble())
+            }
+        }
+        val jsonText = json.toString(2)
+        lifecycleScope.launch(Dispatchers.IO) {
+            val msgResId = try {
+                val resolver = contentResolver
+                resolver.query(
+                    MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+                    arrayOf(MediaStore.Downloads._ID),
+                    "${MediaStore.Downloads.DISPLAY_NAME} = ?",
+                    arrayOf(SETTINGS_FILE_NAME),
+                    null
+                )?.use { cursor ->
+                    while (cursor.moveToNext()) {
+                        val id = cursor.getLong(0)
+                        resolver.delete(
+                            MediaStore.Downloads.EXTERNAL_CONTENT_URI.buildUpon()
+                                .appendPath(id.toString()).build(),
+                            null, null
+                        )
+                    }
                 }
-            }
-            val jsonText = json.toString(2)
-            val resolver = contentResolver
-            val existing = resolver.query(
-                MediaStore.Downloads.EXTERNAL_CONTENT_URI,
-                arrayOf(MediaStore.Downloads._ID),
-                "${MediaStore.Downloads.DISPLAY_NAME} = ?",
-                arrayOf(SETTINGS_FILE_NAME),
-                null
-            )
-            existing?.use { cursor ->
-                while (cursor.moveToNext()) {
-                    val id = cursor.getLong(0)
-                    resolver.delete(
-                        MediaStore.Downloads.EXTERNAL_CONTENT_URI.buildUpon().appendPath(id.toString()).build(),
-                        null, null
-                    )
+                val values = ContentValues().apply {
+                    put(MediaStore.Downloads.DISPLAY_NAME, SETTINGS_FILE_NAME)
+                    put(MediaStore.Downloads.MIME_TYPE, "application/json")
+                    put(MediaStore.Downloads.RELATIVE_PATH, "Download/")
                 }
+                val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+                    ?: throw Exception("MediaStore insert failed")
+                (resolver.openOutputStream(uri) ?: throw Exception("openOutputStream failed"))
+                    .use { it.write(jsonText.toByteArray()) }
+                R.string.settings_data_export_success
+            } catch (e: Exception) {
+                Log.e("SettingsActivity", "export failed", e)
+                R.string.settings_data_export_fail
             }
-            val values = ContentValues().apply {
-                put(MediaStore.Downloads.DISPLAY_NAME, SETTINGS_FILE_NAME)
-                put(MediaStore.Downloads.MIME_TYPE, "application/json")
-                put(MediaStore.Downloads.RELATIVE_PATH, "Download/")
+            withContext(Dispatchers.Main) {
+                Toast.makeText(this@SettingsActivity, msgResId, Toast.LENGTH_SHORT).show()
             }
-            val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
-                ?: throw Exception("MediaStore insert failed")
-            (resolver.openOutputStream(uri) ?: throw Exception("openOutputStream failed"))
-                .use { it.write(jsonText.toByteArray()) }
-            Toast.makeText(this, R.string.settings_data_export_success, Toast.LENGTH_SHORT).show()
-        } catch (e: Exception) {
-            Log.e("SettingsActivity", "export failed", e)
-            Toast.makeText(this, R.string.settings_data_export_fail, Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun importSettings() {
-        try {
-            val resolver = contentResolver
-            val cursor = resolver.query(
-                MediaStore.Downloads.EXTERNAL_CONTENT_URI,
-                arrayOf(MediaStore.Downloads._ID),
-                "${MediaStore.Downloads.DISPLAY_NAME} = ?",
-                arrayOf(SETTINGS_FILE_NAME),
-                null
-            )
-            val uri = cursor?.use {
-                if (it.moveToFirst()) {
-                    val id = it.getLong(0)
-                    MediaStore.Downloads.EXTERNAL_CONTENT_URI.buildUpon().appendPath(id.toString()).build()
-                } else null
+        val allowedKeys = buildSet {
+            addAll(SettingsPreferences.ALL_KEYS)
+            QuickPhraseKey.values().forEach { add(it.prefKey) }
+            QwertyLongKey.values().forEach { add(it.prefKey) }
+        }
+        val booleanKeys = setOf(
+            SettingsPreferences.KEY_KEY_PREVIEW,
+            SettingsPreferences.KEY_AUTO_SPACE_PERIOD,
+            SettingsPreferences.KEY_AUTO_CAPITALIZE_ENGLISH,
+        )
+        lifecycleScope.launch(Dispatchers.IO) {
+            val success = try {
+                val resolver = contentResolver
+                val uri = resolver.query(
+                    MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+                    arrayOf(MediaStore.Downloads._ID),
+                    "${MediaStore.Downloads.DISPLAY_NAME} = ?",
+                    arrayOf(SETTINGS_FILE_NAME),
+                    null
+                )?.use {
+                    if (it.moveToFirst()) {
+                        val id = it.getLong(0)
+                        MediaStore.Downloads.EXTERNAL_CONTENT_URI.buildUpon()
+                            .appendPath(id.toString()).build()
+                    } else null
+                } ?: run {
+                    return@launch withContext(Dispatchers.Main) {
+                        Toast.makeText(this@SettingsActivity, R.string.settings_data_import_fail, Toast.LENGTH_SHORT).show()
+                    }
+                }
+                val jsonText = resolver.openInputStream(uri)?.use { it.readBytes().toString(Charsets.UTF_8) }
+                    ?: throw Exception("openInputStream failed")
+                val json = JSONObject(jsonText)
+                val editor = getSharedPreferences(SettingsPreferences.PREFS_NAME, MODE_PRIVATE).edit()
+                json.keys().forEach { key ->
+                    if (key !in allowedKeys) return@forEach
+                    if (key in booleanKeys) {
+                        editor.putBoolean(key, json.optBoolean(key))
+                    } else if (json.has(key)) {
+                        val value = json.optString(key)
+                        if (value.isNotEmpty()) editor.putString(key, value)
+                    }
+                }
+                editor.apply()
+                true
+            } catch (e: Exception) {
+                Log.e("SettingsActivity", "import failed", e)
+                false
             }
-            if (uri == null) {
-                Toast.makeText(this, R.string.settings_data_import_fail, Toast.LENGTH_SHORT).show()
-                return
-            }
-            val jsonText = resolver.openInputStream(uri)?.use { it.readBytes().toString(Charsets.UTF_8) }
-                ?: throw Exception("openInputStream failed")
-            val json = JSONObject(jsonText)
-            val allowedKeys = buildSet {
-                addAll(SettingsPreferences.ALL_KEYS)
-                QuickPhraseKey.values().forEach { add(it.prefKey) }
-                QwertyLongKey.values().forEach { add(it.prefKey) }
-            }
-            val booleanKeys = setOf(
-                SettingsPreferences.KEY_KEY_PREVIEW,
-                SettingsPreferences.KEY_AUTO_SPACE_PERIOD,
-                SettingsPreferences.KEY_AUTO_CAPITALIZE_ENGLISH,
-            )
-            val editor = getSharedPreferences(SettingsPreferences.PREFS_NAME, MODE_PRIVATE).edit()
-            json.keys().forEach { key ->
-                if (key !in allowedKeys) return@forEach
-                if (key in booleanKeys) {
-                    editor.putBoolean(key, json.optBoolean(key))
-                } else if (json.has(key)) {
-                    val value = json.optString(key)
-                    if (value.isNotEmpty()) editor.putString(key, value)
+            withContext(Dispatchers.Main) {
+                if (success) {
+                    refreshAllDisplays()
+                    Toast.makeText(this@SettingsActivity, R.string.settings_data_import_success, Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this@SettingsActivity, R.string.settings_data_import_fail, Toast.LENGTH_SHORT).show()
                 }
             }
-            editor.apply()
-            refreshAllDisplays()
-            Toast.makeText(this, R.string.settings_data_import_success, Toast.LENGTH_SHORT).show()
-        } catch (e: Exception) {
-            Log.e("SettingsActivity", "import failed", e)
-            Toast.makeText(this, R.string.settings_data_import_fail, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -463,7 +391,5 @@ class SettingsActivity : AppCompatActivity() {
         updateAutoSpacePeriodDisplay()
         updateAutoCapitalizeEnglishDisplay()
         updateEnterLongPressActionDisplay()
-        updateQuickPhraseDisplays()
-        updateQwertyLongKeyDisplays()
     }
 }
