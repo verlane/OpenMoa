@@ -448,7 +448,7 @@ class SettingsActivity : AppCompatActivity() {
     private fun updateGestureAngleDisplay() {
         val preset = getString(SettingsPreferences.getGestureAnglePreset(this).labelResId)
         val threshold = SettingsPreferences.getGestureThreshold(this)
-        binding.gestureAngleValue.text = "$preset · ${threshold}px"
+        binding.gestureAngleValue.text = "$preset · ${threshold}dp"
     }
 
     private fun refreshAllDisplays() {

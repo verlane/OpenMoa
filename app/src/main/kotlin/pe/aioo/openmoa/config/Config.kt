@@ -8,7 +8,10 @@ class Config(private val context: Context) {
     val longPressThresholdTime: Long
         get() = SettingsPreferences.getLongPressTime(context).millis
     val gestureThreshold: Float
-        get() = SettingsPreferences.getGestureThreshold(context).toFloat()
+        get() {
+            val dp = SettingsPreferences.getGestureThreshold(context)
+            return dp * context.resources.displayMetrics.density
+        }
     val hapticFeedback: Boolean = true
     val maxSuggestionCount: Int = 10
     val keyPreviewEnabled: Boolean

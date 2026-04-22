@@ -83,7 +83,7 @@
     <string name="settings_gesture_angle_title">긋기 조절</string>
     <string name="settings_gesture_angle_description">모음 판정 경계 각도를 조절합니다</string>
     <string name="gesture_angle_description">버튼을 움직여서 긋기 판단 영역을 조절할 수 있습니다.</string>
-    <string name="gesture_length_label">%dpx</string>
+    <string name="gesture_length_label">%ddp</string>
     <string name="gesture_section_length">길이 조절</string>
     <string name="gesture_section_angle">각도 조절</string>
     <string name="gesture_angle_reset">초기화</string>

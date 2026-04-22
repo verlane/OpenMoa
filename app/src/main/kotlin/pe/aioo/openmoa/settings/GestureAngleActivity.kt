@@ -63,11 +63,11 @@ class GestureAngleActivity : AppCompatActivity() {
     }
 
     private fun resetToDefault() {
-        currentThreshold = 50
+        currentThreshold = 30
         GestureAngles.RIGHT_HAND.copyInto(currentAngles)
         binding.gestureAngleView.setAngles(currentAngles)
         updateLengthLabel(currentThreshold)
-        binding.gestureLengthSeekBar.progress = currentThreshold - 30
+        binding.gestureLengthSeekBar.progress = currentThreshold - 10
         suppressSpinnerCallback = true
         binding.presetSpinner.setSelection(GestureAnglePreset.RIGHT_HAND.ordinal)
         binding.presetSpinner.post { suppressSpinnerCallback = false }
@@ -75,10 +75,10 @@ class GestureAngleActivity : AppCompatActivity() {
 
     private fun setupSeekBar() {
         updateLengthLabel(currentThreshold)
-        binding.gestureLengthSeekBar.progress = currentThreshold - 30
+        binding.gestureLengthSeekBar.progress = currentThreshold - 10
         binding.gestureLengthSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                currentThreshold = progress + 30
+                currentThreshold = progress + 10
                 updateLengthLabel(currentThreshold)
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}

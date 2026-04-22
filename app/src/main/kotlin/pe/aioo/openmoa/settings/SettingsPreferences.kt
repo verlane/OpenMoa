@@ -105,7 +105,7 @@ object SettingsPreferences {
     }
 
     fun getGestureThreshold(context: Context): Int =
-        prefs(context).getString(KEY_GESTURE_THRESHOLD, null)?.toIntOrNull() ?: 50
+        prefs(context).getString(KEY_GESTURE_THRESHOLD, null)?.toIntOrNull() ?: 30
 
     fun setGestureThreshold(context: Context, value: Int) {
         prefs(context).edit().putString(KEY_GESTURE_THRESHOLD, value.toString()).apply()
