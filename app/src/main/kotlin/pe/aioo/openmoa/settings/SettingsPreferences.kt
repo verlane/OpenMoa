@@ -2,6 +2,8 @@ package pe.aioo.openmoa.settings
 
 import android.content.Context
 import pe.aioo.openmoa.config.EnterLongPressAction
+import pe.aioo.openmoa.config.GestureAnglePreset
+import pe.aioo.openmoa.config.GestureAngles
 import pe.aioo.openmoa.config.HangulInputMode
 import pe.aioo.openmoa.config.KeyboardSkin
 import pe.aioo.openmoa.config.KeypadHeight
@@ -23,6 +25,8 @@ object SettingsPreferences {
     const val KEY_KEYBOARD_SKIN = "keyboard_skin"
     const val KEY_AUTO_CAPITALIZE_ENGLISH = "auto_capitalize_english"
     const val KEY_ENTER_LONG_PRESS_ACTION = "enter_long_press_action"
+    const val KEY_GESTURE_ANGLES = "gesture_angles"
+    const val KEY_GESTURE_ANGLE_PRESET = "gesture_angle_preset"
 
     val ALL_KEYS = setOf(
         KEY_HANGUL_INPUT_MODE,
@@ -35,6 +39,8 @@ object SettingsPreferences {
         KEY_KEYBOARD_SKIN,
         KEY_AUTO_CAPITALIZE_ENGLISH,
         KEY_ENTER_LONG_PRESS_ACTION,
+        KEY_GESTURE_ANGLES,
+        KEY_GESTURE_ANGLE_PRESET,
     ) + UserCharKey.values().map { it.prefKey }.toSet()
 
     private fun prefs(context: Context) =
@@ -81,6 +87,20 @@ object SettingsPreferences {
 
     fun getEnterLongPressAction(context: Context): EnterLongPressAction =
         EnterLongPressAction.fromString(prefs(context).getString(KEY_ENTER_LONG_PRESS_ACTION, null))
+
+    fun getGestureAngles(context: Context): GestureAngles =
+        GestureAngles.fromString(prefs(context).getString(KEY_GESTURE_ANGLES, null))
+
+    fun setGestureAngles(context: Context, angles: GestureAngles) {
+        prefs(context).edit().putString(KEY_GESTURE_ANGLES, angles.toPrefsString()).apply()
+    }
+
+    fun getGestureAnglePreset(context: Context): GestureAnglePreset =
+        GestureAnglePreset.fromString(prefs(context).getString(KEY_GESTURE_ANGLE_PRESET, null))
+
+    fun setGestureAnglePreset(context: Context, preset: GestureAnglePreset) {
+        prefs(context).edit().putString(KEY_GESTURE_ANGLE_PRESET, preset.name).apply()
+    }
 
     fun save(context: Context, key: String, value: String) {
         prefs(context).edit().putString(key, value).apply()

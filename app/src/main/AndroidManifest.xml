@@ -39,6 +39,11 @@
             android:exported="false"
             android:theme="@style/Theme.OpenMoa.QuickPhraseEdit" />
 
+        <activity
+            android:name="pe.aioo.openmoa.settings.GestureAngleActivity"
+            android:exported="false"
+            android:theme="@style/Theme.OpenMoa.Settings" />
+
     </application>
 
 </manifest>

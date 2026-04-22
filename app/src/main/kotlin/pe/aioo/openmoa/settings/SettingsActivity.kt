@@ -1,6 +1,7 @@
 package pe.aioo.openmoa.settings
 
 import android.content.ContentValues
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.provider.MediaStore
@@ -40,6 +41,9 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun setupViews() {
         refreshAllDisplays()
+        binding.gestureAngleItem.setOnClickListener {
+            startActivity(Intent(this, GestureAngleActivity::class.java))
+        }
         binding.hangulInputModeItem.setOnClickListener { showInputModeDialog() }
         binding.keyboardSkinItem.setOnClickListener { showKeyboardSkinDialog() }
         binding.keypadHeightItem.setOnClickListener { showKeypadHeightDialog() }
@@ -436,7 +440,13 @@ class SettingsActivity : AppCompatActivity() {
         Toast.makeText(this, R.string.settings_data_reset_success, Toast.LENGTH_SHORT).show()
     }
 
+    private fun updateGestureAngleDisplay() {
+        binding.gestureAngleValue.text =
+            getString(SettingsPreferences.getGestureAnglePreset(this).labelResId)
+    }
+
     private fun refreshAllDisplays() {
+        updateGestureAngleDisplay()
         updateInputModeDisplay()
         updateKeyboardSkinDisplay()
         updateKeypadHeightDisplay()

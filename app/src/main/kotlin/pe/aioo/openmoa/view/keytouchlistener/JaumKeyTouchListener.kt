@@ -83,22 +83,26 @@ class JaumKeyTouchListener(
                         hasMoved = true
                         handler.removeCallbacks(longPressRunnable)
                     }
-                    val degree = (atan2(currentY - startY, currentX - startX) * 180f) / PI
+                    val atan2Deg = (atan2(currentY - startY, currentX - startX) * 180.0 / PI).toFloat()
                     startX = currentX
                     startY = currentY
-                    if (0.001f <= abs(degree) && abs(degree) < 22.5f) {
-                        moeumGestureProcessor.appendMoeum("ㅏ")
-                    } else if (abs(degree) < 67.5f) {
-                        moeumGestureProcessor.appendMoeum(if (degree > 0) "ㅡR" else "ㅣR")
-                    } else if (abs(degree) < 112.5f) {
-                        moeumGestureProcessor.appendMoeum(if (degree > 0) "ㅜ" else "ㅗ")
-                    } else if (abs(degree) < 157.5f) {
-                        moeumGestureProcessor.appendMoeum(if (degree > 0) "ㅡL" else "ㅣL")
-                    } else if (abs(degree) <= 179.999f) {
-                        moeumGestureProcessor.appendMoeum("ㅓ")
+                    // 좌표계: 0°=왼쪽(ㅓ), 90°=위(ㅗ), 180°=오른쪽(ㅏ), 270°=아래(ㅜ)
+                    // atan2Deg(Android): 오른쪽=0°, 아래=90° → +180+360 보정으로 일치
+                    val uiAngle = ((atan2Deg + 540f) % 360f)
+                    val a = config.gestureAngles.values
+                    val moeum = when {
+                        uiAngle >= a[7] || uiAngle < a[0] -> "ㅓ"
+                        uiAngle < a[1] -> "ㅣL"
+                        uiAngle < a[2] -> "ㅗ"
+                        uiAngle < a[3] -> "ㅣR"
+                        uiAngle < a[4] -> "ㅏ"
+                        uiAngle < a[5] -> "ㅡR"
+                        uiAngle < a[6] -> "ㅜ"
+                        else -> "ㅡL"
                     }
-                    val moeum = moeumGestureProcessor.resolveMoeumList()
-                    previewController?.update(view, HangulPreviewComposer.compose(key, moeum))
+                    moeumGestureProcessor.appendMoeum(moeum)
+                    val resolved = moeumGestureProcessor.resolveMoeumList()
+                    previewController?.update(view, HangulPreviewComposer.compose(key, resolved))
                 }
                 if (isLongPressed && quickPhraseKey != null) {
                     val dx = motionEvent.x - longPressStartX
