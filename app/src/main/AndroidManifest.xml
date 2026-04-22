@@ -50,6 +50,12 @@
             android:exported="false"
             android:theme="@style/Theme.OpenMoa.Settings" />
 
+        <activity
+            android:name="pe.aioo.openmoa.settings.HotstringListActivity"
+            android:exported="false"
+            android:label="@string/settings_hotstring_manage_title"
+            android:theme="@style/Theme.OpenMoa.Settings" />
+
     </application>
 
 </manifest>

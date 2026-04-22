@@ -53,6 +53,9 @@ class SettingsActivity : AppCompatActivity() {
         binding.shortcutItem.setOnClickListener {
             startActivity(Intent(this, ShortcutSettingsActivity::class.java))
         }
+        binding.hotstringManageItem.setOnClickListener {
+            startActivity(Intent(this, HotstringListActivity::class.java))
+        }
         binding.hangulInputModeItem.setOnClickListener { showInputModeDialog() }
         binding.keyboardSkinItem.setOnClickListener { showKeyboardSkinDialog() }
         binding.keypadHeightItem.setOnClickListener { showKeypadHeightDialog() }
@@ -308,6 +311,7 @@ class SettingsActivity : AppCompatActivity() {
             SettingsPreferences.KEY_KEY_PREVIEW,
             SettingsPreferences.KEY_AUTO_SPACE_PERIOD,
             SettingsPreferences.KEY_AUTO_CAPITALIZE_ENGLISH,
+            SettingsPreferences.KEY_HOTSTRING_ENABLED,
         )
         lifecycleScope.launch(Dispatchers.IO) {
             val success = try {

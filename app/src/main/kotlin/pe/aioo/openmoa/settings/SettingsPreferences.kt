@@ -28,6 +28,7 @@ object SettingsPreferences {
     const val KEY_GESTURE_ANGLES = "gesture_angles"
     const val KEY_GESTURE_ANGLE_PRESET = "gesture_angle_preset"
     const val KEY_GESTURE_THRESHOLD = "gesture_threshold"
+    const val KEY_HOTSTRING_ENABLED = "hotstring_enabled"
 
     val ALL_KEYS = setOf(
         KEY_HANGUL_INPUT_MODE,
@@ -43,6 +44,7 @@ object SettingsPreferences {
         KEY_GESTURE_ANGLES,
         KEY_GESTURE_ANGLE_PRESET,
         KEY_GESTURE_THRESHOLD,
+        KEY_HOTSTRING_ENABLED,
     ) + UserCharKey.values().map { it.prefKey }.toSet()
 
     private fun prefs(context: Context) =
@@ -109,6 +111,13 @@ object SettingsPreferences {
 
     fun setGestureThreshold(context: Context, value: Int) {
         prefs(context).edit().putString(KEY_GESTURE_THRESHOLD, value.toString()).apply()
+    }
+
+    fun getHotstringEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_HOTSTRING_ENABLED, false)
+
+    fun setHotstringEnabled(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(KEY_HOTSTRING_ENABLED, enabled).apply()
     }
 
     fun save(context: Context, key: String, value: String) {

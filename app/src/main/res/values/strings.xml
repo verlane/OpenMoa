@@ -163,6 +163,19 @@
 <string name="settings_qwerty_long_key_save">저장</string>
     <string name="settings_qwerty_long_key_cancel">취소</string>
 
+    <string name="settings_hotstring_title">자동 치환</string>
+    <string name="settings_hotstring_description">단축 글자 입력 후 스페이스를 누르면 지정한 단어로 바꿔줍니다</string>
+    <string name="settings_hotstring_manage_title">자동 치환 관리</string>
+    <string name="settings_hotstring_empty">등록된 치환이 없어요</string>
+    <string name="settings_hotstring_add">+ 추가</string>
+    <string name="settings_hotstring_trigger_hint">입력할 글자 (예: ㅇㄷㄹㅇㄷ)</string>
+    <string name="settings_hotstring_expansion_hint">바뀔 문구 (예: 안드로이드)</string>
+    <string name="settings_hotstring_duplicate_confirm">같은 트리거가 이미 있어요. 덮어쓸까요?</string>
+    <string name="settings_hotstring_delete_confirm">이 치환을 삭제할까요?</string>
+    <string name="settings_hotstring_trigger_empty">트리거를 입력해 주세요</string>
+    <string name="settings_hotstring_expansion_empty">바뀔 문구를 입력해 주세요</string>
+    <string name="settings_hotstring_delete">삭제</string>
+
     <string name="settings_data_section">설정 데이터 저장 및 초기화</string>
     <string name="settings_data_export_title">설정 데이터 내보내기</string>
     <string name="settings_data_export_description">설정을 다운로드 폴더에 openmoa_settings.json 으로 저장합니다.</string>

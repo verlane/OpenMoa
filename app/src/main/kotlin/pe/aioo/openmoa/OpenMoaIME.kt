@@ -40,6 +40,8 @@ import pe.aioo.openmoa.config.KeyboardSkin
 import pe.aioo.openmoa.config.OneHandMode
 import pe.aioo.openmoa.databinding.OpenMoaImeBinding
 import pe.aioo.openmoa.hangul.HangulAssembler
+import pe.aioo.openmoa.hotstring.HotstringMatcher
+import pe.aioo.openmoa.hotstring.HotstringRepository
 import pe.aioo.openmoa.settings.SettingsActivity
 import pe.aioo.openmoa.settings.SettingsPreferences
 import pe.aioo.openmoa.view.keyboardview.*
@@ -61,6 +63,10 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     private var composingText = ""
     private var lastSpaceTime = 0L
     private var lastAppliedSkin: KeyboardSkin = KeyboardSkin.DEFAULT
+    private var isPasswordField = false
+    private var isHotstringEnabled = false
+    private var lastHotstringTrigger: String? = null
+    private var lastHotstringExpansion: String? = null
 
     private fun finishComposing() {
         currentInputConnection?.finishComposingText()
@@ -137,6 +143,16 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                         // Process for special key
                         when (key) {
                             SpecialKey.BACKSPACE -> {
+                                val undoTrigger = lastHotstringTrigger
+                                val undoExpansion = lastHotstringExpansion
+                                if (undoTrigger != null && undoExpansion != null) {
+                                    lastHotstringTrigger = null
+                                    lastHotstringExpansion = null
+                                    finishComposing()
+                                    currentInputConnection.deleteSurroundingText(undoExpansion.length + 1, 0)
+                                    currentInputConnection.commitText(undoTrigger, 1)
+                                    return@onReceive
+                                }
                                 val unresolved = hangulAssembler.getUnresolved()
                                 if (unresolved != null) {
                                     composingText = composingText.substring(
@@ -352,18 +368,24 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                             }
                         } else {
                             // Process for another key
+                            lastHotstringTrigger = null
+                            lastHotstringExpansion = null
                             finishComposing()
                             if (key == " ") {
-                                val autoEnabled = SettingsPreferences.getAutoSpacePeriod(this@OpenMoaIME)
-                                val now = SystemClock.elapsedRealtime()
-                                if (autoEnabled && now - lastSpaceTime < 1000L &&
-                                    currentInputConnection.getTextBeforeCursor(1, 0) == " ") {
-                                    currentInputConnection.deleteSurroundingText(1, 0)
-                                    currentInputConnection.commitText(". ", 1)
+                                if (tryExpandHotstring()) {
                                     lastSpaceTime = 0L
                                 } else {
-                                    currentInputConnection.commitText(key, 1)
-                                    lastSpaceTime = if (autoEnabled) now else 0L
+                                    val autoEnabled = SettingsPreferences.getAutoSpacePeriod(this@OpenMoaIME)
+                                    val now = SystemClock.elapsedRealtime()
+                                    if (autoEnabled && now - lastSpaceTime < 1000L &&
+                                        currentInputConnection.getTextBeforeCursor(1, 0) == " ") {
+                                        currentInputConnection.deleteSurroundingText(1, 0)
+                                        currentInputConnection.commitText(". ", 1)
+                                        lastSpaceTime = 0L
+                                    } else {
+                                        currentInputConnection.commitText(key, 1)
+                                        lastSpaceTime = if (autoEnabled) now else 0L
+                                    }
                                 }
                             } else {
                                 currentInputConnection.commitText(key, 1)
@@ -480,9 +502,31 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         }
     }
 
+    private fun tryExpandHotstring(): Boolean {
+        if (!isHotstringEnabled) return false
+        if (isPasswordField) return false
+        val rules = HotstringRepository.getCached(this)
+        val maxLen = HotstringMatcher.bufferLengthNeeded(rules)
+        if (maxLen == 0) return false
+        val buffer = currentInputConnection.getTextBeforeCursor(maxLen, 0)?.toString() ?: return false
+        val match = HotstringMatcher.findMatch(buffer, rules) ?: return false
+        currentInputConnection.deleteSurroundingText(match.trigger.length, 0)
+        currentInputConnection.commitText(match.expansion, 1)
+        currentInputConnection.commitText(" ", 1)
+        lastHotstringTrigger = match.trigger
+        lastHotstringExpansion = match.expansion
+        return true
+    }
+
     override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
         super.onStartInputView(info, restarting)
         finishComposing()
+        isHotstringEnabled = SettingsPreferences.getHotstringEnabled(this)
+        val inputType = (info?.inputType ?: 0)
+        val variation = inputType and InputType.TYPE_MASK_VARIATION
+        isPasswordField = variation == InputType.TYPE_TEXT_VARIATION_PASSWORD ||
+            variation == InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD ||
+            variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
         refreshSkinIfNeeded()
         refreshOpenMoaViewIfNeeded()
         (keyboardViews[IMEMode.IME_KO] as? OpenMoaView)?.refreshQuickPhraseBadges()
