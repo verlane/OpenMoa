@@ -232,7 +232,12 @@ class HangulAssembler {
     }
 
     fun removeLastJamo() {
-        jamoList.removeLastOrNull()
+        val last = jamoList.lastOrNull() ?: return
+        if (last.matches(MOEUM_REGEX)) {
+            jamoList.clear()
+        } else {
+            jamoList.removeLastOrNull()
+        }
     }
 
     fun clear() {
