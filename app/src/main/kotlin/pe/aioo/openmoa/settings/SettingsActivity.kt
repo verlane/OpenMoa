@@ -39,6 +39,11 @@ class SettingsActivity : AppCompatActivity() {
         setupViews()
     }
 
+    override fun onResume() {
+        super.onResume()
+        updateGestureAngleDisplay()
+    }
+
     private fun setupViews() {
         refreshAllDisplays()
         binding.gestureAngleItem.setOnClickListener {
@@ -441,8 +446,9 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun updateGestureAngleDisplay() {
-        binding.gestureAngleValue.text =
-            getString(SettingsPreferences.getGestureAnglePreset(this).labelResId)
+        val preset = getString(SettingsPreferences.getGestureAnglePreset(this).labelResId)
+        val threshold = SettingsPreferences.getGestureThreshold(this)
+        binding.gestureAngleValue.text = "$preset · ${threshold}px"
     }
 
     private fun refreshAllDisplays() {

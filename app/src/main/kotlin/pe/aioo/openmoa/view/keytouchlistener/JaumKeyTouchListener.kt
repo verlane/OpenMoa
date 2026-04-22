@@ -38,6 +38,7 @@ class JaumKeyTouchListener(
     private var longPressStartX = 0f
     private var hasMoved = false
     private var isLongPressed = false
+    private var cachedGestureThreshold = 0f
     private val moeumGestureProcessor = MoeumGestureProcessor()
     private val handler = Handler(Looper.getMainLooper())
     private var anchorView: View? = null
@@ -65,6 +66,7 @@ class JaumKeyTouchListener(
                 longPressStartX = motionEvent.x
                 hasMoved = false
                 isLongPressed = false
+                cachedGestureThreshold = config.gestureThreshold
                 moeumGestureProcessor.clear()
                 previewController?.show(view, jaumPreviewResolver?.invoke(key) ?: key)
                 if (quickPhraseKey != null || numberChar != null) {
@@ -78,7 +80,7 @@ class JaumKeyTouchListener(
                 val currentX = motionEvent.x
                 val currentY = motionEvent.y
                 val distance = sqrt((currentX - startX).pow(2) + (currentY - startY).pow(2))
-                if (distance > config.gestureThreshold) {
+                if (distance > cachedGestureThreshold) {
                     if (!hasMoved) {
                         hasMoved = true
                         handler.removeCallbacks(longPressRunnable)

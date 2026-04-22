@@ -27,6 +27,7 @@ object SettingsPreferences {
     const val KEY_ENTER_LONG_PRESS_ACTION = "enter_long_press_action"
     const val KEY_GESTURE_ANGLES = "gesture_angles"
     const val KEY_GESTURE_ANGLE_PRESET = "gesture_angle_preset"
+    const val KEY_GESTURE_THRESHOLD = "gesture_threshold"
 
     val ALL_KEYS = setOf(
         KEY_HANGUL_INPUT_MODE,
@@ -41,6 +42,7 @@ object SettingsPreferences {
         KEY_ENTER_LONG_PRESS_ACTION,
         KEY_GESTURE_ANGLES,
         KEY_GESTURE_ANGLE_PRESET,
+        KEY_GESTURE_THRESHOLD,
     ) + UserCharKey.values().map { it.prefKey }.toSet()
 
     private fun prefs(context: Context) =
@@ -100,6 +102,13 @@ object SettingsPreferences {
 
     fun setGestureAnglePreset(context: Context, preset: GestureAnglePreset) {
         prefs(context).edit().putString(KEY_GESTURE_ANGLE_PRESET, preset.name).apply()
+    }
+
+    fun getGestureThreshold(context: Context): Int =
+        prefs(context).getString(KEY_GESTURE_THRESHOLD, null)?.toIntOrNull() ?: 50
+
+    fun setGestureThreshold(context: Context, value: Int) {
+        prefs(context).edit().putString(KEY_GESTURE_THRESHOLD, value.toString()).apply()
     }
 
     fun save(context: Context, key: String, value: String) {
