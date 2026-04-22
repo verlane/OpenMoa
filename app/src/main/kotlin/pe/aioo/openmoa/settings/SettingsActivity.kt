@@ -88,7 +88,7 @@ class SettingsActivity : AppCompatActivity() {
                 updateKeyboardSkinDisplay()
                 dialog.dismiss()
             }
-            .setNegativeButton(android.R.string.cancel, null)
+            .setNegativeButton(R.string.action_close, null)
             .show()
     }
 
@@ -124,7 +124,7 @@ class SettingsActivity : AppCompatActivity() {
                 updateLongPressTimeDisplay()
                 dialog.dismiss()
             }
-            .setNegativeButton(android.R.string.cancel, null)
+            .setNegativeButton(R.string.action_close, null)
             .show()
     }
 
@@ -155,7 +155,7 @@ class SettingsActivity : AppCompatActivity() {
                 updateSpaceLongPressActionDisplay()
                 dialog.dismiss()
             }
-            .setNegativeButton(android.R.string.cancel, null)
+            .setNegativeButton(R.string.action_close, null)
             .show()
     }
 
@@ -196,7 +196,7 @@ class SettingsActivity : AppCompatActivity() {
                 updateEnterLongPressActionDisplay()
                 dialog.dismiss()
             }
-            .setNegativeButton(android.R.string.cancel, null)
+            .setNegativeButton(R.string.action_close, null)
             .show()
     }
 
@@ -212,7 +212,7 @@ class SettingsActivity : AppCompatActivity() {
                 updateInputModeDisplay()
                 dialog.dismiss()
             }
-            .setNegativeButton(android.R.string.cancel, null)
+            .setNegativeButton(R.string.action_close, null)
             .show()
     }
 
@@ -228,7 +228,7 @@ class SettingsActivity : AppCompatActivity() {
                 updateKeypadHeightDisplay()
                 dialog.dismiss()
             }
-            .setNegativeButton(android.R.string.cancel, null)
+            .setNegativeButton(R.string.action_close, null)
             .show()
     }
 
@@ -244,7 +244,7 @@ class SettingsActivity : AppCompatActivity() {
                 updateOneHandModeDisplay()
                 dialog.dismiss()
             }
-            .setNegativeButton(android.R.string.cancel, null)
+            .setNegativeButton(R.string.action_close, null)
             .show()
     }
 

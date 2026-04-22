@@ -88,6 +88,7 @@
     <string name="gesture_section_angle">각도 조절</string>
     <string name="gesture_angle_reset">초기화</string>
     <string name="gesture_angle_cancel">취소</string>
+    <string name="action_close">닫기</string>
     <string name="gesture_angle_reset_confirm">기본값으로 초기화하시겠습니까?</string>
     <string name="gesture_angle_apply">적용</string>
     <string name="gesture_angle_applied">설정이 적용되었습니다.</string>
