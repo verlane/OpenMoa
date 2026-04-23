@@ -149,7 +149,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                                     lastHotstringTrigger = null
                                     lastHotstringExpansion = null
                                     finishComposing()
-                                    currentInputConnection.deleteSurroundingText(undoExpansion.length + 1, 0)
+                                    currentInputConnection.deleteSurroundingText(undoExpansion.length, 0)
                                     currentInputConnection.commitText(undoTrigger, 1)
                                     return@onReceive
                                 }
@@ -512,7 +512,6 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         val match = HotstringMatcher.findMatch(buffer, rules) ?: return false
         currentInputConnection.deleteSurroundingText(match.trigger.length, 0)
         currentInputConnection.commitText(match.expansion, 1)
-        currentInputConnection.commitText(" ", 1)
         lastHotstringTrigger = match.trigger
         lastHotstringExpansion = match.expansion
         return true
