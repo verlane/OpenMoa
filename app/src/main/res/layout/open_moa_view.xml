@@ -692,13 +692,6 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/key_hanja_hint"
-            android:textSize="9sp"
-            android:textColor="@color/key_foreground_muted" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:text="@string/key_hanja_number_punctuation"
             android:textSize="14sp"
             android:textStyle="bold"
