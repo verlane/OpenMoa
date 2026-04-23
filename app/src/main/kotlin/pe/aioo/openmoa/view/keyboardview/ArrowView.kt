@@ -161,10 +161,10 @@ class ArrowView : ConstraintLayout {
         super.onDetachedFromWindow()
         enterKeyListener?.cancel()
         languageKeyListener?.cancel()
-        upKeyListener?.endTimer()
-        downKeyListener?.endTimer()
-        leftKeyListener?.endTimer()
-        rightKeyListener?.endTimer()
+        upKeyListener?.endRepeat()
+        downKeyListener?.endRepeat()
+        leftKeyListener?.endRepeat()
+        rightKeyListener?.endRepeat()
     }
 
 }

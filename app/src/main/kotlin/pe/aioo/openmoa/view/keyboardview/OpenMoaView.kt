@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.util.AttributeSet
-import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -16,6 +15,9 @@ import pe.aioo.openmoa.OpenMoaIME
 import pe.aioo.openmoa.R
 import pe.aioo.openmoa.config.Config
 import pe.aioo.openmoa.config.HangulInputMode
+import pe.aioo.openmoa.config.HapticStrength
+import pe.aioo.openmoa.config.SoundVolume
+import pe.aioo.openmoa.view.feedback.KeyFeedbackPlayer
 import pe.aioo.openmoa.settings.SettingsPreferences
 import pe.aioo.openmoa.view.message.SpecialKey
 import pe.aioo.openmoa.databinding.OpenMoaViewBinding
@@ -41,6 +43,7 @@ import pe.aioo.openmoa.view.skin.SkinApplier
 class OpenMoaView : ConstraintLayout, KoinComponent {
 
     private val config: Config by inject()
+    private val feedbackPlayer: KeyFeedbackPlayer by inject()
 
     constructor(context: Context) : super(context) {
         init()
@@ -323,10 +326,11 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
                                         background = moeumKeyBgPressed
                                         b.euKey.background = moeumKeyBgNormal
                                         b.araeaKey.background = moeumKeyBgNormal
-                                        if (config.hapticFeedback) {
-                                            performHapticFeedback(
-                                                HapticFeedbackConstants.KEYBOARD_PRESS
-                                            )
+                                        config.hapticStrength.let { s ->
+                                            if (s != HapticStrength.OFF) feedbackPlayer.playHaptic(s.durationMs, s.amplitude)
+                                        }
+                                        config.soundVolume.let { v ->
+                                            if (v != SoundVolume.OFF) feedbackPlayer.playSound(config.soundType.effectId, v.volume)
                                         }
                                         if (moeum != null) {
                                             sendKeyMessage(StringKeyMessage(moeum))
@@ -343,10 +347,11 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
                                         background = moeumKeyBgPressed
                                         b.iKey.background = moeumKeyBgNormal
                                         b.araeaKey.background = moeumKeyBgNormal
-                                        if (config.hapticFeedback) {
-                                            performHapticFeedback(
-                                                HapticFeedbackConstants.KEYBOARD_PRESS
-                                            )
+                                        config.hapticStrength.let { s ->
+                                            if (s != HapticStrength.OFF) feedbackPlayer.playHaptic(s.durationMs, s.amplitude)
+                                        }
+                                        config.soundVolume.let { v ->
+                                            if (v != SoundVolume.OFF) feedbackPlayer.playSound(config.soundType.effectId, v.volume)
                                         }
                                         if (moeum != null) {
                                             sendKeyMessage(StringKeyMessage(moeum))
@@ -363,10 +368,11 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
                                         background = moeumKeyBgPressed
                                         b.iKey.background = moeumKeyBgNormal
                                         b.euKey.background = moeumKeyBgNormal
-                                        if (config.hapticFeedback) {
-                                            performHapticFeedback(
-                                                HapticFeedbackConstants.KEYBOARD_PRESS
-                                            )
+                                        config.hapticStrength.let { s ->
+                                            if (s != HapticStrength.OFF) feedbackPlayer.playHaptic(s.durationMs, s.amplitude)
+                                        }
+                                        config.soundVolume.let { v ->
+                                            if (v != SoundVolume.OFF) feedbackPlayer.playSound(config.soundType.effectId, v.volume)
                                         }
                                         if (moeum != null) {
                                             sendKeyMessage(StringKeyMessage(moeum))

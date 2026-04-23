@@ -36,6 +36,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import pe.aioo.openmoa.config.Config
 import pe.aioo.openmoa.config.HangulInputMode
+import pe.aioo.openmoa.view.feedback.KeyFeedbackPlayer
 import pe.aioo.openmoa.config.KeyboardSkin
 import pe.aioo.openmoa.config.OneHandMode
 import pe.aioo.openmoa.databinding.OpenMoaImeBinding
@@ -57,6 +58,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     private lateinit var broadcastReceiver: BroadcastReceiver
     private lateinit var keyboardViews: Map<IMEMode, View>
     private val config: Config by inject()
+    private val feedbackPlayer: KeyFeedbackPlayer by inject()
     private val hangulAssembler = HangulAssembler()
     private var imeMode = IMEMode.IME_KO
     private var previousImeMode = IMEMode.IME_KO
@@ -600,6 +602,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         if (this::broadcastReceiver.isInitialized) {
             LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
         }
+        feedbackPlayer.release()
         super.onDestroy()
     }
 

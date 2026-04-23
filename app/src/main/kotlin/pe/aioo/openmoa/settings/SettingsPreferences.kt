@@ -5,10 +5,13 @@ import pe.aioo.openmoa.config.EnterLongPressAction
 import pe.aioo.openmoa.config.GestureAnglePreset
 import pe.aioo.openmoa.config.GestureAngles
 import pe.aioo.openmoa.config.HangulInputMode
+import pe.aioo.openmoa.config.HapticStrength
 import pe.aioo.openmoa.config.KeyboardSkin
+import pe.aioo.openmoa.config.SoundType
 import pe.aioo.openmoa.config.KeypadHeight
 import pe.aioo.openmoa.config.LongPressTime
 import pe.aioo.openmoa.config.OneHandMode
+import pe.aioo.openmoa.config.SoundVolume
 import pe.aioo.openmoa.config.SpaceLongPressAction
 import pe.aioo.openmoa.quickphrase.UserCharKey
 
@@ -29,6 +32,9 @@ object SettingsPreferences {
     const val KEY_GESTURE_ANGLE_PRESET = "gesture_angle_preset"
     const val KEY_GESTURE_THRESHOLD = "gesture_threshold"
     const val KEY_HOTSTRING_ENABLED = "hotstring_enabled"
+    const val KEY_HAPTIC_STRENGTH = "haptic_strength"
+    const val KEY_SOUND_VOLUME = "sound_volume"
+    const val KEY_SOUND_TYPE = "sound_type"
 
     val ALL_KEYS = setOf(
         KEY_HANGUL_INPUT_MODE,
@@ -45,6 +51,9 @@ object SettingsPreferences {
         KEY_GESTURE_ANGLE_PRESET,
         KEY_GESTURE_THRESHOLD,
         KEY_HOTSTRING_ENABLED,
+        KEY_HAPTIC_STRENGTH,
+        KEY_SOUND_VOLUME,
+        KEY_SOUND_TYPE,
     ) + UserCharKey.values().map { it.prefKey }.toSet()
 
     private fun prefs(context: Context) =
@@ -119,6 +128,15 @@ object SettingsPreferences {
     fun setHotstringEnabled(context: Context, enabled: Boolean) {
         prefs(context).edit().putBoolean(KEY_HOTSTRING_ENABLED, enabled).apply()
     }
+
+    fun getHapticStrength(context: Context): HapticStrength =
+        HapticStrength.fromString(prefs(context).getString(KEY_HAPTIC_STRENGTH, null))
+
+    fun getSoundVolume(context: Context): SoundVolume =
+        SoundVolume.fromString(prefs(context).getString(KEY_SOUND_VOLUME, null))
+
+    fun getSoundType(context: Context): SoundType =
+        SoundType.fromString(prefs(context).getString(KEY_SOUND_TYPE, null))
 
     fun save(context: Context, key: String, value: String) {
         prefs(context).edit().putString(key, value).apply()

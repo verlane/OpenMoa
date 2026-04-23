@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.VIBRATE" />
+
     <application
         android:name="MainApplication"
         android:allowBackup="true"
@@ -54,6 +56,12 @@
             android:name="pe.aioo.openmoa.settings.HotstringListActivity"
             android:exported="false"
             android:label="@string/settings_hotstring_manage_title"
+            android:theme="@style/Theme.OpenMoa.Settings" />
+
+        <activity
+            android:name="pe.aioo.openmoa.settings.DevToolsActivity"
+            android:exported="false"
+            android:label="@string/dev_tools_title"
             android:theme="@style/Theme.OpenMoa.Settings" />
 
     </application>

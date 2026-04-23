@@ -12,7 +12,12 @@ class Config(private val context: Context) {
             val dp = SettingsPreferences.getGestureThreshold(context)
             return dp * context.resources.displayMetrics.density
         }
-    val hapticFeedback: Boolean = true
+    val hapticStrength: HapticStrength
+        get() = SettingsPreferences.getHapticStrength(context)
+    val soundVolume: SoundVolume
+        get() = SettingsPreferences.getSoundVolume(context)
+    val soundType: SoundType
+        get() = SettingsPreferences.getSoundType(context)
     val maxSuggestionCount: Int = 10
     val keyPreviewEnabled: Boolean
         get() = SettingsPreferences.getKeyPreviewEnabled(context)

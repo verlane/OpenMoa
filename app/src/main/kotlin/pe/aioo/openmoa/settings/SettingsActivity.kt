@@ -16,10 +16,13 @@ import org.json.JSONObject
 import pe.aioo.openmoa.R
 import pe.aioo.openmoa.config.EnterLongPressAction
 import pe.aioo.openmoa.config.HangulInputMode
+import pe.aioo.openmoa.config.HapticStrength
 import pe.aioo.openmoa.config.KeyboardSkin
+import pe.aioo.openmoa.config.SoundType
 import pe.aioo.openmoa.config.KeypadHeight
 import pe.aioo.openmoa.config.LongPressTime
 import pe.aioo.openmoa.config.OneHandMode
+import pe.aioo.openmoa.config.SoundVolume
 import pe.aioo.openmoa.config.SpaceLongPressAction
 import pe.aioo.openmoa.databinding.ActivitySettingsBinding
 import pe.aioo.openmoa.quickphrase.QuickPhraseKey
@@ -29,9 +32,13 @@ class SettingsActivity : AppCompatActivity() {
 
     companion object {
         private const val SETTINGS_FILE_NAME = "openmoa_settings.json"
+        private const val DEV_TAP_REQUIRED = 7
+        private const val DEV_TAP_RESET_MS = 2000L
     }
 
     private lateinit var binding: ActivitySettingsBinding
+    private var devTapCount = 0
+    private var devTapLastTime = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,9 +73,24 @@ class SettingsActivity : AppCompatActivity() {
         binding.autoSpacePeriodItem.setOnClickListener { toggleAutoSpacePeriod() }
         binding.autoCapitalizeEnglishItem.setOnClickListener { toggleAutoCapitalizeEnglish() }
         binding.enterLongPressActionItem.setOnClickListener { showEnterLongPressActionDialog() }
+        binding.hapticStrengthItem.setOnClickListener { showHapticStrengthDialog() }
+        binding.soundVolumeItem.setOnClickListener { showSoundVolumeDialog() }
+        binding.soundTypeItem.setOnClickListener { showSoundTypeDialog() }
         binding.settingsDataExportItem.setOnClickListener { exportSettings() }
         binding.settingsDataImportItem.setOnClickListener { importSettings() }
         binding.settingsDataResetItem.setOnClickListener { showResetConfirmDialog() }
+        binding.hangulSectionHeader.setOnClickListener { onDevTap() }
+    }
+
+    private fun onDevTap() {
+        val now = System.currentTimeMillis()
+        if (now - devTapLastTime > DEV_TAP_RESET_MS) devTapCount = 0
+        devTapLastTime = now
+        devTapCount++
+        if (devTapCount >= DEV_TAP_REQUIRED) {
+            devTapCount = 0
+            startActivity(Intent(this, DevToolsActivity::class.java))
+        }
     }
 
     private fun updateKeyboardSkinDisplay() {
@@ -177,6 +199,69 @@ class SettingsActivity : AppCompatActivity() {
         val newValue = !SettingsPreferences.getAutoCapitalizeEnglish(this)
         SettingsPreferences.setAutoCapitalizeEnglish(this, newValue)
         binding.autoCapitalizeEnglishSwitch.isChecked = newValue
+    }
+
+    private fun updateHapticStrengthDisplay() {
+        binding.hapticStrengthValue.text =
+            getString(SettingsPreferences.getHapticStrength(this).labelResId)
+    }
+
+    private fun showHapticStrengthDialog() {
+        val options = HapticStrength.values()
+        val labels = options.map { getString(it.labelResId) }.toTypedArray()
+        val currentIndex = options.indexOf(SettingsPreferences.getHapticStrength(this))
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.settings_haptic_strength_title)
+            .setSingleChoiceItems(labels, currentIndex) { dialog, which ->
+                SettingsPreferences.save(this, SettingsPreferences.KEY_HAPTIC_STRENGTH, options[which].name)
+                updateHapticStrengthDisplay()
+                dialog.dismiss()
+            }
+            .setNegativeButton(R.string.action_close, null)
+            .show()
+    }
+
+    private fun updateSoundVolumeDisplay() {
+        binding.soundVolumeValue.text =
+            getString(SettingsPreferences.getSoundVolume(this).labelResId)
+    }
+
+    private fun showSoundVolumeDialog() {
+        val options = SoundVolume.values()
+        val labels = options.map { getString(it.labelResId) }.toTypedArray()
+        val currentIndex = options.indexOf(SettingsPreferences.getSoundVolume(this))
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.settings_sound_volume_title)
+            .setSingleChoiceItems(labels, currentIndex) { dialog, which ->
+                SettingsPreferences.save(this, SettingsPreferences.KEY_SOUND_VOLUME, options[which].name)
+                updateSoundVolumeDisplay()
+                dialog.dismiss()
+            }
+            .setNegativeButton(R.string.action_close, null)
+            .show()
+    }
+
+    private fun updateSoundTypeDisplay() {
+        binding.soundTypeValue.text =
+            getString(SettingsPreferences.getSoundType(this).labelResId)
+    }
+
+    private fun showSoundTypeDialog() {
+        val options = SoundType.values()
+        val labels = options.map { getString(it.labelResId) }.toTypedArray()
+        val currentIndex = options.indexOf(SettingsPreferences.getSoundType(this))
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.settings_sound_type_title)
+            .setSingleChoiceItems(labels, currentIndex) { dialog, which ->
+                SettingsPreferences.save(this, SettingsPreferences.KEY_SOUND_TYPE, options[which].name)
+                updateSoundTypeDisplay()
+                dialog.dismiss()
+            }
+            .setNegativeButton(R.string.action_close, null)
+            .show()
     }
 
     private fun updateEnterLongPressActionDisplay() {
@@ -395,5 +480,8 @@ class SettingsActivity : AppCompatActivity() {
         updateAutoSpacePeriodDisplay()
         updateAutoCapitalizeEnglishDisplay()
         updateEnterLongPressActionDisplay()
+        updateHapticStrengthDisplay()
+        updateSoundVolumeDisplay()
+        updateSoundTypeDisplay()
     }
 }

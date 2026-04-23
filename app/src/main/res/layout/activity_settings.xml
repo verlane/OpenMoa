@@ -10,12 +10,15 @@
         android:padding="16dp">
 
         <TextView
+            android:id="@+id/hangulSectionHeader"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/settings_hangul_section"
             android:textSize="14sp"
             android:textColor="@color/key_foreground_locked"
-            android:paddingBottom="8dp" />
+            android:paddingBottom="8dp"
+            android:clickable="true"
+            android:focusable="true" />
 
         <View
             android:layout_width="match_parent"
@@ -419,6 +422,102 @@
                 android:layout_height="wrap_content"
                 android:clickable="false"
                 android:focusable="false" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_feedback_section"
+            android:textSize="14sp"
+            android:textColor="@color/key_foreground_locked"
+            android:paddingTop="16dp"
+            android:paddingBottom="8dp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/keyboard_background"
+            android:layout_marginBottom="4dp" />
+
+        <LinearLayout
+            android:id="@+id/hapticStrengthItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_haptic_strength_title"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/hapticStrengthValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/key_foreground_muted"
+                android:paddingTop="2dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/soundVolumeItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_sound_volume_title"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/soundVolumeValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/key_foreground_muted"
+                android:paddingTop="2dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/soundTypeItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_sound_type_title"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/soundTypeValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/key_foreground_muted"
+                android:paddingTop="2dp" />
 
         </LinearLayout>
 
