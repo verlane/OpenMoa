@@ -40,6 +40,10 @@ class ArrowView : ConstraintLayout {
     private var currentSkin: KeyboardSkin = KeyboardSkin.DEFAULT
     private var enterKeyListener: EnterKeyTouchListener? = null
     private var languageKeyListener: LanguageKeyTouchListener? = null
+    private var upKeyListener: RepeatKeyTouchListener? = null
+    private var downKeyListener: RepeatKeyTouchListener? = null
+    private var leftKeyListener: RepeatKeyTouchListener? = null
+    private var rightKeyListener: RepeatKeyTouchListener? = null
 
     private fun init() {
         inflate(context, R.layout.arrow_view, this)
@@ -84,13 +88,10 @@ class ArrowView : ConstraintLayout {
             copyKey.setOnTouchListener(
                 SimpleKeyTouchListener(context, SpecialKeyMessage(SpecialKey.COPY))
             )
-            upKey.setOnTouchListener(
-                FunctionalKeyTouchListener(context) {
-                    SpecialKeyMessage(
-                        if (isSelecting) SpecialKey.SELECT_ARROW_UP else SpecialKey.ARROW_UP
-                    )
-                }
-            )
+            upKeyListener = RepeatKeyTouchListener(context) {
+                SpecialKeyMessage(if (isSelecting) SpecialKey.SELECT_ARROW_UP else SpecialKey.ARROW_UP)
+            }
+            upKey.setOnTouchListener(upKeyListener)
             cutKey.setOnTouchListener(
                 SimpleKeyTouchListener(context, SpecialKeyMessage(SpecialKey.CUT))
             )
@@ -107,26 +108,20 @@ class ArrowView : ConstraintLayout {
             selectAllKey.setOnTouchListener(
                 SimpleKeyTouchListener(context, SpecialKeyMessage(SpecialKey.SELECT_ALL))
             )
-            leftKey.setOnTouchListener(
-                FunctionalKeyTouchListener(context) {
-                    SpecialKeyMessage(
-                        if (isSelecting) SpecialKey.SELECT_ARROW_LEFT else SpecialKey.ARROW_LEFT
-                    )
-                }
-            )
+            leftKeyListener = RepeatKeyTouchListener(context) {
+                SpecialKeyMessage(if (isSelecting) SpecialKey.SELECT_ARROW_LEFT else SpecialKey.ARROW_LEFT)
+            }
+            leftKey.setOnTouchListener(leftKeyListener)
             areaSelectKey.setOnTouchListener(
                 FunctionalKeyTouchListener(context) {
                     setSelectingOrToggleSelecting()
                     null
                 }
             )
-            rightKey.setOnTouchListener(
-                FunctionalKeyTouchListener(context) {
-                    SpecialKeyMessage(
-                        if (isSelecting) SpecialKey.SELECT_ARROW_RIGHT else SpecialKey.ARROW_RIGHT
-                    )
-                }
-            )
+            rightKeyListener = RepeatKeyTouchListener(context) {
+                SpecialKeyMessage(if (isSelecting) SpecialKey.SELECT_ARROW_RIGHT else SpecialKey.ARROW_RIGHT)
+            }
+            rightKey.setOnTouchListener(rightKeyListener)
             endKey.setOnTouchListener(
                 FunctionalKeyTouchListener(context) {
                     SpecialKeyMessage(
@@ -137,13 +132,10 @@ class ArrowView : ConstraintLayout {
             deleteKey.setOnTouchListener(
                 SimpleKeyTouchListener(context, SpecialKeyMessage(SpecialKey.DELETE))
             )
-            downKey.setOnTouchListener(
-                FunctionalKeyTouchListener(context) {
-                    SpecialKeyMessage(
-                        if (isSelecting) SpecialKey.SELECT_ARROW_DOWN else SpecialKey.ARROW_DOWN
-                    )
-                }
-            )
+            downKeyListener = RepeatKeyTouchListener(context) {
+                SpecialKeyMessage(if (isSelecting) SpecialKey.SELECT_ARROW_DOWN else SpecialKey.ARROW_DOWN)
+            }
+            downKey.setOnTouchListener(downKeyListener)
             pasteKey.setOnTouchListener(
                 SimpleKeyTouchListener(context, SpecialKeyMessage(SpecialKey.PASTE))
             )
@@ -169,6 +161,10 @@ class ArrowView : ConstraintLayout {
         super.onDetachedFromWindow()
         enterKeyListener?.cancel()
         languageKeyListener?.cancel()
+        upKeyListener?.endTimer()
+        downKeyListener?.endTimer()
+        leftKeyListener?.endTimer()
+        rightKeyListener?.endTimer()
     }
 
 }
