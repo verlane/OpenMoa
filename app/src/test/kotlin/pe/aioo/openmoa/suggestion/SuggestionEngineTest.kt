@@ -16,7 +16,7 @@ class SuggestionEngineTest {
         val map = entries.toMap()
         return object : UserWordStore {
             override fun increment(word: String) = Unit
-            override fun topN(prefix: String, limit: Int) =
+            override suspend fun topN(prefix: String, limit: Int) =
                 map.entries.firstOrNull { prefix.startsWith(it.key) || it.key == prefix }
                     ?.value?.take(limit) ?: emptyList()
             override fun clear() = Unit

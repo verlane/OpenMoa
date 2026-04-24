@@ -37,10 +37,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.koin.core.qualifier.named
 import pe.aioo.openmoa.config.Config
+import pe.aioo.openmoa.suggestion.KoreanSuggestionEngine
 import pe.aioo.openmoa.suggestion.SuggestionEngine
 import pe.aioo.openmoa.suggestion.UserWordStore
 import pe.aioo.openmoa.config.HangulInputMode
@@ -68,7 +71,9 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     private val config: Config by inject()
     private val feedbackPlayer: KeyFeedbackPlayer by inject()
     private val suggestionEngine: SuggestionEngine by inject()
-    private val userWordStore: UserWordStore by inject()
+    private val koreanSuggestionEngine: KoreanSuggestionEngine by inject()
+    private val userWordStore: UserWordStore by inject(named("en"))
+    private val koreanUserWordStore: UserWordStore by inject(named("ko"))
     private val hangulAssembler = HangulAssembler()
     private var imeMode = IMEMode.IME_KO
     private var previousImeMode = IMEMode.IME_KO
@@ -90,7 +95,11 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
 
     private fun refreshSuggestions(prefix: String) {
         if (!this::binding.isInitialized) return
-        if (!config.wordSuggestionEnabled || isPasswordField || imeMode != IMEMode.IME_EN) {
+        val isEnMode = imeMode == IMEMode.IME_EN
+        val isKoMode = imeMode == IMEMode.IME_KO
+        val enEnabled = config.wordSuggestionEnabled && isEnMode
+        val koEnabled = config.koreanWordSuggestionEnabled && isKoMode
+        if (isPasswordField || (!enEnabled && !koEnabled)) {
             hideSuggestionBar()
             return
         }
@@ -100,7 +109,16 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         }
         suggestionJob?.cancel()
         suggestionJob = serviceScope.launch {
-            val words = suggestionEngine.suggest(prefix)
+            // 첫 등장(GONE→VISIBLE) 시 키 미리보기 dismiss 딜레이(200ms) 완료 후 표시해
+            // 그래야 레이아웃 전환 시 팝업이 이미 사라진 상태라 깜빡임이 없음
+            if (config.keyPreviewEnabled && binding.wordSuggestionBar.visibility == View.GONE) {
+                delay(250)
+            }
+            val words = if (isKoMode) {
+                koreanSuggestionEngine.suggest(composingText, hangulAssembler.getUnresolved())
+            } else {
+                suggestionEngine.suggest(prefix)
+            }
             if (!this@OpenMoaIME::binding.isInitialized) return@launch
             if (words.isEmpty()) {
                 hideSuggestionBar()
@@ -118,10 +136,17 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     }
 
     private fun onSuggestionPicked(word: String) {
-        userWordStore.increment(word)
-        currentInputConnection?.commitText(word + " ", 1)
-        hangulAssembler.clear()
-        composingText = ""
+        if (imeMode == IMEMode.IME_KO) {
+            koreanUserWordStore.increment(word)
+            hangulAssembler.clear()
+            composingText = ""
+            currentInputConnection?.commitText(word + " ", 1)
+        } else {
+            userWordStore.increment(word)
+            currentInputConnection?.commitText(word + " ", 1)
+            hangulAssembler.clear()
+            composingText = ""
+        }
         hideSuggestionBar()
         setShiftAutomatically()
     }
@@ -452,9 +477,9 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                 if (beforeComposingText != composingText) {
                     currentInputConnection.setComposingText(composingText, 1)
                 }
-                if (imeMode == IMEMode.IME_EN && composingText.isNotEmpty()) {
+                if (composingText.isNotEmpty()) {
                     refreshSuggestions(composingText)
-                } else if (imeMode == IMEMode.IME_EN && composingText.isEmpty()) {
+                } else {
                     hideSuggestionBar()
                 }
                 setShiftAutomatically()

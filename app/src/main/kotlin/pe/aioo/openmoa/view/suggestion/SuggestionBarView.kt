@@ -49,8 +49,8 @@ class SuggestionBarView @JvmOverloads constructor(
     }
 
     companion object {
-        private const val TEXT_SIZE_SP = 19f
-        private const val PADDING_H_DP = 14
+        private const val TEXT_SIZE_SP = 17f
+        private const val PADDING_H_DP = 10
         private const val PADDING_V_DP = 4
     }
 

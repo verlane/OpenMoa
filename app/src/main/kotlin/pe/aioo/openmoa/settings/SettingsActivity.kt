@@ -73,6 +73,7 @@ class SettingsActivity : AppCompatActivity() {
         binding.autoSpacePeriodItem.setOnClickListener { toggleAutoSpacePeriod() }
         binding.autoCapitalizeEnglishItem.setOnClickListener { toggleAutoCapitalizeEnglish() }
         binding.wordSuggestionItem.setOnClickListener { toggleWordSuggestion() }
+        binding.koreanWordSuggestionItem.setOnClickListener { toggleKoreanWordSuggestion() }
         binding.enterLongPressActionItem.setOnClickListener { showEnterLongPressActionDialog() }
         binding.hapticStrengthItem.setOnClickListener { showHapticStrengthDialog() }
         binding.soundVolumeItem.setOnClickListener { showSoundVolumeDialog() }
@@ -210,6 +211,17 @@ class SettingsActivity : AppCompatActivity() {
         val newValue = !SettingsPreferences.getWordSuggestionEnabled(this)
         SettingsPreferences.setWordSuggestionEnabled(this, newValue)
         binding.wordSuggestionSwitch.isChecked = newValue
+    }
+
+    private fun updateKoreanWordSuggestionDisplay() {
+        binding.koreanWordSuggestionSwitch.isChecked =
+            SettingsPreferences.getKoreanWordSuggestionEnabled(this)
+    }
+
+    private fun toggleKoreanWordSuggestion() {
+        val newValue = !SettingsPreferences.getKoreanWordSuggestionEnabled(this)
+        SettingsPreferences.setKoreanWordSuggestionEnabled(this, newValue)
+        binding.koreanWordSuggestionSwitch.isChecked = newValue
     }
 
     private fun updateHapticStrengthDisplay() {
@@ -408,6 +420,8 @@ class SettingsActivity : AppCompatActivity() {
             SettingsPreferences.KEY_AUTO_SPACE_PERIOD,
             SettingsPreferences.KEY_AUTO_CAPITALIZE_ENGLISH,
             SettingsPreferences.KEY_HOTSTRING_ENABLED,
+            SettingsPreferences.KEY_WORD_SUGGESTION_ENABLED,
+            SettingsPreferences.KEY_KOREAN_WORD_SUGGESTION_ENABLED,
         )
         lifecycleScope.launch(Dispatchers.IO) {
             val success = try {
@@ -491,6 +505,7 @@ class SettingsActivity : AppCompatActivity() {
         updateAutoSpacePeriodDisplay()
         updateAutoCapitalizeEnglishDisplay()
         updateWordSuggestionDisplay()
+        updateKoreanWordSuggestionDisplay()
         updateEnterLongPressActionDisplay()
         updateHapticStrengthDisplay()
         updateSoundVolumeDisplay()

@@ -21,6 +21,8 @@ class Config(private val context: Context) {
     val maxSuggestionCount: Int = 10
     val wordSuggestionEnabled: Boolean
         get() = SettingsPreferences.getWordSuggestionEnabled(context)
+    val koreanWordSuggestionEnabled: Boolean
+        get() = SettingsPreferences.getKoreanWordSuggestionEnabled(context)
     val keyPreviewEnabled: Boolean
         get() = SettingsPreferences.getKeyPreviewEnabled(context)
     val autoCapitalizeEnglish: Boolean
