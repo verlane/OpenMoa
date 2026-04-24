@@ -8,4 +8,10 @@
     <color name="key_foreground_muted">#444444</color>
     <color name="key_foreground_locked">#5E97EE</color>
 
+    <color name="gesture_angle_sector_text">#000000</color>
+    <color name="gesture_angle_angle_text">#333333</color>
+    <color name="gesture_angle_boundary_line">#CC3333</color>
+    <color name="gesture_angle_pin_outer">#DD4444</color>
+    <color name="gesture_angle_pin_inner">#FFFFFF</color>
+
 </resources>

@@ -3,12 +3,13 @@ package pe.aioo.openmoa.settings
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.DashPathEffect
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import androidx.core.content.ContextCompat
+import pe.aioo.openmoa.R
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.min
@@ -36,28 +37,28 @@ class GestureAngleView @JvmOverloads constructor(
     var onAnglesChanged: ((IntArray) -> Unit)? = null
 
     private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#CC3333")
+        color = ContextCompat.getColor(context, R.color.gesture_angle_boundary_line)
         strokeWidth = 3f
         style = Paint.Style.STROKE
     }
 
     private val pinPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#DD4444")
+        color = ContextCompat.getColor(context, R.color.gesture_angle_pin_outer)
         style = Paint.Style.FILL
     }
 
     private val pinInnerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE
+        color = ContextCompat.getColor(context, R.color.gesture_angle_pin_inner)
         style = Paint.Style.FILL
     }
 
     private val sectorTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.BLACK
+        color = ContextCompat.getColor(context, R.color.gesture_angle_sector_text)
         textAlign = Paint.Align.CENTER
     }
 
     private val angleTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#333333")
+        color = ContextCompat.getColor(context, R.color.gesture_angle_angle_text)
         textAlign = Paint.Align.CENTER
     }
 
