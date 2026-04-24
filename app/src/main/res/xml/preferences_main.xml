@@ -71,6 +71,31 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/settings_clipboard_section">
+
+        <SwitchPreferenceCompat
+            app:key="clipboard_enabled"
+            app:title="@string/settings_clipboard_enabled_title"
+            app:summary="@string/settings_clipboard_enabled_description"
+            app:defaultValue="true"
+            app:icon="@drawable/ic_pref_replace" />
+
+        <ListPreference
+            app:key="clipboard_max_items"
+            app:title="@string/settings_clipboard_max_items_title"
+            app:useSimpleSummaryProvider="true"
+            android:negativeButtonText="@string/dialog_close"
+            app:icon="@drawable/ic_pref_height" />
+
+        <ListPreference
+            app:key="clipboard_expiry_minutes"
+            app:title="@string/settings_clipboard_expiry_title"
+            app:useSimpleSummaryProvider="true"
+            android:negativeButtonText="@string/dialog_close"
+            app:icon="@drawable/ic_pref_timer" />
+
+    </PreferenceCategory>
+
     <PreferenceCategory app:title="@string/settings_shortcut_section">
 
         <Preference

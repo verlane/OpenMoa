@@ -66,6 +66,12 @@
             android:label="@string/dev_tools_title"
             android:theme="@style/Theme.OpenMoa.Settings" />
 
+        <activity
+            android:name="pe.aioo.openmoa.clipboard.ClipboardEditActivity"
+            android:exported="false"
+            android:label="@string/clipboard_edit_title"
+            android:theme="@style/Theme.OpenMoa.Settings" />
+
     </application>
 
 </manifest>

@@ -40,6 +40,13 @@ class HotstringListActivity : AppCompatActivity() {
         }
         binding.addButton.setOnClickListener { showEditDialog(null) }
         refreshList()
+        intent.getStringExtra(EXTRA_EXPANSION)?.let { expansion ->
+            showEditDialog(null, prefillExpansion = expansion)
+        }
+    }
+
+    companion object {
+        const val EXTRA_EXPANSION = "extra_expansion"
     }
 
     override fun onResume() {
@@ -152,7 +159,7 @@ class HotstringListActivity : AppCompatActivity() {
         return row
     }
 
-    private fun showEditDialog(existing: HotstringRule?) {
+    private fun showEditDialog(existing: HotstringRule?, prefillExpansion: String? = null) {
         val dp16 = (16 * resources.displayMetrics.density).toInt()
 
         val container = LinearLayout(this).apply {
@@ -167,7 +174,7 @@ class HotstringListActivity : AppCompatActivity() {
         }
         val expansionEdit = EditText(this).apply {
             hint = getString(R.string.settings_hotstring_expansion_hint)
-            setText(existing?.expansion ?: "")
+            setText(prefillExpansion ?: existing?.expansion ?: "")
             setSingleLine(true)
         }
 

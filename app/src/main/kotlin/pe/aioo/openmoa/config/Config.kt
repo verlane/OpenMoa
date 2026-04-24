@@ -29,4 +29,6 @@ class Config(private val context: Context) {
         get() = SettingsPreferences.getAutoCapitalizeEnglish(context)
     val gestureAngles: GestureAngles
         get() = SettingsPreferences.getGestureAngles(context)
+    val clipboardEnabled: Boolean
+        get() = SettingsPreferences.getClipboardEnabled(context)
 }

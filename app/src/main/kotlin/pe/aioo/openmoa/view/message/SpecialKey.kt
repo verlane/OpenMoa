@@ -2,6 +2,7 @@ package pe.aioo.openmoa.view.message
 
 enum class SpecialKey {
     ARROW,
+    CLIPBOARD_OPEN,
     ARROW_UP,
     ARROW_LEFT,
     ARROW_RIGHT,

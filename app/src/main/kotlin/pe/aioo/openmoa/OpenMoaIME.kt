@@ -55,6 +55,8 @@ import pe.aioo.openmoa.databinding.OpenMoaImeBinding
 import pe.aioo.openmoa.hangul.HangulAssembler
 import pe.aioo.openmoa.hotstring.HotstringMatcher
 import pe.aioo.openmoa.hotstring.HotstringRepository
+import pe.aioo.openmoa.clipboard.ClipboardEditActivity
+import pe.aioo.openmoa.clipboard.ClipboardRepository
 import pe.aioo.openmoa.settings.SettingsActivity
 import pe.aioo.openmoa.settings.SettingsPreferences
 import pe.aioo.openmoa.view.keyboardview.*
@@ -89,11 +91,40 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     private var suggestionJob: Job? = null
     private var isSuggestionBarActive = false
     private var isTextSelected = false
+    private var isClipboardPanelVisible = false
+    private var clipboardManager: ClipboardManager? = null
+    private val clipboardListener = ClipboardManager.OnPrimaryClipChangedListener {
+        if (!isPasswordField && config.clipboardEnabled) {
+            getClipboardText()?.let { ClipboardRepository.add(this, it) }
+        }
+    }
 
     private fun finishComposing() {
         currentInputConnection?.finishComposingText()
         hangulAssembler.clear()
         composingText = ""
+    }
+
+    private fun showClipboardPanel() {
+        if (!this::binding.isInitialized) return
+        if (!config.clipboardEnabled) return
+        isClipboardPanelVisible = true
+        finishComposing()
+        deactivateSuggestionBar()
+        if (!isPasswordField) {
+            getClipboardText()?.let { ClipboardRepository.add(this, it) }
+        }
+        ClipboardRepository.purgeExpired(this)
+        binding.clipboardPanel.refresh(this)
+        binding.clipboardPanel.visibility = View.VISIBLE
+        binding.keyboardFrameLayout.visibility = View.INVISIBLE
+    }
+
+    private fun hideClipboardPanel() {
+        if (!this::binding.isInitialized) return
+        isClipboardPanelVisible = false
+        binding.clipboardPanel.visibility = View.GONE
+        binding.keyboardFrameLayout.visibility = View.VISIBLE
     }
 
     private fun refreshSuggestions(prefix: String) {
@@ -471,6 +502,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                                 val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
                                 imm?.showInputMethodPicker()
                             }
+                            SpecialKey.CLIPBOARD_OPEN -> showClipboardPanel()
                         }
                     }
                     is String -> {
@@ -592,6 +624,31 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         val view = layoutInflater.inflate(R.layout.open_moa_ime, null)
         binding = OpenMoaImeBinding.bind(view)
         binding.wordSuggestionBar.onPick = ::onSuggestionPicked
+        binding.clipboardPanel.onPaste = { text ->
+            finishComposing()
+            currentInputConnection?.commitText(text, 1)
+            hideClipboardPanel()
+        }
+        binding.clipboardPanel.onClose = { hideClipboardPanel() }
+        binding.clipboardPanel.onEdit = { entry ->
+            hideClipboardPanel()
+            startActivity(
+                Intent(this, ClipboardEditActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    putExtra(ClipboardEditActivity.EXTRA_ENTRY_ID, entry.id)
+                    putExtra(ClipboardEditActivity.EXTRA_ENTRY_TEXT, entry.text)
+                }
+            )
+        }
+        binding.clipboardPanel.onAddHotstring = { entry ->
+            hideClipboardPanel()
+            startActivity(
+                Intent(this, pe.aioo.openmoa.settings.HotstringListActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    putExtra(pe.aioo.openmoa.settings.HotstringListActivity.EXTRA_EXPANSION, entry.text)
+                }
+            )
+        }
         applyKeyboardLayout()
         setKeyboard(imeMode)
         return view
@@ -661,6 +718,11 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         isPasswordField = variation == InputType.TYPE_TEXT_VARIATION_PASSWORD ||
             variation == InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD ||
             variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+        clipboardManager?.removePrimaryClipChangedListener(clipboardListener)
+        if (!isPasswordField && config.clipboardEnabled) {
+            clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+            clipboardManager?.addPrimaryClipChangedListener(clipboardListener)
+        }
         refreshSkinIfNeeded()
         refreshOpenMoaViewIfNeeded()
         (keyboardViews[IMEMode.IME_KO] as? OpenMoaView)?.refreshQuickPhraseBadges()
@@ -741,6 +803,9 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     override fun onFinishInputView(finishingInput: Boolean) {
         super.onFinishInputView(finishingInput)
         deactivateSuggestionBar()
+        if (isClipboardPanelVisible) hideClipboardPanel()
+        clipboardManager?.removePrimaryClipChangedListener(clipboardListener)
+        clipboardManager = null
     }
 
     override fun onDestroy() {
@@ -848,15 +913,20 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         } else {
             android.view.ViewGroup.LayoutParams.MATCH_PARENT
         }
-        val params = android.widget.FrameLayout.LayoutParams(keyboardWidth, calculateKeyboardHeight()).apply {
-            gravity = oneHandMode.gravity
+        val keyboardHeight = calculateKeyboardHeight()
+        val keyboardGravity = oneHandMode.gravity
+        val params = android.widget.FrameLayout.LayoutParams(keyboardWidth, keyboardHeight).apply {
+            gravity = keyboardGravity
         }
         binding.keyboardFrameLayout.layoutParams = params
+        binding.clipboardPanel.layoutParams = android.widget.FrameLayout.LayoutParams(keyboardWidth, keyboardHeight).apply {
+            gravity = keyboardGravity
+        }
         if (this::binding.isInitialized) {
-            binding.wordSuggestionBar.applyColors(
-                SkinApplier.fgColor(this, skin),
-                SkinApplier.keyboardBgColor(this, skin),
-            )
+            val fg = SkinApplier.fgColor(this, skin)
+            val bg = SkinApplier.keyboardBgColor(this, skin)
+            binding.wordSuggestionBar.applyColors(fg, bg)
+            binding.clipboardPanel.applyColors(fg, bg)
         }
     }
 

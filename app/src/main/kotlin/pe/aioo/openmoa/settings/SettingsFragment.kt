@@ -54,6 +54,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     private fun setupListPreferences() {
+        setupClipboardListPreferences()
         pref<ListPreference>(SettingsPreferences.KEY_HANGUL_INPUT_MODE)
             ?.setupEnum(HangulInputMode.values(), { it.labelResId }, HangulInputMode.TWO_HAND_MOAKEY)
         pref<ListPreference>(SettingsPreferences.KEY_KEYBOARD_SKIN)
@@ -74,6 +75,26 @@ class SettingsFragment : PreferenceFragmentCompat() {
             ?.setupEnum(SoundVolume.values(), { it.labelResId }, SoundVolume.OFF)
         pref<ListPreference>(SettingsPreferences.KEY_SOUND_TYPE)
             ?.setupEnum(SoundType.values(), { it.labelResId }, SoundType.STANDARD)
+    }
+
+    private fun setupClipboardListPreferences() {
+        val ctx = requireContext()
+        pref<ListPreference>(SettingsPreferences.KEY_CLIPBOARD_MAX_ITEMS)?.apply {
+            entries = arrayOf("10", "20", "30", "50")
+            entryValues = arrayOf("10", "20", "30", "50")
+            if (value == null) value = "20"
+        }
+        pref<ListPreference>(SettingsPreferences.KEY_CLIPBOARD_EXPIRY_MINUTES)?.apply {
+            entries = arrayOf(
+                ctx.getString(R.string.settings_clipboard_expiry_30min),
+                ctx.getString(R.string.settings_clipboard_expiry_1h),
+                ctx.getString(R.string.settings_clipboard_expiry_3h),
+                ctx.getString(R.string.settings_clipboard_expiry_1d),
+                ctx.getString(R.string.settings_clipboard_expiry_unlimited),
+            )
+            entryValues = arrayOf("30", "60", "180", "1440", "0")
+            if (value == null) value = "60"
+        }
     }
 
     private fun setupClickPreferences() {
@@ -217,6 +238,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             SettingsPreferences.KEY_HOTSTRING_ENABLED,
             SettingsPreferences.KEY_WORD_SUGGESTION_ENABLED,
             SettingsPreferences.KEY_KOREAN_WORD_SUGGESTION_ENABLED,
+            SettingsPreferences.KEY_CLIPBOARD_ENABLED,
         )
         lifecycleScope.launch(Dispatchers.IO) {
             val success = try {
