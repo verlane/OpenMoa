@@ -78,7 +78,7 @@
 
     <string name="key_language_settings_hint">설정</string>
     <string name="settings_hangul_section">모아키 설정</string>
-    <string name="settings_english_section">영어 입력</string>
+    <string name="settings_english_section">키보드 입력</string>
     <string name="settings_shortcut_section">단축 기능</string>
     <string name="settings_hangul_input_mode_title">입력 방식</string>
     <string name="settings_shortcut_title">단축키</string>

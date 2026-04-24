@@ -374,49 +374,6 @@
             android:layout_marginBottom="4dp" />
 
         <LinearLayout
-            android:id="@+id/autoCapitalizeEnglishItem"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:gravity="center_vertical"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/settings_auto_capitalize_english_title"
-                    android:textSize="16sp" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/settings_auto_capitalize_english_description"
-                    android:textSize="12sp"
-                    android:textColor="@color/key_foreground_muted"
-                    android:paddingTop="2dp" />
-
-            </LinearLayout>
-
-            <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/autoCapitalizeEnglishSwitch"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:clickable="false"
-                android:focusable="false" />
-
-        </LinearLayout>
-
-        <LinearLayout
             android:id="@+id/autoSpacePeriodItem"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -452,6 +409,49 @@
 
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/autoSpacePeriodSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clickable="false"
+                android:focusable="false" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/koreanWordSuggestionItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:gravity="center_vertical"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_korean_word_suggestion_title"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_korean_word_suggestion_description"
+                    android:textSize="12sp"
+                    android:textColor="@color/key_foreground_muted"
+                    android:paddingTop="2dp" />
+
+            </LinearLayout>
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/koreanWordSuggestionSwitch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:clickable="false"
@@ -503,7 +503,7 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/koreanWordSuggestionItem"
+            android:id="@+id/autoCapitalizeEnglishItem"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -523,13 +523,13 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/settings_korean_word_suggestion_title"
+                    android:text="@string/settings_auto_capitalize_english_title"
                     android:textSize="16sp" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/settings_korean_word_suggestion_description"
+                    android:text="@string/settings_auto_capitalize_english_description"
                     android:textSize="12sp"
                     android:textColor="@color/key_foreground_muted"
                     android:paddingTop="2dp" />
@@ -537,7 +537,7 @@
             </LinearLayout>
 
             <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/koreanWordSuggestionSwitch"
+                android:id="@+id/autoCapitalizeEnglishSwitch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:clickable="false"
