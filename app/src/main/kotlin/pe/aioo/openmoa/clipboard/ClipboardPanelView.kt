@@ -131,13 +131,13 @@ class ClipboardPanelView @JvmOverloads constructor(
                 isClickable = true
                 isFocusable = true
                 setOnClickListener {
-                    showInlineMenu(listOf(
-                        context.getString(pe.aioo.openmoa.R.string.clipboard_clear_confirm) to {
+                    showConfirmMenu(
+                        message = context.getString(pe.aioo.openmoa.R.string.clipboard_clear_confirm),
+                        onConfirm = {
                             ClipboardRepository.clearUnpinned(context)
                             refresh(context)
                         },
-                        context.getString(pe.aioo.openmoa.R.string.clipboard_clear_cancel) to {},
-                    ))
+                    )
                 }
             })
 
@@ -266,6 +266,61 @@ class ClipboardPanelView @JvmOverloads constructor(
 
     private fun hideInlineMenu() {
         menuOverlay.visibility = GONE
+    }
+
+    private fun showConfirmMenu(message: String, onConfirm: () -> Unit) {
+        val dp = resources.displayMetrics.density
+        val dp8 = (8 * dp).toInt()
+        val dp12 = (12 * dp).toInt()
+        val dp16 = (16 * dp).toInt()
+
+        menuCard.removeAllViews()
+        menuCard.setBackgroundColor(bgColor)
+
+        menuCard.addView(TextView(context).apply {
+            text = message
+            textSize = 13f
+            setPadding(dp16, dp12, dp16, dp8)
+            setTextColor(fgColor)
+        })
+
+        menuCard.addView(LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.END
+            setPadding(dp8, 0, dp8, dp8)
+            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
+
+            addView(TextView(context).apply {
+                text = context.getString(pe.aioo.openmoa.R.string.clipboard_clear_cancel)
+                textSize = 13f
+                setPadding(dp12, dp8, dp12, dp8)
+                setTextColor(fgColor)
+                isClickable = true
+                isFocusable = true
+                background = context.obtainStyledAttributes(
+                    intArrayOf(android.R.attr.selectableItemBackground)
+                ).use { it.getDrawable(0) }
+                setOnClickListener { hideInlineMenu() }
+            })
+
+            addView(TextView(context).apply {
+                text = context.getString(pe.aioo.openmoa.R.string.clipboard_clear_yes)
+                textSize = 13f
+                setPadding(dp12, dp8, dp12, dp8)
+                setTextColor(fgColor)
+                isClickable = true
+                isFocusable = true
+                background = context.obtainStyledAttributes(
+                    intArrayOf(android.R.attr.selectableItemBackground)
+                ).use { it.getDrawable(0) }
+                setOnClickListener {
+                    onConfirm()
+                    hideInlineMenu()
+                }
+            })
+        })
+
+        menuOverlay.visibility = VISIBLE
     }
 
     private fun showTypeActions(entry: ClipboardEntry, type: EntryType) {

@@ -252,6 +252,7 @@
     <string name="clipboard_clear_unpinned">전체 삭제</string>
     <string name="clipboard_clear_confirm">고정되지 않은 항목을 모두 삭제할까요?</string>
     <string name="clipboard_clear_cancel">취소</string>
+    <string name="clipboard_clear_yes">확인</string>
     <string name="clipboard_action_paste">붙여넣기</string>
     <string name="clipboard_action_open_url">URL 열기</string>
     <string name="clipboard_action_send_email">이메일 보내기</string>
