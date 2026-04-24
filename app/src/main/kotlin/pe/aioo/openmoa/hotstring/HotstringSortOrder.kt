@@ -12,19 +12,20 @@ enum class HotstringSortOrder {
 
     companion object {
         val DEFAULT = INSERTION_ORDER
+        private val collator: Collator = Collator.getInstance(Locale.KOREAN)
 
         fun fromString(name: String?): HotstringSortOrder =
             values().find { it.name == name } ?: DEFAULT
+
+        fun compare(a: String, b: String): Int = collator.compare(a, b)
     }
 }
 
-fun List<HotstringRule>.sortedBy(order: HotstringSortOrder): List<HotstringRule> {
-    val collator = Collator.getInstance(Locale.KOREAN)
-    return when (order) {
+fun List<HotstringRule>.sortedByOrder(order: HotstringSortOrder): List<HotstringRule> =
+    when (order) {
         HotstringSortOrder.INSERTION_ORDER -> this
-        HotstringSortOrder.TRIGGER_ASC -> sortedWith { a, b -> collator.compare(a.trigger, b.trigger) }
-        HotstringSortOrder.TRIGGER_DESC -> sortedWith { a, b -> collator.compare(b.trigger, a.trigger) }
-        HotstringSortOrder.EXPANSION_ASC -> sortedWith { a, b -> collator.compare(a.expansion, b.expansion) }
-        HotstringSortOrder.EXPANSION_DESC -> sortedWith { a, b -> collator.compare(b.expansion, a.expansion) }
+        HotstringSortOrder.TRIGGER_ASC -> sortedWith { a, b -> HotstringSortOrder.compare(a.trigger, b.trigger) }
+        HotstringSortOrder.TRIGGER_DESC -> sortedWith { a, b -> HotstringSortOrder.compare(b.trigger, a.trigger) }
+        HotstringSortOrder.EXPANSION_ASC -> sortedWith { a, b -> HotstringSortOrder.compare(a.expansion, b.expansion) }
+        HotstringSortOrder.EXPANSION_DESC -> sortedWith { a, b -> HotstringSortOrder.compare(b.expansion, a.expansion) }
     }
-}

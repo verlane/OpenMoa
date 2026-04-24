@@ -98,20 +98,15 @@
             android:paddingTop="8dp"
             android:gravity="center_vertical">
 
-            <View
-                android:layout_width="12dp"
-                android:layout_height="12dp"
-                android:layout_marginEnd="8dp"
-                android:background="@color/key_foreground_locked"
-                android:importantForAccessibility="no" />
-
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/gesture_angle_description"
                 android:textSize="13sp"
-                android:textColor="#555555" />
+                android:textColor="#555555"
+                android:drawableStart="@drawable/shape_circle_red"
+                android:drawablePadding="8dp" />
 
         </LinearLayout>
 

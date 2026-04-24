@@ -17,13 +17,14 @@ import pe.aioo.openmoa.databinding.ActivityHotstringListBinding
 import pe.aioo.openmoa.hotstring.HotstringRepository
 import pe.aioo.openmoa.hotstring.HotstringRule
 import pe.aioo.openmoa.hotstring.HotstringSortOrder
-import pe.aioo.openmoa.hotstring.sortedBy
+import pe.aioo.openmoa.hotstring.sortedByOrder
 import pe.aioo.openmoa.settings.SettingsPreferences
 
 class HotstringListActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHotstringListBinding
     private var currentSort: HotstringSortOrder = HotstringSortOrder.DEFAULT
+    private var optionsMenu: Menu? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +50,7 @@ class HotstringListActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_hotstring_list, menu)
         menu.findItem(R.id.menu_sort)?.icon?.setTint(Color.WHITE)
+        optionsMenu = menu
         applySortCheck(menu, currentSort)
         return true
     }
@@ -64,7 +66,7 @@ class HotstringListActivity : AppCompatActivity() {
         }
         currentSort = order
         SettingsPreferences.setHotstringSortOrder(this, order)
-        item.isChecked = true
+        optionsMenu?.let { applySortCheck(it, order) }
         refreshList()
         return true
     }
@@ -82,7 +84,7 @@ class HotstringListActivity : AppCompatActivity() {
 
     private fun refreshList() {
         val container = binding.ruleListContainer
-        val rules = HotstringRepository.getAll(this).sortedBy(currentSort)
+        val rules = HotstringRepository.getAll(this).sortedByOrder(currentSort)
 
         // emptyText를 제외한 rule view 제거
         val viewsToRemove = mutableListOf<View>()
