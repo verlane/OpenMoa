@@ -97,6 +97,20 @@ class MoeumGestureProcessorTest {
     @Test
     fun `ㅚ+ㅗ = ㅛ`() = assertEquals("ㅛ", resolve("ㅗ", "ㅜ", "ㅗ"))
 
+    // --- ㅠ 경로 ---
+
+    @Test
+    fun `ㅝ+ㅜ = ㅠ (non-strict)`() = assertEquals("ㅠ", resolve("ㅜ", "ㅓ", "ㅜ"))
+
+    @Test
+    fun `ㅟ+ㅜ = ㅠ`() = assertEquals("ㅠ", resolve("ㅜ", "ㅗ", "ㅜ"))
+
+    @Test
+    fun `ㅟ+ㅡL = ㅠ (non-strict)`() = assertEquals("ㅠ", resolve("ㅜ", "ㅗ", "ㅡL"))
+
+    @Test
+    fun `ㅟ+ㅡR = ㅠ (non-strict)`() = assertEquals("ㅠ", resolve("ㅜ", "ㅗ", "ㅡR"))
+
     // --- non-strict 전이 ---
 
     @Test

@@ -825,7 +825,10 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         binding.root.setBackgroundColor(bgColor)
         binding.keyboardContainer.setBackgroundColor(bgColor)
         window.window?.apply {
-            navigationBarColor = bgColor
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+                @Suppress("DEPRECATION")
+                navigationBarColor = bgColor
+            }
             val isLightBg = Color.luminance(bgColor) > 0.5f
             insetsController?.setSystemBarsAppearance(
                 if (isLightBg) APPEARANCE_LIGHT_NAVIGATION_BARS else 0,

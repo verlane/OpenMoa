@@ -309,6 +309,16 @@ class HangulAssemblerTest {
     }
 
     @Test
+    fun `previewWithAppended - 각 상태에서 ㅏ 누르면 조합 완성되며 가 반환`() {
+        val assembler = HangulAssembler()
+        assembler.appendJamo("ㄱ")
+        assembler.appendJamo("ㅏ")
+        assembler.appendJamo("ㄱ")
+        assertEquals("가", assembler.previewWithAppended("ㅏ"))
+        assertEquals("각", assembler.getUnresolved())
+    }
+
+    @Test
     fun `previewWithAppended - 호출 후 조합 상태가 변경되지 않음`() {
         val assembler = HangulAssembler()
         assembler.appendJamo("ㄱ")
