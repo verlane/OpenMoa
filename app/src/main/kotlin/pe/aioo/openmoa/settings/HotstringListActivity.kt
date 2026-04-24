@@ -144,7 +144,6 @@ class HotstringListActivity : AppCompatActivity() {
         val deleteBtn = TextView(this).apply {
             text = getString(R.string.settings_hotstring_delete)
             textSize = 14f
-            setTextColor(context.getColor(android.R.color.holo_red_dark))
             setPadding(dp8, 0, 0, 0)
             setOnClickListener { showDeleteConfirm(rule) }
         }

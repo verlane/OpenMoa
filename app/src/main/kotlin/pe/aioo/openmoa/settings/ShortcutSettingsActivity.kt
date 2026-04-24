@@ -2,6 +2,7 @@ package pe.aioo.openmoa.settings
 
 import android.os.Bundle
 import android.widget.EditText
+import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import pe.aioo.openmoa.R
@@ -54,14 +55,20 @@ class ShortcutSettingsActivity : AppCompatActivity() {
 
     private fun showEditDialog(key: PhraseKey) {
         val hintResId = R.string.settings_quick_phrase_edit_hint
+        val dp16 = (16 * resources.displayMetrics.density).toInt()
         val editText = EditText(this).apply {
             setText(key.getPhrase(this@ShortcutSettingsActivity))
             hint = getString(hintResId)
             setSingleLine(true)
         }
+        val container = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp16, dp16, dp16, 0)
+            addView(editText)
+        }
         AlertDialog.Builder(this)
             .setTitle("${key.displayName} ${getString(hintResId)}")
-            .setView(editText)
+            .setView(container)
             .setPositiveButton(R.string.settings_qwerty_long_key_save) { _, _ ->
                 val input = editText.text.toString()
                 key.setPhrase(this, input.ifEmpty { key.defaultPhrase })
