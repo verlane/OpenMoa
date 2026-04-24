@@ -177,6 +177,12 @@
     <string name="settings_hotstring_trigger_empty">트리거를 입력해 주세요</string>
     <string name="settings_hotstring_expansion_empty">바뀔 문구를 입력해 주세요</string>
     <string name="settings_hotstring_delete">삭제</string>
+    <string name="settings_hotstring_sort_title">정렬</string>
+    <string name="settings_hotstring_sort_insertion">등록 순서</string>
+    <string name="settings_hotstring_sort_trigger_asc">키워드 (ㄱ→ㅎ)</string>
+    <string name="settings_hotstring_sort_trigger_desc">키워드 (ㅎ→ㄱ)</string>
+    <string name="settings_hotstring_sort_expansion_asc">내용 (가→하)</string>
+    <string name="settings_hotstring_sort_expansion_desc">내용 (하→가)</string>
 
     <string name="settings_feedback_section">피드백 설정</string>
     <string name="settings_haptic_title">진동 피드백</string>

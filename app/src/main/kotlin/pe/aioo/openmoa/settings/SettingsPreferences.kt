@@ -13,6 +13,7 @@ import pe.aioo.openmoa.config.LongPressTime
 import pe.aioo.openmoa.config.OneHandMode
 import pe.aioo.openmoa.config.SoundVolume
 import pe.aioo.openmoa.config.SpaceLongPressAction
+import pe.aioo.openmoa.hotstring.HotstringSortOrder
 import pe.aioo.openmoa.quickphrase.UserCharKey
 
 object SettingsPreferences {
@@ -32,6 +33,7 @@ object SettingsPreferences {
     const val KEY_GESTURE_ANGLE_PRESET = "gesture_angle_preset"
     const val KEY_GESTURE_THRESHOLD = "gesture_threshold"
     const val KEY_HOTSTRING_ENABLED = "hotstring_enabled"
+    const val KEY_HOTSTRING_SORT_ORDER = "hotstring_sort_order"
     const val KEY_HAPTIC_STRENGTH = "haptic_strength"
     const val KEY_SOUND_VOLUME = "sound_volume"
     const val KEY_SOUND_TYPE = "sound_type"
@@ -51,6 +53,7 @@ object SettingsPreferences {
         KEY_GESTURE_ANGLE_PRESET,
         KEY_GESTURE_THRESHOLD,
         KEY_HOTSTRING_ENABLED,
+        KEY_HOTSTRING_SORT_ORDER,
         KEY_HAPTIC_STRENGTH,
         KEY_SOUND_VOLUME,
         KEY_SOUND_TYPE,
@@ -127,6 +130,13 @@ object SettingsPreferences {
 
     fun setHotstringEnabled(context: Context, enabled: Boolean) {
         prefs(context).edit().putBoolean(KEY_HOTSTRING_ENABLED, enabled).apply()
+    }
+
+    fun getHotstringSortOrder(context: Context): HotstringSortOrder =
+        HotstringSortOrder.fromString(prefs(context).getString(KEY_HOTSTRING_SORT_ORDER, null))
+
+    fun setHotstringSortOrder(context: Context, order: HotstringSortOrder) {
+        prefs(context).edit().putString(KEY_HOTSTRING_SORT_ORDER, order.name).apply()
     }
 
     fun getHapticStrength(context: Context): HapticStrength =

@@ -1,7 +1,10 @@
 package pe.aioo.openmoa.settings
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.Gravity
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -13,16 +16,20 @@ import pe.aioo.openmoa.R
 import pe.aioo.openmoa.databinding.ActivityHotstringListBinding
 import pe.aioo.openmoa.hotstring.HotstringRepository
 import pe.aioo.openmoa.hotstring.HotstringRule
+import pe.aioo.openmoa.hotstring.HotstringSortOrder
+import pe.aioo.openmoa.hotstring.sortedBy
 import pe.aioo.openmoa.settings.SettingsPreferences
 
 class HotstringListActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHotstringListBinding
+    private var currentSort: HotstringSortOrder = HotstringSortOrder.DEFAULT
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityHotstringListBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        currentSort = SettingsPreferences.getHotstringSortOrder(this)
         HotstringRepository.ensureDefaults(this)
         binding.enabledSwitch.isChecked = SettingsPreferences.getHotstringEnabled(this)
         binding.enabledItem.setOnClickListener {
@@ -39,9 +46,43 @@ class HotstringListActivity : AppCompatActivity() {
         refreshList()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_hotstring_list, menu)
+        menu.findItem(R.id.menu_sort)?.icon?.setTint(Color.WHITE)
+        applySortCheck(menu, currentSort)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val order = when (item.itemId) {
+            R.id.menu_sort_insertion -> HotstringSortOrder.INSERTION_ORDER
+            R.id.menu_sort_trigger_asc -> HotstringSortOrder.TRIGGER_ASC
+            R.id.menu_sort_trigger_desc -> HotstringSortOrder.TRIGGER_DESC
+            R.id.menu_sort_expansion_asc -> HotstringSortOrder.EXPANSION_ASC
+            R.id.menu_sort_expansion_desc -> HotstringSortOrder.EXPANSION_DESC
+            else -> return super.onOptionsItemSelected(item)
+        }
+        currentSort = order
+        SettingsPreferences.setHotstringSortOrder(this, order)
+        item.isChecked = true
+        refreshList()
+        return true
+    }
+
+    private fun applySortCheck(menu: Menu, order: HotstringSortOrder) {
+        val itemId = when (order) {
+            HotstringSortOrder.INSERTION_ORDER -> R.id.menu_sort_insertion
+            HotstringSortOrder.TRIGGER_ASC -> R.id.menu_sort_trigger_asc
+            HotstringSortOrder.TRIGGER_DESC -> R.id.menu_sort_trigger_desc
+            HotstringSortOrder.EXPANSION_ASC -> R.id.menu_sort_expansion_asc
+            HotstringSortOrder.EXPANSION_DESC -> R.id.menu_sort_expansion_desc
+        }
+        menu.findItem(itemId)?.isChecked = true
+    }
+
     private fun refreshList() {
         val container = binding.ruleListContainer
-        val rules = HotstringRepository.getAll(this)
+        val rules = HotstringRepository.getAll(this).sortedBy(currentSort)
 
         // emptyText를 제외한 rule view 제거
         val viewsToRemove = mutableListOf<View>()
@@ -55,7 +96,6 @@ class HotstringListActivity : AppCompatActivity() {
 
         rules.forEach { rule ->
             container.addView(createRuleView(rule))
-            container.addView(createDivider())
         }
     }
 
@@ -105,15 +145,6 @@ class HotstringListActivity : AppCompatActivity() {
         row.addView(deleteBtn)
 
         return row
-    }
-
-    private fun createDivider(): View {
-        return View(this).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, 1
-            )
-            setBackgroundColor(context.getColor(R.color.keyboard_background))
-        }
     }
 
     private fun showEditDialog(existing: HotstringRule?) {

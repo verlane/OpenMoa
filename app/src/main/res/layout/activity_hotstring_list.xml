@@ -34,11 +34,6 @@
 
     </LinearLayout>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/keyboard_background" />
-
     <Button
         android:id="@+id/addButton"
         android:layout_width="match_parent"
