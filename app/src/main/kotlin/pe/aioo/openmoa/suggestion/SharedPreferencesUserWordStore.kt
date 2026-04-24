@@ -26,6 +26,7 @@ class SharedPreferencesUserWordStore(private val context: Context) : UserWordSto
         prefs.edit().putString(KEY_WORDS, obj.toString()).apply()
     }
 
+    @Synchronized
     override fun increment(word: String) {
         if (word.isBlank()) return
         val normalized = word.lowercase().trim()
@@ -34,6 +35,7 @@ class SharedPreferencesUserWordStore(private val context: Context) : UserWordSto
         persist()
     }
 
+    @Synchronized
     override fun topN(prefix: String, limit: Int): List<String> {
         if (prefix.isEmpty()) return emptyList()
         val normalized = prefix.lowercase()
@@ -44,6 +46,7 @@ class SharedPreferencesUserWordStore(private val context: Context) : UserWordSto
             .map { it.key }
     }
 
+    @Synchronized
     override fun clear() {
         words.clear()
         prefs.edit().remove(KEY_WORDS).apply()

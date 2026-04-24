@@ -9,6 +9,7 @@ import kotlinx.coroutines.withContext
 class TrieDictionary(private val context: Context) : Dictionary {
 
     private val mutex = Mutex()
+    @Volatile
     private var root: Node? = null
 
     private class Node {
@@ -29,7 +30,7 @@ class TrieDictionary(private val context: Context) : Dictionary {
         context.assets.open("dict/en_words.txt").bufferedReader().useLines { lines ->
             lines.map { it.trim().lowercase() }
                 .filter { it.isNotEmpty() && it.all { c -> c in 'a'..'z' } }
-                .toSortedSet()
+                .toHashSet()
                 .forEach { word -> insert(trie, word) }
         }
         trie
@@ -39,10 +40,8 @@ class TrieDictionary(private val context: Context) : Dictionary {
         var node = root
         for (c in word) {
             val idx = c - 'a'
-            if (node.children[idx] == null) {
-                node.children[idx] = Node()
-            }
-            node = node.children[idx]!!
+            val child = node.children[idx] ?: Node().also { node.children[idx] = it }
+            node = child
         }
         node.isEnd = true
     }
@@ -52,7 +51,8 @@ class TrieDictionary(private val context: Context) : Dictionary {
         val normalized = prefix.lowercase()
         if (normalized.isEmpty() || normalized.any { it !in 'a'..'z' }) return emptyList()
 
-        var node = root ?: return emptyList()
+        val localRoot = root ?: return emptyList()
+        var node = localRoot
         for (c in normalized) {
             node = node.children[c - 'a'] ?: return emptyList()
         }

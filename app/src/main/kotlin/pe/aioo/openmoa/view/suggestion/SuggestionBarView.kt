@@ -1,6 +1,8 @@
 package pe.aioo.openmoa.view.suggestion
 
+import android.content.res.ColorStateList
 import android.content.Context
+import android.graphics.drawable.RippleDrawable
 import android.util.AttributeSet
 import android.view.Gravity
 import android.widget.HorizontalScrollView
@@ -14,6 +16,7 @@ class SuggestionBarView @JvmOverloads constructor(
 
     var onPick: ((String) -> Unit)? = null
 
+    private val density = context.resources.displayMetrics.density
     private val container = LinearLayout(context).apply {
         orientation = LinearLayout.HORIZONTAL
         gravity = Gravity.CENTER_VERTICAL
@@ -30,20 +33,25 @@ class SuggestionBarView @JvmOverloads constructor(
     }
 
     private fun buildWordView(word: String): TextView {
-        val density = context.resources.displayMetrics.density
         return TextView(context).apply {
             text = word
-            textSize = 19f
-            setPadding((14 * density).toInt(), (4 * density).toInt(), (14 * density).toInt(), (4 * density).toInt())
+            textSize = TEXT_SIZE_SP
+            setPadding(
+                (PADDING_H_DP * density).toInt(), (PADDING_V_DP * density).toInt(),
+                (PADDING_H_DP * density).toInt(), (PADDING_V_DP * density).toInt(),
+            )
             gravity = Gravity.CENTER
             isClickable = true
             isFocusable = true
-            background = with(android.graphics.drawable.RippleDrawable(
-                android.content.res.ColorStateList.valueOf(0x22000000),
-                null, null
-            )) { this }
+            background = RippleDrawable(ColorStateList.valueOf(0x22000000), null, null)
             setOnClickListener { onPick?.invoke(word) }
         }
+    }
+
+    companion object {
+        private const val TEXT_SIZE_SP = 19f
+        private const val PADDING_H_DP = 14
+        private const val PADDING_V_DP = 4
     }
 
     fun applyColors(textColor: Int, bgColor: Int) {
