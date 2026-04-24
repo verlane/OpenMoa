@@ -3,6 +3,7 @@ package pe.aioo.openmoa.view.keyboardview
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
@@ -93,6 +94,9 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
         updateQuickPhraseBadges()
         updateUserCharLabels()
         SkinApplier.apply(this, skin)
+        val emojiTint = ColorStateList.valueOf(SkinApplier.fgColor(context, skin))
+        twoHandBinding?.emojiKey?.foregroundTintList = emojiTint
+        moakeyBinding?.emojiKey?.foregroundTintList = emojiTint
         moeumKeyBgPressed = SkinApplier.buildKeyDrawable(context, skin, pressed = true)
         moeumKeyBgNormal = SkinApplier.buildKeyDrawable(context, skin, pressed = false)
         if (SettingsPreferences.getOneHandMode(context).isReduced) {

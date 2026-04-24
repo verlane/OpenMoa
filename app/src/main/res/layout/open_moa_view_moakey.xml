@@ -625,7 +625,9 @@
     <TextView
         android:id="@+id/emojiKey"
         style="@style/KeyStyle"
-        android:text="@string/key_emoji"
+        android:text=""
+        android:foreground="@drawable/ic_emoji"
+        android:foregroundGravity="center"
         app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintVertical_chainStyle="spread"
         app:layout_constraintHorizontal_weight="0.583"
