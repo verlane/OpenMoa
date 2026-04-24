@@ -24,6 +24,8 @@ class GestureAngleActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityGestureAngleBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         SettingsPreferences.getGestureAngles(this).values.copyInto(currentAngles)
         currentThreshold = SettingsPreferences.getGestureThreshold(this)
@@ -52,6 +54,11 @@ class GestureAngleActivity : AppCompatActivity() {
             Toast.makeText(this, R.string.gesture_angle_applied, Toast.LENGTH_SHORT).show()
             finish()
         }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        finish()
+        return true
     }
 
     private fun showResetConfirmDialog() {

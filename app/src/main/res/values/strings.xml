@@ -225,6 +225,9 @@
     <string name="settings_data_reset_confirm">모든 설정을 초기화하시겠습니까?</string>
     <string name="settings_data_reset_success">설정을 초기화했습니다.</string>
     <string name="dialog_confirm">확인</string>
+    <string name="dialog_close">닫기</string>
+    <string name="settings_about_section">앱 정보</string>
+    <string name="settings_version_title">버전</string>
 
     <string name="quick_phrase_menu_edit">수정</string>
     <string name="quick_phrase_menu_cancel">취소</string>

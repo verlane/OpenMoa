@@ -40,6 +40,7 @@ dependencies {
     implementation libs.androidx.core.ktx
     implementation libs.androidx.appcompat
     implementation libs.androidx.autofill
+    implementation libs.androidx.preference
     implementation libs.material
     implementation libs.koin.android
     implementation libs.emoji2.emojipicker

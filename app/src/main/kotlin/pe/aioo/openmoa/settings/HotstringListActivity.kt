@@ -1,6 +1,5 @@
 package pe.aioo.openmoa.settings
 
-import android.graphics.Color
 import android.os.Bundle
 import android.view.Gravity
 import android.view.Menu
@@ -18,7 +17,6 @@ import pe.aioo.openmoa.hotstring.HotstringRepository
 import pe.aioo.openmoa.hotstring.HotstringRule
 import pe.aioo.openmoa.hotstring.HotstringSortOrder
 import pe.aioo.openmoa.hotstring.sortedByOrder
-import pe.aioo.openmoa.settings.SettingsPreferences
 
 class HotstringListActivity : AppCompatActivity() {
 
@@ -30,6 +28,8 @@ class HotstringListActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityHotstringListBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         currentSort = SettingsPreferences.getHotstringSortOrder(this)
         HotstringRepository.ensureDefaults(this)
         binding.enabledSwitch.isChecked = SettingsPreferences.getHotstringEnabled(this)
@@ -47,9 +47,13 @@ class HotstringListActivity : AppCompatActivity() {
         refreshList()
     }
 
+    override fun onSupportNavigateUp(): Boolean {
+        finish()
+        return true
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_hotstring_list, menu)
-        menu.findItem(R.id.menu_sort)?.icon?.setTint(Color.WHITE)
         optionsMenu = menu
         applySortCheck(menu, currentSort)
         return true

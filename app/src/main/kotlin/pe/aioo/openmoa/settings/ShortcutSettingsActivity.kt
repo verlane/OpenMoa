@@ -18,6 +18,8 @@ class ShortcutSettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityShortcutSettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         setupViews()
         refreshAllDisplays()
     }
@@ -25,6 +27,11 @@ class ShortcutSettingsActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         refreshAllDisplays()
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        finish()
+        return true
     }
 
     private fun setupViews() {

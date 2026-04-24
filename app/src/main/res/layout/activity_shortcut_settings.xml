@@ -1,475 +1,490 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-    <LinearLayout
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_height="?attr/actionBarSize"
+        app:title="@string/settings_shortcut_title" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/settings_quick_phrase_section"
-            android:textSize="14sp"
-            android:textColor="@color/key_foreground_locked"
-            android:paddingBottom="8dp" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/keyboard_background"
-            android:layout_marginBottom="4dp" />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
         <LinearLayout
-            android:id="@+id/quickPhraseKieukItem"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true">
+            android:padding="16dp">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/settings_quick_phrase_kieuk_label"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/quickPhraseKieukValue"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:text="@string/settings_quick_phrase_section"
                 android:textSize="14sp"
-                android:textColor="@color/key_foreground_muted"
-                android:paddingTop="2dp" />
+                android:textColor="?attr/colorPrimary"
+                android:paddingBottom="8dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="?attr/colorOutlineVariant"
+                android:layout_marginBottom="4dp" />
+
+            <LinearLayout
+                android:id="@+id/quickPhraseKieukItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_quick_phrase_kieuk_label"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/quickPhraseKieukValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:paddingTop="2dp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/quickPhraseTieutItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_quick_phrase_tieut_label"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/quickPhraseTieutValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:paddingTop="2dp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/quickPhraseChieutItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_quick_phrase_chieut_label"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/quickPhraseChieutValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:paddingTop="2dp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/quickPhrasePieupItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_quick_phrase_pieup_label"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/quickPhrasePieupValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:paddingTop="2dp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/quickPhraseSsangbieupItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_quick_phrase_ssangbieup_label"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/quickPhraseSsangbieupValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:paddingTop="2dp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/quickPhraseSsangjieutItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_quick_phrase_ssangjieut_label"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/quickPhraseSsangjieutValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:paddingTop="2dp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/quickPhraseSsangdigeutItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_quick_phrase_ssangdigeut_label"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/quickPhraseSsangdigeutValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:paddingTop="2dp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/quickPhraseSsanggiyeokItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_quick_phrase_ssanggiyeok_label"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/quickPhraseSsanggiyeokValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:paddingTop="2dp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/quickPhraseSsangsiotItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_quick_phrase_ssangsiot_label"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/quickPhraseSsangsiotValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:paddingTop="2dp" />
+
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_qwerty_long_key_section"
+                android:textSize="14sp"
+                android:textColor="?attr/colorPrimary"
+                android:paddingTop="16dp"
+                android:paddingBottom="8dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="?attr/colorOutlineVariant"
+                android:layout_marginBottom="4dp" />
+
+            <LinearLayout
+                android:id="@+id/qwertyLongKeyZItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_qwerty_long_key_z_label"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/qwertyLongKeyZValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:paddingTop="2dp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/qwertyLongKeyXItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_qwerty_long_key_x_label"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/qwertyLongKeyXValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:paddingTop="2dp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/qwertyLongKeyCItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_qwerty_long_key_c_label"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/qwertyLongKeyCValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:paddingTop="2dp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/qwertyLongKeyVItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_qwerty_long_key_v_label"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/qwertyLongKeyVValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:paddingTop="2dp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/qwertyLongKeyBItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_qwerty_long_key_b_label"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/qwertyLongKeyBValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:paddingTop="2dp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/qwertyLongKeyNItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_qwerty_long_key_n_label"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/qwertyLongKeyNValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:paddingTop="2dp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/qwertyLongKeyMItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_qwerty_long_key_m_label"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/qwertyLongKeyMValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:paddingTop="2dp" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/quickPhraseTieutItem"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true">
+    </ScrollView>
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/settings_quick_phrase_tieut_label"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/quickPhraseTieutValue"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:textColor="@color/key_foreground_muted"
-                android:paddingTop="2dp" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/quickPhraseChieutItem"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/settings_quick_phrase_chieut_label"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/quickPhraseChieutValue"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:textColor="@color/key_foreground_muted"
-                android:paddingTop="2dp" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/quickPhrasePieupItem"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/settings_quick_phrase_pieup_label"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/quickPhrasePieupValue"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:textColor="@color/key_foreground_muted"
-                android:paddingTop="2dp" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/quickPhraseSsangbieupItem"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/settings_quick_phrase_ssangbieup_label"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/quickPhraseSsangbieupValue"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:textColor="@color/key_foreground_muted"
-                android:paddingTop="2dp" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/quickPhraseSsangjieutItem"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/settings_quick_phrase_ssangjieut_label"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/quickPhraseSsangjieutValue"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:textColor="@color/key_foreground_muted"
-                android:paddingTop="2dp" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/quickPhraseSsangdigeutItem"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/settings_quick_phrase_ssangdigeut_label"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/quickPhraseSsangdigeutValue"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:textColor="@color/key_foreground_muted"
-                android:paddingTop="2dp" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/quickPhraseSsanggiyeokItem"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/settings_quick_phrase_ssanggiyeok_label"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/quickPhraseSsanggiyeokValue"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:textColor="@color/key_foreground_muted"
-                android:paddingTop="2dp" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/quickPhraseSsangsiotItem"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/settings_quick_phrase_ssangsiot_label"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/quickPhraseSsangsiotValue"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:textColor="@color/key_foreground_muted"
-                android:paddingTop="2dp" />
-
-        </LinearLayout>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/settings_qwerty_long_key_section"
-            android:textSize="14sp"
-            android:textColor="@color/key_foreground_locked"
-            android:paddingTop="16dp"
-            android:paddingBottom="8dp" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/keyboard_background"
-            android:layout_marginBottom="4dp" />
-
-        <LinearLayout
-            android:id="@+id/qwertyLongKeyZItem"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/settings_qwerty_long_key_z_label"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/qwertyLongKeyZValue"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:textColor="@color/key_foreground_muted"
-                android:paddingTop="2dp" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/qwertyLongKeyXItem"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/settings_qwerty_long_key_x_label"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/qwertyLongKeyXValue"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:textColor="@color/key_foreground_muted"
-                android:paddingTop="2dp" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/qwertyLongKeyCItem"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/settings_qwerty_long_key_c_label"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/qwertyLongKeyCValue"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:textColor="@color/key_foreground_muted"
-                android:paddingTop="2dp" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/qwertyLongKeyVItem"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/settings_qwerty_long_key_v_label"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/qwertyLongKeyVValue"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:textColor="@color/key_foreground_muted"
-                android:paddingTop="2dp" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/qwertyLongKeyBItem"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/settings_qwerty_long_key_b_label"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/qwertyLongKeyBValue"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:textColor="@color/key_foreground_muted"
-                android:paddingTop="2dp" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/qwertyLongKeyNItem"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/settings_qwerty_long_key_n_label"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/qwertyLongKeyNValue"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:textColor="@color/key_foreground_muted"
-                android:paddingTop="2dp" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/qwertyLongKeyMItem"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/settings_qwerty_long_key_m_label"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/qwertyLongKeyMValue"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:textColor="@color/key_foreground_muted"
-                android:paddingTop="2dp" />
-
-        </LinearLayout>
-
-    </LinearLayout>
-
-</ScrollView>
+</LinearLayout>

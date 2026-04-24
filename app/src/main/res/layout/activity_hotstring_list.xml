@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:title="@string/settings_hotstring_title" />
 
     <LinearLayout
         android:id="@+id/enabledItem"
@@ -61,7 +68,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/settings_hotstring_empty"
                 android:textAlignment="center"
-                android:textColor="@color/key_foreground_muted"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:padding="32dp"
                 android:visibility="gone" />
 

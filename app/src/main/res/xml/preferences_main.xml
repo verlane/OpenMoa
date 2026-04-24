@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="@string/settings_hangul_section">
+
+        <ListPreference
+            app:key="hangul_input_mode"
+            app:title="@string/settings_hangul_input_mode_title"
+            app:useSimpleSummaryProvider="true"
+            android:negativeButtonText="@string/dialog_close"
+            app:icon="@drawable/ic_pref_keyboard" />
+
+        <Preference
+            app:key="pref_gesture_angle"
+            app:title="@string/settings_gesture_angle_title"
+            app:summary="@string/settings_gesture_angle_description"
+            app:icon="@drawable/ic_pref_gesture" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/settings_keyboard_section">
+
+        <ListPreference
+            app:key="keyboard_skin"
+            app:title="@string/settings_keyboard_skin_title"
+            app:useSimpleSummaryProvider="true"
+            android:negativeButtonText="@string/dialog_close"
+            app:icon="@drawable/ic_pref_palette" />
+
+        <ListPreference
+            app:key="keypad_height"
+            app:title="@string/settings_keypad_height_title"
+            app:useSimpleSummaryProvider="true"
+            android:negativeButtonText="@string/dialog_close"
+            app:icon="@drawable/ic_pref_height" />
+
+        <ListPreference
+            app:key="one_hand_mode"
+            app:title="@string/settings_one_hand_mode_title"
+            app:useSimpleSummaryProvider="true"
+            android:negativeButtonText="@string/dialog_close"
+            app:icon="@drawable/ic_pref_hand" />
+
+        <SwitchPreferenceCompat
+            app:key="key_preview_enabled"
+            app:title="@string/settings_key_preview_title"
+            app:defaultValue="true"
+            app:icon="@drawable/ic_pref_preview" />
+
+        <ListPreference
+            app:key="long_press_time"
+            app:title="@string/settings_long_press_time_title"
+            app:useSimpleSummaryProvider="true"
+            android:negativeButtonText="@string/dialog_close"
+            app:icon="@drawable/ic_pref_timer" />
+
+        <ListPreference
+            app:key="space_long_press_action"
+            app:title="@string/settings_space_long_press_title"
+            app:useSimpleSummaryProvider="true"
+            android:negativeButtonText="@string/dialog_close"
+            app:icon="@drawable/ic_pref_space" />
+
+        <ListPreference
+            app:key="enter_long_press_action"
+            app:title="@string/settings_enter_long_press_title"
+            app:useSimpleSummaryProvider="true"
+            android:negativeButtonText="@string/dialog_close"
+            app:icon="@drawable/ic_pref_enter" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/settings_shortcut_section">
+
+        <Preference
+            app:key="pref_shortcut"
+            app:title="@string/settings_shortcut_title"
+            app:summary="@string/settings_shortcut_description"
+            app:icon="@drawable/ic_pref_bolt" />
+
+        <Preference
+            app:key="pref_hotstring"
+            app:title="@string/settings_hotstring_title"
+            app:summary="@string/settings_hotstring_description"
+            app:icon="@drawable/ic_pref_replace" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/settings_english_section">
+
+        <SwitchPreferenceCompat
+            app:key="auto_space_period"
+            app:title="@string/settings_auto_space_period_title"
+            app:summary="@string/settings_auto_space_period_description"
+            app:defaultValue="false"
+            app:icon="@drawable/ic_pref_period" />
+
+        <SwitchPreferenceCompat
+            app:key="auto_capitalize_english"
+            app:title="@string/settings_auto_capitalize_english_title"
+            app:summary="@string/settings_auto_capitalize_english_description"
+            app:defaultValue="true"
+            app:icon="@drawable/ic_pref_caps" />
+
+        <SwitchPreferenceCompat
+            app:key="word_suggestion_enabled"
+            app:title="@string/settings_word_suggestion_title"
+            app:summary="@string/settings_word_suggestion_description"
+            app:defaultValue="false"
+            app:icon="@drawable/ic_pref_suggest" />
+
+        <SwitchPreferenceCompat
+            app:key="korean_word_suggestion_enabled"
+            app:title="@string/settings_korean_word_suggestion_title"
+            app:summary="@string/settings_korean_word_suggestion_description"
+            app:defaultValue="false"
+            app:icon="@drawable/ic_pref_suggest" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/settings_feedback_section">
+
+        <ListPreference
+            app:key="haptic_strength"
+            app:title="@string/settings_haptic_strength_title"
+            app:useSimpleSummaryProvider="true"
+            android:negativeButtonText="@string/dialog_close"
+            app:icon="@drawable/ic_pref_vibrate" />
+
+        <ListPreference
+            app:key="sound_volume"
+            app:title="@string/settings_sound_volume_title"
+            app:useSimpleSummaryProvider="true"
+            android:negativeButtonText="@string/dialog_close"
+            app:icon="@drawable/ic_pref_volume" />
+
+        <ListPreference
+            app:key="sound_type"
+            app:title="@string/settings_sound_type_title"
+            app:useSimpleSummaryProvider="true"
+            android:negativeButtonText="@string/dialog_close"
+            app:icon="@drawable/ic_pref_sound" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/settings_data_section">
+
+        <Preference
+            app:key="pref_data_export"
+            app:title="@string/settings_data_export_title"
+            app:summary="@string/settings_data_export_description"
+            app:icon="@drawable/ic_pref_export" />
+
+        <Preference
+            app:key="pref_data_import"
+            app:title="@string/settings_data_import_title"
+            app:summary="@string/settings_data_import_description"
+            app:icon="@drawable/ic_pref_import" />
+
+        <Preference
+            app:key="pref_data_reset"
+            app:title="@string/settings_data_reset_title"
+            app:summary="@string/settings_data_reset_description"
+            app:icon="@drawable/ic_pref_reset" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/settings_about_section">
+
+        <Preference
+            app:key="pref_version"
+            app:title="@string/settings_version_title"
+            app:icon="@drawable/ic_pref_info" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

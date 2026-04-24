@@ -17,7 +17,8 @@ class DevToolsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityDevToolsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        title = getString(R.string.dev_tools_title)
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         binding.amplitudeStatusText.setText(
             if (feedbackPlayer.hasAmplitudeControl()) R.string.dev_tools_amplitude_supported
@@ -33,5 +34,10 @@ class DevToolsActivity : AppCompatActivity() {
         binding.hapticStrongButton.setOnClickListener {
             feedbackPlayer.playHaptic(HapticStrength.STRONG.durationMs, HapticStrength.STRONG.amplitude)
         }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        finish()
+        return true
     }
 }

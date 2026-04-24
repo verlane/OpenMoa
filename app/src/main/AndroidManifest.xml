@@ -34,7 +34,7 @@
         <activity
             android:name="pe.aioo.openmoa.settings.SettingsActivity"
             android:exported="false"
-            android:label="오픈모아 설정"
+            android:label="@string/app_name"
             android:theme="@style/Theme.OpenMoa.Settings" />
 
         <activity
