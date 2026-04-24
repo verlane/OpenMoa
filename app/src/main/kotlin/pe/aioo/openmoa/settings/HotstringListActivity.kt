@@ -143,7 +143,7 @@ class HotstringListActivity : AppCompatActivity() {
             .setView(container)
             .setPositiveButton(R.string.settings_qwerty_long_key_save) { _, _ ->
                 val trigger = triggerEdit.text.toString().trim()
-                val expansion = expansionEdit.text.toString().trim()
+                val expansion = expansionEdit.text.toString()
                 when {
                     trigger.isEmpty() -> showToast(R.string.settings_hotstring_trigger_empty)
                     expansion.isEmpty() -> showToast(R.string.settings_hotstring_expansion_empty)

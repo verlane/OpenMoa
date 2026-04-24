@@ -69,7 +69,7 @@ class PhraseEditActivity : AppCompatActivity() {
     private fun setupButtons() {
         binding.confirmButton.setOnClickListener {
             val key = keys[binding.keySpinner.selectedItemPosition]
-            val raw = binding.contentEditText.text.toString().trim()
+            val raw = binding.contentEditText.text.toString()
             val content = if (type == TYPE_USER_CHAR && raw.isNotEmpty()) {
                 raw.substring(0, raw.offsetByCodePoints(0, 1))
             } else {

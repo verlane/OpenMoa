@@ -56,7 +56,7 @@ class ShortcutSettingsActivity : AppCompatActivity() {
             .setTitle("${key.displayName} ${getString(hintResId)}")
             .setView(editText)
             .setPositiveButton(R.string.settings_qwerty_long_key_save) { _, _ ->
-                val input = editText.text.toString().trim()
+                val input = editText.text.toString()
                 key.setPhrase(this, input.ifEmpty { key.defaultPhrase })
                 refreshAllDisplays()
             }
