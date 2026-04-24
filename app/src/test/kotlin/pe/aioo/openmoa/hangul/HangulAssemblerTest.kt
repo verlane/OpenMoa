@@ -224,6 +224,16 @@ class HangulAssemblerTest {
     }
 
     @Test
+    fun `removeLastJamo - 자음+복합모음 상태에서 모음 제거 시 전체 초기화`() {
+        val assembler = HangulAssembler()
+        assembler.appendJamo("ㄴ")
+        assembler.appendJamo("ㅡ")
+        assertEquals("느", assembler.getUnresolved())
+        assembler.removeLastJamo()
+        assertNull(assembler.getUnresolved())
+    }
+
+    @Test
     fun `removeLastJamo - 종성 있을 때 종성만 제거`() {
         val assembler = HangulAssembler()
         assembler.appendJamo("ㄱ")

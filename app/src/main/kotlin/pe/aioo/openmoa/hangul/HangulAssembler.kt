@@ -236,7 +236,7 @@ class HangulAssembler {
         if (last.matches(MOEUM_REGEX)) {
             jamoList.clear()
         } else {
-            if (jamoList.isNotEmpty()) jamoList.removeAt(jamoList.lastIndex)
+            jamoList.removeAt(jamoList.lastIndex)
         }
     }
 
