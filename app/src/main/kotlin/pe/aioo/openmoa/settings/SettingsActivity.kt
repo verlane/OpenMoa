@@ -72,6 +72,7 @@ class SettingsActivity : AppCompatActivity() {
         binding.keyPreviewItem.setOnClickListener { toggleKeyPreview() }
         binding.autoSpacePeriodItem.setOnClickListener { toggleAutoSpacePeriod() }
         binding.autoCapitalizeEnglishItem.setOnClickListener { toggleAutoCapitalizeEnglish() }
+        binding.wordSuggestionItem.setOnClickListener { toggleWordSuggestion() }
         binding.enterLongPressActionItem.setOnClickListener { showEnterLongPressActionDialog() }
         binding.hapticStrengthItem.setOnClickListener { showHapticStrengthDialog() }
         binding.soundVolumeItem.setOnClickListener { showSoundVolumeDialog() }
@@ -199,6 +200,16 @@ class SettingsActivity : AppCompatActivity() {
         val newValue = !SettingsPreferences.getAutoCapitalizeEnglish(this)
         SettingsPreferences.setAutoCapitalizeEnglish(this, newValue)
         binding.autoCapitalizeEnglishSwitch.isChecked = newValue
+    }
+
+    private fun updateWordSuggestionDisplay() {
+        binding.wordSuggestionSwitch.isChecked = SettingsPreferences.getWordSuggestionEnabled(this)
+    }
+
+    private fun toggleWordSuggestion() {
+        val newValue = !SettingsPreferences.getWordSuggestionEnabled(this)
+        SettingsPreferences.setWordSuggestionEnabled(this, newValue)
+        binding.wordSuggestionSwitch.isChecked = newValue
     }
 
     private fun updateHapticStrengthDisplay() {
@@ -479,6 +490,7 @@ class SettingsActivity : AppCompatActivity() {
         updateKeyPreviewDisplay()
         updateAutoSpacePeriodDisplay()
         updateAutoCapitalizeEnglishDisplay()
+        updateWordSuggestionDisplay()
         updateEnterLongPressActionDisplay()
         updateHapticStrengthDisplay()
         updateSoundVolumeDisplay()

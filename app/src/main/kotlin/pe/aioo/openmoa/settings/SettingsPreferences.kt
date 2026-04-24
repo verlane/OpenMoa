@@ -37,6 +37,7 @@ object SettingsPreferences {
     const val KEY_HAPTIC_STRENGTH = "haptic_strength"
     const val KEY_SOUND_VOLUME = "sound_volume"
     const val KEY_SOUND_TYPE = "sound_type"
+    const val KEY_WORD_SUGGESTION_ENABLED = "word_suggestion_enabled"
 
     val ALL_KEYS = setOf(
         KEY_HANGUL_INPUT_MODE,
@@ -57,6 +58,7 @@ object SettingsPreferences {
         KEY_HAPTIC_STRENGTH,
         KEY_SOUND_VOLUME,
         KEY_SOUND_TYPE,
+        KEY_WORD_SUGGESTION_ENABLED,
     ) + UserCharKey.values().map { it.prefKey }.toSet()
 
     private fun prefs(context: Context) =
@@ -147,6 +149,13 @@ object SettingsPreferences {
 
     fun getSoundType(context: Context): SoundType =
         SoundType.fromString(prefs(context).getString(KEY_SOUND_TYPE, null))
+
+    fun getWordSuggestionEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_WORD_SUGGESTION_ENABLED, false)
+
+    fun setWordSuggestionEnabled(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(KEY_WORD_SUGGESTION_ENABLED, enabled).apply()
+    }
 
     fun save(context: Context, key: String, value: String) {
         prefs(context).edit().putString(key, value).apply()

@@ -165,6 +165,8 @@
 <string name="settings_qwerty_long_key_save">저장</string>
     <string name="settings_qwerty_long_key_cancel">취소</string>
 
+    <string name="settings_word_suggestion_title">영문 단어 제안</string>
+    <string name="settings_word_suggestion_description">영문 입력 시 키보드 위에 단어 후보를 표시합니다</string>
     <string name="settings_hotstring_title">자동 치환</string>
     <string name="settings_hotstring_description">단축 글자 입력 후 스페이스를 누르면 지정한 단어로 바꿔줍니다</string>
     <string name="settings_hotstring_manage_title">자동 치환 관리</string>

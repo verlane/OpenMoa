@@ -32,9 +32,17 @@ import androidx.autofill.inline.v1.InlineSuggestionUi
 import androidx.core.content.ContextCompat
 import androidx.core.view.isEmpty
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import pe.aioo.openmoa.config.Config
+import pe.aioo.openmoa.suggestion.SuggestionEngine
+import pe.aioo.openmoa.suggestion.UserWordStore
 import pe.aioo.openmoa.config.HangulInputMode
 import pe.aioo.openmoa.view.feedback.KeyFeedbackPlayer
 import pe.aioo.openmoa.config.KeyboardSkin
@@ -59,6 +67,8 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     private lateinit var keyboardViews: Map<IMEMode, View>
     private val config: Config by inject()
     private val feedbackPlayer: KeyFeedbackPlayer by inject()
+    private val suggestionEngine: SuggestionEngine by inject()
+    private val userWordStore: UserWordStore by inject()
     private val hangulAssembler = HangulAssembler()
     private var imeMode = IMEMode.IME_KO
     private var previousImeMode = IMEMode.IME_KO
@@ -69,11 +79,51 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     private var isHotstringEnabled = false
     private var lastHotstringTrigger: String? = null
     private var lastHotstringExpansion: String? = null
+    private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private var suggestionJob: Job? = null
 
     private fun finishComposing() {
         currentInputConnection?.finishComposingText()
         hangulAssembler.clear()
         composingText = ""
+    }
+
+    private fun refreshSuggestions(prefix: String) {
+        if (!this::binding.isInitialized) return
+        if (!config.wordSuggestionEnabled || isPasswordField || imeMode != IMEMode.IME_EN) {
+            hideSuggestionBar()
+            return
+        }
+        if (prefix.isEmpty()) {
+            hideSuggestionBar()
+            return
+        }
+        suggestionJob?.cancel()
+        suggestionJob = serviceScope.launch {
+            val words = suggestionEngine.suggest(prefix)
+            if (!this@OpenMoaIME::binding.isInitialized) return@launch
+            if (words.isEmpty()) {
+                hideSuggestionBar()
+            } else {
+                binding.wordSuggestionBar.setSuggestions(words)
+                binding.wordSuggestionBar.visibility = View.VISIBLE
+            }
+        }
+    }
+
+    private fun hideSuggestionBar() {
+        if (!this::binding.isInitialized) return
+        binding.wordSuggestionBar.setSuggestions(emptyList())
+        binding.wordSuggestionBar.visibility = View.GONE
+    }
+
+    private fun onSuggestionPicked(word: String) {
+        userWordStore.increment(word)
+        currentInputConnection?.commitText(word + " ", 1)
+        hangulAssembler.clear()
+        composingText = ""
+        hideSuggestionBar()
+        setShiftAutomatically()
     }
 
     private inline fun <reified T : Serializable> getKeyFromIntent(intent: Intent): T? {
@@ -372,6 +422,9 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                             // Process for another key
                             lastHotstringTrigger = null
                             lastHotstringExpansion = null
+                            if (key == " " && imeMode == IMEMode.IME_EN && composingText.isNotEmpty()) {
+                                userWordStore.increment(composingText)
+                            }
                             finishComposing()
                             if (key == " ") {
                                 if (tryExpandHotstring()) {
@@ -399,6 +452,11 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                 if (beforeComposingText != composingText) {
                     currentInputConnection.setComposingText(composingText, 1)
                 }
+                if (imeMode == IMEMode.IME_EN && composingText.isNotEmpty()) {
+                    refreshSuggestions(composingText)
+                } else if (imeMode == IMEMode.IME_EN && composingText.isEmpty()) {
+                    hideSuggestionBar()
+                }
                 setShiftAutomatically()
             }
         }
@@ -409,6 +467,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
 
     private fun setKeyboard(mode: IMEMode) {
         finishComposing()
+        hideSuggestionBar()
         keyboardViews[mode]?.let {
             when (it) {
                 is PunctuationView -> it.setPageOrNextPage(0)
@@ -459,6 +518,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         keyboardViews = buildKeyboardViews()
         val view = layoutInflater.inflate(R.layout.open_moa_ime, null)
         binding = OpenMoaImeBinding.bind(view)
+        binding.wordSuggestionBar.onPick = ::onSuggestionPicked
         applyKeyboardLayout()
         setKeyboard(imeMode)
         return view
@@ -603,6 +663,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
             LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
         }
         feedbackPlayer.release()
+        serviceScope.cancel()
         super.onDestroy()
     }
 
@@ -703,6 +764,12 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
             gravity = oneHandMode.gravity
         }
         binding.keyboardFrameLayout.layoutParams = params
+        if (this::binding.isInitialized) {
+            binding.wordSuggestionBar.applyColors(
+                SkinApplier.fgColor(this, skin),
+                SkinApplier.keyboardBgColor(this, skin),
+            )
+        }
     }
 
     private fun calculateKeyboardHeight(): Int {
