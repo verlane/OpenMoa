@@ -125,11 +125,17 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                 suggestionEngine.suggest(prefix)
             }
             if (!this@OpenMoaIME::binding.isInitialized) return@launch
-            if (words.isEmpty()) {
+            val hotstringFirst = HotstringRepository.getCached(this@OpenMoaIME)
+                .filter { it.enabled && it.trigger == capturedComposing }
+                .map { it.expansion }
+            val wordsSet = words.toSet()
+            val finalWords = (hotstringFirst.filter { it !in wordsSet } + words)
+                .take(config.maxSuggestionCount)
+            if (finalWords.isEmpty()) {
                 showIdleSuggestionBar(isTextSelected)
             } else {
                 isSuggestionBarActive = true
-                binding.wordSuggestionBar.setSuggestions(words)
+                binding.wordSuggestionBar.setSuggestions(finalWords)
                 binding.wordSuggestionBar.visibility = View.VISIBLE
             }
         }
