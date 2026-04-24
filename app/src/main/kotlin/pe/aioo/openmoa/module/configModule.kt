@@ -24,6 +24,6 @@ val configModule = module {
     single<UserWordStore>(named("ko")) {
         SharedPreferencesUserWordStore(androidContext(), SharedPreferencesUserWordStore.Language.KO)
     }
-    single { SuggestionEngine(get(named("en")), get(named("en"))) }
-    single { KoreanSuggestionEngine(get(named("ko")), get(named("ko"))) }
+    single { SuggestionEngine(get(named("en")), get(named("en")), get<Config>().maxSuggestionCount) }
+    single { KoreanSuggestionEngine(get(named("ko")), get(named("ko")), get<Config>().maxSuggestionCount) }
 }

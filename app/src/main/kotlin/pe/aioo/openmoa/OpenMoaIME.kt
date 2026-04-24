@@ -2,6 +2,7 @@ package pe.aioo.openmoa
 
 import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -86,6 +87,8 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     private var lastHotstringExpansion: String? = null
     private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var suggestionJob: Job? = null
+    private var isSuggestionBarActive = false
+    private var isTextSelected = false
 
     private fun finishComposing() {
         currentInputConnection?.finishComposingText()
@@ -100,39 +103,76 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         val enEnabled = config.wordSuggestionEnabled && isEnMode
         val koEnabled = config.koreanWordSuggestionEnabled && isKoMode
         if (isPasswordField || (!enEnabled && !koEnabled)) {
-            hideSuggestionBar()
+            deactivateSuggestionBar()
             return
         }
         if (prefix.isEmpty()) {
-            hideSuggestionBar()
+            showIdleSuggestionBar(isTextSelected)
             return
         }
         suggestionJob?.cancel()
+        val capturedComposing = composingText
+        val capturedUnresolved = if (isKoMode) hangulAssembler.getUnresolved() else null
         suggestionJob = serviceScope.launch {
-            // 첫 등장(GONE→VISIBLE) 시 키 미리보기 dismiss 딜레이(200ms) 완료 후 표시해
-            // 그래야 레이아웃 전환 시 팝업이 이미 사라진 상태라 깜빡임이 없음
-            if (config.keyPreviewEnabled && binding.wordSuggestionBar.visibility == View.GONE) {
+            // 첫 활성화 시 키 미리보기 dismiss 딜레이 완료 후 표시
+            if (config.keyPreviewEnabled && !isSuggestionBarActive) {
                 delay(250)
             }
+            if (composingText != capturedComposing) return@launch
             val words = if (isKoMode) {
-                koreanSuggestionEngine.suggest(composingText, hangulAssembler.getUnresolved())
+                koreanSuggestionEngine.suggest(capturedComposing, capturedUnresolved)
             } else {
                 suggestionEngine.suggest(prefix)
             }
             if (!this@OpenMoaIME::binding.isInitialized) return@launch
             if (words.isEmpty()) {
-                hideSuggestionBar()
+                showIdleSuggestionBar(isTextSelected)
             } else {
+                isSuggestionBarActive = true
                 binding.wordSuggestionBar.setSuggestions(words)
                 binding.wordSuggestionBar.visibility = View.VISIBLE
             }
         }
     }
 
-    private fun hideSuggestionBar() {
+    private fun deactivateSuggestionBar() {
         if (!this::binding.isInitialized) return
+        isSuggestionBarActive = false
         binding.wordSuggestionBar.setSuggestions(emptyList())
         binding.wordSuggestionBar.visibility = View.GONE
+    }
+
+    private fun showIdleSuggestionBar(hasSelection: Boolean) {
+        if (!this::binding.isInitialized) return
+        if (!isSuggestionBarActive) return
+        if (hasSelection) {
+            binding.wordSuggestionBar.showSelectionActions(
+                onCut = { sendKeyDownUpEvent(KeyEvent.KEYCODE_X, KeyEvent.META_CTRL_ON) },
+                onCopy = { sendKeyDownUpEvent(KeyEvent.KEYCODE_C, KeyEvent.META_CTRL_ON) },
+            )
+        } else {
+            val clipText = getClipboardText()
+            if (clipText != null) {
+                binding.wordSuggestionBar.showClipboard(clipText) { text ->
+                    finishComposing()
+                    currentInputConnection?.commitText(text, 1)
+                    deactivateSuggestionBar()
+                }
+            } else {
+                binding.wordSuggestionBar.showEmpty()
+            }
+        }
+        binding.wordSuggestionBar.visibility = View.VISIBLE
+    }
+
+    private fun getClipboardText(): String? {
+        return try {
+            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+            val item = clipboard?.primaryClip?.getItemAt(0) ?: return null
+            item.coerceToText(this)?.toString()?.takeIf { it.isNotBlank() }
+        } catch (_: Exception) {
+            null
+        }
     }
 
     private fun onSuggestionPicked(word: String) {
@@ -143,11 +183,12 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
             currentInputConnection?.commitText(word + " ", 1)
         } else {
             userWordStore.increment(word)
-            currentInputConnection?.commitText(word + " ", 1)
-            hangulAssembler.clear()
             composingText = ""
+            hangulAssembler.clear()
+            currentInputConnection?.commitText(word + " ", 1)
         }
-        hideSuggestionBar()
+        isTextSelected = false
+        showIdleSuggestionBar(false)
         setShiftAutomatically()
     }
 
@@ -480,7 +521,8 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                 if (composingText.isNotEmpty()) {
                     refreshSuggestions(composingText)
                 } else {
-                    hideSuggestionBar()
+                    suggestionJob?.cancel()
+                    showIdleSuggestionBar(false)
                 }
                 setShiftAutomatically()
             }
@@ -492,7 +534,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
 
     private fun setKeyboard(mode: IMEMode) {
         finishComposing()
-        hideSuggestionBar()
+        deactivateSuggestionBar()
         keyboardViews[mode]?.let {
             when (it) {
                 is PunctuationView -> it.setPageOrNextPage(0)
@@ -681,6 +723,18 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         ) {
             finishComposing()
         }
+        val hasSelection = newSelStart != newSelEnd
+        if (hasSelection != isTextSelected) {
+            isTextSelected = hasSelection
+            if (isSuggestionBarActive && composingText.isEmpty()) {
+                showIdleSuggestionBar(hasSelection)
+            }
+        }
+    }
+
+    override fun onFinishInputView(finishingInput: Boolean) {
+        super.onFinishInputView(finishingInput)
+        deactivateSuggestionBar()
     }
 
     override fun onDestroy() {
