@@ -1,9 +1,7 @@
 package pe.aioo.openmoa.clipboard
 
 import android.content.Context
-import android.content.Intent
 import android.graphics.Color
-import android.net.Uri
 import android.text.TextUtils
 import android.util.AttributeSet
 import android.util.Patterns
@@ -26,6 +24,8 @@ class ClipboardPanelView @JvmOverloads constructor(
     var onClose: (() -> Unit)? = null
     var onEdit: ((ClipboardEntry) -> Unit)? = null
     var onAddHotstring: ((ClipboardEntry) -> Unit)? = null
+    var onOpenUrl: ((String) -> Unit)? = null
+    var onOpenEmail: ((String) -> Unit)? = null
 
     private val itemAdapter = ClipboardAdapter()
     private val recyclerView: RecyclerView
@@ -101,27 +101,25 @@ class ClipboardPanelView @JvmOverloads constructor(
             gravity = Gravity.CENTER_VERTICAL
             setPadding(dp8, dp4, dp4, dp4)
 
-            addView(TextView(context).apply {
-                text = context.getString(pe.aioo.openmoa.R.string.clipboard_title)
-                textSize = 13f
-                setPadding(0, 0, dp8, 0)
-            })
+            // 왼쪽 그룹(제목+탭)에 weight=1 → 공간 부족 시 자동 압축, 오른쪽 버튼 항상 확보
+            addView(LinearLayout(context).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f)
 
-            Filter.values().forEach { filter ->
-                val tab = TextView(context).apply {
-                    text = filter.label
-                    textSize = 11f
-                    setPadding(dp8, dp4, dp8, dp4)
-                    isClickable = true
-                    isFocusable = true
-                    setOnClickListener { setFilter(filter) }
+                Filter.values().forEach { filter ->
+                    val tab = TextView(context).apply {
+                        text = filter.label
+                        textSize = 11f
+                        setPadding(dp8, dp4, dp8, dp4)
+                        isClickable = true
+                        isFocusable = true
+                        isSingleLine = true
+                        setOnClickListener { setFilter(filter) }
+                    }
+                    filterTabs[filter] = tab
+                    addView(tab)
                 }
-                filterTabs[filter] = tab
-                addView(tab)
-            }
-
-            addView(View(context).apply {
-                layoutParams = LinearLayout.LayoutParams(0, 1, 1f)
             })
 
             addView(TextView(context).apply {
@@ -130,6 +128,7 @@ class ClipboardPanelView @JvmOverloads constructor(
                 setPadding(dp8, dp4, dp8, dp4)
                 isClickable = true
                 isFocusable = true
+                isSingleLine = true
                 setOnClickListener {
                     showConfirmMenu(
                         message = context.getString(pe.aioo.openmoa.R.string.clipboard_clear_confirm),
@@ -202,13 +201,19 @@ class ClipboardPanelView @JvmOverloads constructor(
     }
 
     private fun applyColorToHeader(fg: Int) {
-        for (i in 0 until headerView.childCount) {
-            val child = headerView.getChildAt(i)
-            if (child is TextView) child.setTextColor(fg)
+        applyColorToViewGroup(headerView, fg)
+    }
+
+    private fun applyColorToViewGroup(vg: android.view.ViewGroup, fg: Int) {
+        for (i in 0 until vg.childCount) {
+            when (val child = vg.getChildAt(i)) {
+                is TextView -> child.setTextColor(fg)
+                is android.view.ViewGroup -> applyColorToViewGroup(child, fg)
+            }
         }
     }
 
-    fun detectType(text: String): EntryType {
+    private fun detectType(text: String): EntryType {
         val t = text.trim()
         return when {
             Patterns.EMAIL_ADDRESS.matcher(t).matches() -> EntryType.EMAIL
@@ -218,26 +223,16 @@ class ClipboardPanelView @JvmOverloads constructor(
     }
 
     private fun openUrl(url: String) {
-        runCatching {
-            context.startActivity(
-                Intent(Intent.ACTION_VIEW, Uri.parse(url.trim()))
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            )
-        }
+        onOpenUrl?.invoke(url.trim())
     }
 
     private fun openEmail(email: String) {
-        runCatching {
-            context.startActivity(
-                Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:${email.trim()}"))
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            )
-        }
+        onOpenEmail?.invoke(email.trim())
     }
 
     private fun showInlineMenu(menuItems: List<Pair<String, () -> Unit>>) {
         val dp = resources.displayMetrics.density
-        val dp12 = (12 * dp).toInt()
+        val dp8 = (8 * dp).toInt()
         val dp16 = (16 * dp).toInt()
 
         menuCard.removeAllViews()
@@ -246,8 +241,8 @@ class ClipboardPanelView @JvmOverloads constructor(
         menuItems.forEach { (label, action) ->
             menuCard.addView(TextView(context).apply {
                 text = label
-                textSize = 14f
-                setPadding(dp16, dp12, dp16, dp12)
+                textSize = 13f
+                setPadding(dp16, dp8, dp16, dp8)
                 setTextColor(fgColor)
                 isClickable = true
                 isFocusable = true

@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Configuration
 import android.graphics.Color
+import android.net.Uri
 import android.graphics.drawable.Icon
 import android.inputmethodservice.InputMethodService
 import android.os.Build
@@ -648,6 +649,20 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                     putExtra(pe.aioo.openmoa.settings.HotstringListActivity.EXTRA_EXPANSION, entry.text)
                 }
             )
+        }
+        binding.clipboardPanel.onOpenUrl = { url ->
+            runCatching {
+                val normalizedUrl = if (Uri.parse(url).scheme == null) "https://$url" else url
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(normalizedUrl)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            }.onFailure { android.util.Log.w("OpenMoaIME", "Failed to open URL: $url", it) }
+        }
+        binding.clipboardPanel.onOpenEmail = { email ->
+            runCatching {
+                startActivity(
+                    Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:$email"))
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                )
+            }.onFailure { android.util.Log.w("OpenMoaIME", "Failed to open email: $email", it) }
         }
         applyKeyboardLayout()
         setKeyboard(imeMode)
