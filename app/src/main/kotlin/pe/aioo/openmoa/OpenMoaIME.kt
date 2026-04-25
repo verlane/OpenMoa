@@ -89,6 +89,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     private var isHotstringEnabled = false
     private var lastHotstringTrigger: String? = null
     private var lastHotstringExpansion: String? = null
+    private var hotstringBuffer = ""
     private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var suggestionJob: Job? = null
     private var isSuggestionBarActive = false
@@ -144,7 +145,9 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
             return
         }
         suggestionJob?.cancel()
+        val capturedIsKoMode = isKoMode
         val capturedComposing = composingText
+        val capturedHotstringBuffer = hotstringBuffer
         val capturedUnresolved = if (isKoMode) hangulAssembler.getUnresolved() else null
         suggestionJob = serviceScope.launch {
             // 첫 활성화 시 키 미리보기 dismiss 딜레이 완료 후 표시
@@ -152,14 +155,15 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                 delay(250)
             }
             if (composingText != capturedComposing) return@launch
-            val words = if (isKoMode) {
+            val words = if (capturedIsKoMode) {
                 koreanSuggestionEngine.suggest(capturedComposing, capturedUnresolved)
             } else {
                 suggestionEngine.suggest(prefix)
             }
             if (!this@OpenMoaIME::binding.isInitialized) return@launch
+            val triggerToMatch = if (capturedIsKoMode) capturedComposing else capturedHotstringBuffer
             val hotstringFirst = HotstringRepository.getCached(this@OpenMoaIME)
-                .filter { it.enabled && it.trigger == capturedComposing }
+                .filter { it.enabled && it.trigger == triggerToMatch }
                 .map { it.expansion }
             val wordsSet = words.toSet()
             val hotstringSet = hotstringFirst.toSet()
@@ -217,9 +221,26 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
 
     private fun onSuggestionPicked(word: String, isHotstring: Boolean) {
         if (isHotstring) {
-            hangulAssembler.clear()
-            composingText = ""
-            currentInputConnection?.commitText(word, 1)
+            if (imeMode == IMEMode.IME_EN) {
+                val trigger = hotstringBuffer
+                val currentComposingLen = composingText.length
+                val committedPartLen = (trigger.length - currentComposingLen).coerceAtLeast(0)
+                hangulAssembler.clear()
+                composingText = ""
+                currentInputConnection?.beginBatchEdit()
+                try {
+                    currentInputConnection?.finishComposingText()
+                    currentInputConnection?.deleteSurroundingText(committedPartLen + currentComposingLen, 0)
+                    currentInputConnection?.commitText(word, 1)
+                } finally {
+                    currentInputConnection?.endBatchEdit()
+                }
+            } else {
+                hangulAssembler.clear()
+                composingText = ""
+                currentInputConnection?.commitText(word, 1)
+            }
+            hotstringBuffer = ""
         } else if (imeMode == IMEMode.IME_KO) {
             koreanUserWordStore.increment(word)
             hangulAssembler.clear()
@@ -310,11 +331,13 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                                 if (undoTrigger != null && undoExpansion != null) {
                                     lastHotstringTrigger = null
                                     lastHotstringExpansion = null
+                                    hotstringBuffer = ""
                                     finishComposing()
                                     currentInputConnection.deleteSurroundingText(undoExpansion.length, 0)
                                     currentInputConnection.commitText(undoTrigger, 1)
                                     return@onReceive
                                 }
+                                hotstringBuffer = hotstringBuffer.dropLast(1)
                                 val unresolved = hangulAssembler.getUnresolved()
                                 if (unresolved != null) {
                                     composingText = composingText.substring(
@@ -335,6 +358,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                                 }
                             }
                             SpecialKey.ENTER -> {
+                                hotstringBuffer = ""
                                 finishComposing()
                                 val action = currentInputEditorInfo.imeOptions and (
                                     EditorInfo.IME_MASK_ACTION or
@@ -405,21 +429,25 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                                 )
                             }
                             SpecialKey.ARROW_UP -> {
+                                hotstringBuffer = ""
                                 if (!isTextEmpty()) {
                                     sendKeyDownUpEvent(KeyEvent.KEYCODE_DPAD_UP)
                                 }
                             }
                             SpecialKey.ARROW_LEFT -> {
+                                hotstringBuffer = ""
                                 if (!isTextEmpty()) {
                                     sendKeyDownUpEvent(KeyEvent.KEYCODE_DPAD_LEFT)
                                 }
                             }
                             SpecialKey.ARROW_RIGHT -> {
+                                hotstringBuffer = ""
                                 if (!isTextEmpty()) {
                                     sendKeyDownUpEvent(KeyEvent.KEYCODE_DPAD_RIGHT)
                                 }
                             }
                             SpecialKey.ARROW_DOWN -> {
+                                hotstringBuffer = ""
                                 if (!isTextEmpty()) {
                                     sendKeyDownUpEvent(KeyEvent.KEYCODE_DPAD_DOWN)
                                 }
@@ -432,29 +460,36 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                                 sendKeyDownUpEvent(KeyEvent.KEYCODE_C, KeyEvent.META_CTRL_ON)
                             }
                             SpecialKey.CUT_ALL -> {
+                                hotstringBuffer = ""
                                 sendKeyDownUpEvent(KeyEvent.KEYCODE_A, KeyEvent.META_CTRL_ON)
                                 sendKeyDownUpEvent(KeyEvent.KEYCODE_X, KeyEvent.META_CTRL_ON)
                             }
                             SpecialKey.CUT -> {
+                                hotstringBuffer = ""
                                 sendKeyDownUpEvent(KeyEvent.KEYCODE_X, KeyEvent.META_CTRL_ON)
                             }
                             SpecialKey.HOME -> {
+                                hotstringBuffer = ""
                                 sendKeyDownUpEvent(
                                     KeyEvent.KEYCODE_MOVE_HOME, KeyEvent.META_CTRL_ON
                                 )
                             }
                             SpecialKey.END -> {
+                                hotstringBuffer = ""
                                 sendKeyDownUpEvent(
                                     KeyEvent.KEYCODE_MOVE_END, KeyEvent.META_CTRL_ON
                                 )
                             }
                             SpecialKey.DELETE -> {
+                                hotstringBuffer = hotstringBuffer.dropLast(1)
                                 sendKeyDownUpEvent(KeyEvent.KEYCODE_DEL)
                             }
                             SpecialKey.PASTE -> {
+                                hotstringBuffer = ""
                                 sendKeyDownUpEvent(KeyEvent.KEYCODE_V, KeyEvent.META_CTRL_ON)
                             }
                             SpecialKey.SELECT_ALL -> {
+                                hotstringBuffer = ""
                                 sendKeyDownUpEvent(KeyEvent.KEYCODE_A, KeyEvent.META_CTRL_ON)
                             }
                             SpecialKey.SELECT_ARROW_UP -> {
@@ -516,6 +551,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                         if (key.matches(Regex("^[A-Za-z]$"))) {
                             // Process for Alphabet key
                             composingText += key
+                            hotstringBuffer = (hotstringBuffer + key).takeLast(50)
                         } else if (key.matches(HangulAssembler.JAMO_REGEX)) {
                             // Process for Jamo key
                             hangulAssembler.getUnresolved()?.let {
@@ -529,12 +565,18 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                             hangulAssembler.getUnresolved()?.let {
                                 composingText += it
                             }
+                            hotstringBuffer = (hotstringBuffer + key).takeLast(50)
                         } else {
                             // Process for another key
                             lastHotstringTrigger = null
                             lastHotstringExpansion = null
                             if (key == " " && imeMode == IMEMode.IME_EN && composingText.isNotEmpty()) {
                                 userWordStore.increment(composingText)
+                            }
+                            if (key != " ") {
+                                hotstringBuffer = (hotstringBuffer + key).takeLast(50)
+                            } else {
+                                hotstringBuffer = ""
                             }
                             finishComposing()
                             if (key == " ") {
@@ -579,6 +621,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
 
     private fun setKeyboard(mode: IMEMode) {
         finishComposing()
+        hotstringBuffer = ""
         deactivateSuggestionBar()
         keyboardViews[mode]?.let {
             when (it) {
@@ -761,6 +804,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
         super.onStartInputView(info, restarting)
         finishComposing()
+        hotstringBuffer = ""
         isHotstringEnabled = SettingsPreferences.getHotstringEnabled(this)
         val inputType = (info?.inputType ?: 0)
         val variation = inputType and InputType.TYPE_MASK_VARIATION
@@ -839,6 +883,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
             (newSelStart != candidatesEnd || newSelEnd != candidatesEnd)
         ) {
             finishComposing()
+            hotstringBuffer = ""
         }
         val hasSelection = newSelStart != newSelEnd
         if (hasSelection != isTextSelected) {
