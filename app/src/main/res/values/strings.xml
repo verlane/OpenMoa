@@ -100,6 +100,8 @@
     <string name="gesture_angle_preset_both_hands">양손용 프리셋</string>
     <string name="gesture_angle_preset_six_dir">6방향 프리셋</string>
     <string name="gesture_angle_preset_custom">사용자 정의</string>
+    <string name="gesture_test_input_description">아래 입력란에서 현재 설정으로 긋기를 바로 테스트할 수 있습니다.</string>
+    <string name="gesture_test_input_hint">긋기 테스트</string>
     <string name="settings_input_mode_two_hand_moakey">양손 모아키(기본)</string>
     <string name="settings_input_mode_moakey">모아키</string>
     <string name="settings_input_mode_moakey_plus">모아키+</string>

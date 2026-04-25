@@ -5,7 +5,6 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.SeekBar
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import pe.aioo.openmoa.R
@@ -41,19 +40,10 @@ class GestureAngleActivity : AppCompatActivity() {
                 binding.presetSpinner.setSelection(GestureAnglePreset.CUSTOM.ordinal)
                 binding.presetSpinner.post { suppressSpinnerCallback = false }
             }
+            saveSettings()
         }
 
         binding.resetButton.setOnClickListener { showResetConfirmDialog() }
-        binding.cancelButton.setOnClickListener { finish() }
-
-        binding.applyButton.setOnClickListener {
-            val preset = GestureAnglePreset.values()[binding.presetSpinner.selectedItemPosition]
-            SettingsPreferences.setGestureAngles(this, GestureAngles(currentAngles.copyOf()))
-            SettingsPreferences.setGestureAnglePreset(this, preset)
-            SettingsPreferences.setGestureThreshold(this, currentThreshold)
-            Toast.makeText(this, R.string.gesture_angle_applied, Toast.LENGTH_SHORT).show()
-            finish()
-        }
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -78,6 +68,7 @@ class GestureAngleActivity : AppCompatActivity() {
         suppressSpinnerCallback = true
         binding.presetSpinner.setSelection(GestureAnglePreset.RIGHT_HAND.ordinal)
         binding.presetSpinner.post { suppressSpinnerCallback = false }
+        saveSettings()
     }
 
     private fun setupSeekBar() {
@@ -89,8 +80,15 @@ class GestureAngleActivity : AppCompatActivity() {
                 updateLengthLabel(currentThreshold)
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) { saveSettings() }
         })
+    }
+
+    private fun saveSettings() {
+        val preset = GestureAnglePreset.values()[binding.presetSpinner.selectedItemPosition]
+        SettingsPreferences.setGestureAngles(this, GestureAngles(currentAngles.copyOf()))
+        SettingsPreferences.setGestureAnglePreset(this, preset)
+        SettingsPreferences.setGestureThreshold(this, currentThreshold)
     }
 
     private fun updateLengthLabel(value: Int) {
@@ -115,6 +113,7 @@ class GestureAngleActivity : AppCompatActivity() {
                 val presetAngles = presets[position].angles ?: return
                 presetAngles.copyInto(currentAngles)
                 binding.gestureAngleView.setAngles(currentAngles)
+                saveSettings()
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }

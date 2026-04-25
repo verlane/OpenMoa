@@ -52,7 +52,8 @@
             android:name="pe.aioo.openmoa.settings.GestureAngleActivity"
             android:exported="false"
             android:label="@string/settings_gesture_angle_title"
-            android:theme="@style/Theme.OpenMoa.Settings" />
+            android:theme="@style/Theme.OpenMoa.Settings"
+            android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name="pe.aioo.openmoa.settings.HotstringListActivity"

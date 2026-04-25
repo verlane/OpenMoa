@@ -150,6 +150,7 @@ class GestureAngleView @JvmOverloads constructor(
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 draggingIndex = findNearestPin(event.x, event.y)
+                if (draggingIndex >= 0) parent?.requestDisallowInterceptTouchEvent(true)
                 return draggingIndex >= 0
             }
             MotionEvent.ACTION_MOVE -> {
@@ -160,6 +161,7 @@ class GestureAngleView @JvmOverloads constructor(
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                 val wasDragging = draggingIndex >= 0
                 draggingIndex = -1
+                parent?.requestDisallowInterceptTouchEvent(false)
                 return wasDragging
             }
         }
