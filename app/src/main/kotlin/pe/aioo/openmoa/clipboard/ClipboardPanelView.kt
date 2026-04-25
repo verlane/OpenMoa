@@ -29,6 +29,9 @@ import androidx.recyclerview.widget.RecyclerView
 private fun Int.withAlpha(alpha: Int): Int =
     Color.argb(alpha, Color.red(this), Color.green(this), Color.blue(this))
 
+private fun Int.luminance(): Float =
+    (0.299f * Color.red(this) + 0.587f * Color.green(this) + 0.114f * Color.blue(this)) / 255f
+
 private fun Context.selectableBackground() =
     obtainStyledAttributes(intArrayOf(android.R.attr.selectableItemBackground)).use { it.getDrawable(0) }
 
@@ -56,6 +59,8 @@ class ClipboardPanelView @JvmOverloads constructor(
     private val headerView: LinearLayout
     private val menuCard: LinearLayout
     private val menuOverlay: LinearLayout
+    private lateinit var pinToggleBtn: ImageView
+    private var showPinSwitches = false
 
     enum class Filter(val label: String) {
         ALL("전체"), PINNED("고정"), NUMBER("숫자"), URL("URL"), EMAIL("Email")
@@ -129,6 +134,7 @@ class ClipboardPanelView @JvmOverloads constructor(
 
     private fun buildHeader(dp4: Int, dp8: Int): LinearLayout {
         val dp = resources.displayMetrics.density
+        val dp6 = (6 * dp).toInt()
         val dp20 = (20 * dp).toInt()
 
         return LinearLayout(context).apply {
@@ -145,7 +151,7 @@ class ClipboardPanelView @JvmOverloads constructor(
                     val tab = TextView(context).apply {
                         text = filter.label
                         textSize = 11f
-                        setPadding(dp8, dp4, dp8, dp4)
+                        setPadding(dp6, dp4, dp6, dp4)
                         isClickable = true
                         isFocusable = true
                         isSingleLine = true
@@ -155,6 +161,23 @@ class ClipboardPanelView @JvmOverloads constructor(
                     addView(tab)
                 }
             })
+
+            pinToggleBtn = ImageView(context).apply {
+                setImageResource(pe.aioo.openmoa.R.drawable.ic_pin)
+                scaleType = ImageView.ScaleType.CENTER_INSIDE
+                setPadding(dp8, dp4, dp8, dp4)
+                isClickable = true
+                isFocusable = true
+                imageAlpha = 120
+                layoutParams = LinearLayout.LayoutParams(dp20 + dp8 * 2, WRAP_CONTENT)
+                setOnClickListener {
+                    showPinSwitches = !showPinSwitches
+                    imageAlpha = if (showPinSwitches) 255 else 120
+                    itemAdapter.showPinSwitches = showPinSwitches
+                    itemAdapter.notifyDataSetChanged()
+                }
+            }
+            addView(pinToggleBtn)
 
             addView(ImageView(context).apply {
                 setImageResource(pe.aioo.openmoa.R.drawable.ic_trash)
@@ -230,9 +253,14 @@ class ClipboardPanelView @JvmOverloads constructor(
         setBackgroundColor(bg)
         applyColorToViewGroup(headerView, fg)
         if (changed) {
+            val pinnedAccent = if (bg.luminance() < 0.5f)
+                Color.parseColor("#FF9500")
+            else
+                Color.parseColor("#C86000")
             itemAdapter.fgColor = fg
             itemAdapter.bgColor = bg
-            itemAdapter.updateSwitchTints(fg)
+            itemAdapter.pinnedAccent = pinnedAccent
+            itemAdapter.updateSwitchTints(fg, pinnedAccent)
             itemAdapter.notifyDataSetChanged()
         }
         updateFilterTabAppearance()
@@ -407,18 +435,19 @@ class ClipboardPanelView @JvmOverloads constructor(
         internal var items: List<DisplayEntry> = emptyList()
         var fgColor = Color.BLACK
         var bgColor = Color.WHITE
+        var pinnedAccent = Color.parseColor("#C86000")
+        var showPinSwitches = false
 
-        private val pinnedColor = Color.parseColor("#FF8C00")
         private val switchStates = arrayOf(
             intArrayOf(android.R.attr.state_checked),
             intArrayOf(-android.R.attr.state_checked),
         )
-        private var thumbTints = ColorStateList(switchStates, intArrayOf(pinnedColor, Color.BLACK.withAlpha(160)))
-        private var trackTints = ColorStateList(switchStates, intArrayOf(pinnedColor.withAlpha(100), Color.BLACK.withAlpha(40)))
+        private var thumbTints = ColorStateList(switchStates, intArrayOf(pinnedAccent, Color.BLACK.withAlpha(160)))
+        private var trackTints = ColorStateList(switchStates, intArrayOf(pinnedAccent.withAlpha(100), Color.BLACK.withAlpha(40)))
 
-        fun updateSwitchTints(fg: Int) {
-            thumbTints = ColorStateList(switchStates, intArrayOf(pinnedColor, fg.withAlpha(160)))
-            trackTints = ColorStateList(switchStates, intArrayOf(pinnedColor.withAlpha(100), fg.withAlpha(40)))
+        fun updateSwitchTints(fg: Int, accent: Int) {
+            thumbTints = ColorStateList(switchStates, intArrayOf(accent, fg.withAlpha(160)))
+            trackTints = ColorStateList(switchStates, intArrayOf(accent.withAlpha(100), fg.withAlpha(40)))
         }
 
         inner class VH(
@@ -514,7 +543,7 @@ class ClipboardPanelView @JvmOverloads constructor(
 
             val cardBgAlpha = if (isFirst) 45 else 20
             val strokeColor = when {
-                entry.pinned -> Color.parseColor("#FF8C00")
+                entry.pinned -> pinnedAccent
                 isFirst -> fgColor.withAlpha(140)
                 else -> fgColor.withAlpha(40)
             }
@@ -535,6 +564,7 @@ class ClipboardPanelView @JvmOverloads constructor(
             }
             holder.typeView.setTextColor(dimFg)
 
+            holder.pinView.visibility = if (showPinSwitches) VISIBLE else GONE
             holder.pinView.setOnCheckedChangeListener(null)
             holder.pinView.isChecked = entry.pinned
             holder.pinView.jumpDrawablesToCurrentState()
