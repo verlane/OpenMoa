@@ -25,7 +25,7 @@ class LanguageKeyTouchListener(context: Context) : BaseKeyTouchListener(context)
                 var elapsed = 0L
                 timer = kotlin.concurrent.timer(period = config.longPressRepeatTime) {
                     elapsed += config.longPressRepeatTime
-                    if (elapsed >= LONG_PRESS_THRESHOLD_MS) {
+                    if (elapsed >= config.longPressThresholdTime) {
                         longPressTriggered = true
                         cancel()
                         mainHandler.post {
@@ -57,7 +57,5 @@ class LanguageKeyTouchListener(context: Context) : BaseKeyTouchListener(context)
         longPressTriggered = false
     }
 
-    companion object {
-        private const val LONG_PRESS_THRESHOLD_MS = 300L
-    }
+
 }
