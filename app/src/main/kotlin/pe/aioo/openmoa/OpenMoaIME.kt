@@ -22,6 +22,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.ExtractedText
 import android.view.inputmethod.ExtractedTextRequest
 import android.view.inputmethod.InlineSuggestionsRequest
 import android.view.inputmethod.InlineSuggestionsResponse
@@ -717,15 +718,43 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     private fun tryExpandHotstring(): Boolean {
         if (!isHotstringEnabled) return false
         if (isPasswordField) return false
+        val ic = currentInputConnection ?: return false
         val rules = HotstringRepository.getCached(this)
         val maxLen = HotstringMatcher.bufferLengthNeeded(rules)
         if (maxLen == 0) return false
-        val buffer = currentInputConnection.getTextBeforeCursor(maxLen, 0)?.toString() ?: return false
+
+        // Chrome의 인라인 자동완성은 selectionStart(사용자 입력 끝) ~ selectionEnd(완성 텍스트 끝)를
+        // 선택 상태로 표시한다. 이 경우 getTextBeforeCursor가 완성 텍스트까지 포함해 반환하여
+        // 트리거 매칭이 실패하므로, selectionStart 이전 텍스트로만 매칭한다.
+        val et: ExtractedText? = ic.getExtractedText(ExtractedTextRequest(), 0)
+        val selStart = et?.selectionStart ?: 0
+        val selEnd = et?.selectionEnd ?: 0
+        val etText = et?.text
+        // et.text가 null이면 선택 범위를 신뢰할 수 없으므로 0으로 처리
+        val inlineCompletionLen = if (selEnd > selStart && etText != null) selEnd - selStart else 0
+
+        val buffer = if (inlineCompletionLen > 0 && etText != null) {
+            val localSelStart = (selStart - et!!.startOffset).coerceAtLeast(0)
+            etText.substring(maxOf(0, localSelStart - maxLen), localSelStart)
+        } else {
+            ic.getTextBeforeCursor(maxLen, 0)?.toString() ?: return false
+        }
+
         val match = HotstringMatcher.findMatch(buffer, rules) ?: return false
-        currentInputConnection.deleteSurroundingText(match.trigger.length, 0)
-        currentInputConnection.commitText(match.expansion, 1)
-        lastHotstringTrigger = match.trigger
-        lastHotstringExpansion = match.expansion
+
+        ic.beginBatchEdit()
+        try {
+            if (inlineCompletionLen > 0) {
+                // 커서가 selStart 쪽에 있을 수 있으므로 selEnd로 명시적 이동 후 삭제
+                ic.setSelection(selEnd, selEnd)
+            }
+            ic.deleteSurroundingText(match.trigger.length + inlineCompletionLen, 0)
+            ic.commitText(match.expansion, 1)
+            lastHotstringTrigger = match.trigger
+            lastHotstringExpansion = match.expansion
+        } finally {
+            ic.endBatchEdit()
+        }
         return true
     }
 
