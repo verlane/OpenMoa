@@ -6,6 +6,7 @@ import com.github.kimkevin.hangulparser.HangulParserException
 class HangulAssembler {
 
     private val jamoList = arrayListOf<String>()
+    private var isDecomposedState = false
 
     private fun assembleLastJongseongIfCan(jamo: String): Boolean {
         if (!jamo.matches(JAEUM_REGEX) || jamoList.size != 3) {
@@ -53,22 +54,7 @@ class HangulAssembler {
 
     private fun disassembleLastJongseongIfCan() {
         val lastJamo = jamoList.removeAt(jamoList.lastIndex)
-        jamoList.addAll(
-            when (lastJamo) {
-                "ㄳ" -> listOf("ㄱ", "ㅅ")
-                "ㄵ" -> listOf("ㄴ", "ㅈ")
-                "ㄶ" -> listOf("ㄴ", "ㅎ")
-                "ㄺ" -> listOf("ㄹ", "ㄱ")
-                "ㄻ" -> listOf("ㄹ", "ㅁ")
-                "ㄼ" -> listOf("ㄹ", "ㅂ")
-                "ㄽ" -> listOf("ㄹ", "ㅅ")
-                "ㄾ" -> listOf("ㄹ", "ㅌ")
-                "ㄿ" -> listOf("ㄹ", "ㅍ")
-                "ㅀ" -> listOf("ㄹ", "ㅎ")
-                "ㅄ" -> listOf("ㅂ", "ㅅ")
-                else -> listOf(lastJamo)
-            }
-        )
+        jamoList.addAll(DOUBLE_JONGSEONG_DECOMPOSITION[lastJamo] ?: listOf(lastJamo))
     }
 
     private fun assembleLastMoeumIfCan(jamo: String): Boolean {
@@ -185,6 +171,7 @@ class HangulAssembler {
     }
 
     fun appendJamo(jamo: String): String? {
+        isDecomposedState = false
         if (jamoList.isEmpty()) {
             jamoList.add(jamo)
             return null
@@ -233,15 +220,29 @@ class HangulAssembler {
 
     fun removeLastJamo() {
         val last = jamoList.lastOrNull() ?: return
-        if (last.matches(MOEUM_REGEX)) {
-            jamoList.clear()
-        } else {
-            jamoList.removeAt(jamoList.lastIndex)
+        val firstOfDouble = DOUBLE_JONGSEONG_DECOMPOSITION[last]?.first()
+        when {
+            firstOfDouble != null -> {
+                jamoList[jamoList.lastIndex] = firstOfDouble
+            }
+            last.matches(MOEUM_REGEX) -> {
+                if (isDecomposedState) {
+                    jamoList.removeAt(jamoList.lastIndex)
+                    isDecomposedState = false
+                } else {
+                    jamoList.clear()
+                }
+            }
+            else -> {
+                jamoList.removeAt(jamoList.lastIndex)
+                isDecomposedState = jamoList.lastOrNull()?.matches(MOEUM_REGEX) == true
+            }
         }
     }
 
     fun clear() {
         jamoList.clear()
+        isDecomposedState = false
     }
 
     companion object {
@@ -249,6 +250,19 @@ class HangulAssembler {
         private val JAEUM_REGEX = Regex("^[ㄱ-ㅎ]$")
         private val MOEUM_REGEX = Regex("^[ㅏ-ㅣㆍᆢ]$")
         private val ARAEA_REGEX = Regex("^[ㆍᆢ]$")
+        private val DOUBLE_JONGSEONG_DECOMPOSITION = mapOf(
+            "ㄳ" to listOf("ㄱ", "ㅅ"),
+            "ㄵ" to listOf("ㄴ", "ㅈ"),
+            "ㄶ" to listOf("ㄴ", "ㅎ"),
+            "ㄺ" to listOf("ㄹ", "ㄱ"),
+            "ㄻ" to listOf("ㄹ", "ㅁ"),
+            "ㄼ" to listOf("ㄹ", "ㅂ"),
+            "ㄽ" to listOf("ㄹ", "ㅅ"),
+            "ㄾ" to listOf("ㄹ", "ㅌ"),
+            "ㄿ" to listOf("ㄹ", "ㅍ"),
+            "ㅀ" to listOf("ㄹ", "ㅎ"),
+            "ㅄ" to listOf("ㅂ", "ㅅ"),
+        )
     }
 
 }

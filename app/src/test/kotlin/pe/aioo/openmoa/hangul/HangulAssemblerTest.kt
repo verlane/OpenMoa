@@ -215,7 +215,7 @@ class HangulAssemblerTest {
     }
 
     @Test
-    fun `removeLastJamo - 자음+모음 상태에서 모음 제거 시 전체 초기화`() {
+    fun `removeLastJamo - 직접 입력된 가에서 백스페이스 시 전체 초기화`() {
         val assembler = HangulAssembler()
         assembler.appendJamo("ㄱ")
         assembler.appendJamo("ㅏ")
@@ -224,7 +224,7 @@ class HangulAssemblerTest {
     }
 
     @Test
-    fun `removeLastJamo - 자음+복합모음 상태에서 모음 제거 시 전체 초기화`() {
+    fun `removeLastJamo - 직접 입력된 느에서 백스페이스 시 전체 초기화`() {
         val assembler = HangulAssembler()
         assembler.appendJamo("ㄴ")
         assembler.appendJamo("ㅡ")
@@ -234,17 +234,19 @@ class HangulAssemblerTest {
     }
 
     @Test
-    fun `removeLastJamo - 종성 있을 때 종성만 제거`() {
+    fun `removeLastJamo - 종성 제거 후 가 상태에서 백스페이스 시 ㄱ 남음`() {
         val assembler = HangulAssembler()
         assembler.appendJamo("ㄱ")
         assembler.appendJamo("ㅏ")
         assembler.appendJamo("ㄴ")
         assembler.removeLastJamo()
         assertEquals("가", assembler.getUnresolved())
+        assembler.removeLastJamo()
+        assertEquals("ㄱ", assembler.getUnresolved())
     }
 
     @Test
-    fun `removeLastJamo - 복합 종성은 단위로 제거`() {
+    fun `removeLastJamo - 복합 종성에서 마지막 자음만 제거`() {
         val assembler = HangulAssembler()
         assembler.appendJamo("ㄱ")
         assembler.appendJamo("ㅏ")
@@ -252,7 +254,85 @@ class HangulAssemblerTest {
         assembler.appendJamo("ㄱ")
         assertEquals("갉", assembler.getUnresolved())
         assembler.removeLastJamo()
+        assertEquals("갈", assembler.getUnresolved())
+    }
+
+    @Test
+    fun `removeLastJamo - 갉에서 연속 백스페이스 시 갈 가 ㄱ 순으로 분해`() {
+        val assembler = HangulAssembler()
+        assembler.appendJamo("ㄱ")
+        assembler.appendJamo("ㅏ")
+        assembler.appendJamo("ㄹ")
+        assembler.appendJamo("ㄱ")
+        assertEquals("갉", assembler.getUnresolved())
+        assembler.removeLastJamo()
+        assertEquals("갈", assembler.getUnresolved())
+        assembler.removeLastJamo()
         assertEquals("가", assembler.getUnresolved())
+        assembler.removeLastJamo()
+        assertEquals("ㄱ", assembler.getUnresolved())
+        assembler.removeLastJamo()
+        assertNull(assembler.getUnresolved())
+    }
+
+    @Test
+    fun `removeLastJamo - 겹받침 ㄳ 분해`() {
+        val assembler = HangulAssembler()
+        assembler.appendJamo("ㄱ")
+        assembler.appendJamo("ㅏ")
+        assembler.appendJamo("ㄱ")
+        assembler.appendJamo("ㅅ")
+        assertEquals("갃", assembler.getUnresolved())
+        assembler.removeLastJamo()
+        assertEquals("각", assembler.getUnresolved())
+    }
+
+    @Test
+    fun `removeLastJamo - 겹받침 ㄵ 분해`() {
+        val assembler = HangulAssembler()
+        assembler.appendJamo("ㄱ")
+        assembler.appendJamo("ㅏ")
+        assembler.appendJamo("ㄴ")
+        assembler.appendJamo("ㅈ")
+        assertEquals("갅", assembler.getUnresolved())
+        assembler.removeLastJamo()
+        assertEquals("간", assembler.getUnresolved())
+    }
+
+    @Test
+    fun `removeLastJamo - 겹받침 ㄶ 분해`() {
+        val assembler = HangulAssembler()
+        assembler.appendJamo("ㄱ")
+        assembler.appendJamo("ㅏ")
+        assembler.appendJamo("ㄴ")
+        assembler.appendJamo("ㅎ")
+        assertEquals("갆", assembler.getUnresolved())
+        assembler.removeLastJamo()
+        assertEquals("간", assembler.getUnresolved())
+    }
+
+    @Test
+    fun `removeLastJamo - 겹받침 ㄻ 분해`() {
+        val assembler = HangulAssembler()
+        assembler.appendJamo("ㄱ")
+        assembler.appendJamo("ㅏ")
+        assembler.appendJamo("ㄹ")
+        assembler.appendJamo("ㅁ")
+        assertEquals("갊", assembler.getUnresolved())
+        assembler.removeLastJamo()
+        assertEquals("갈", assembler.getUnresolved())
+    }
+
+    @Test
+    fun `removeLastJamo - 겹받침 ㅄ 분해`() {
+        val assembler = HangulAssembler()
+        assembler.appendJamo("ㄱ")
+        assembler.appendJamo("ㅏ")
+        assembler.appendJamo("ㅂ")
+        assembler.appendJamo("ㅅ")
+        assertEquals("값", assembler.getUnresolved())
+        assembler.removeLastJamo()
+        assertEquals("갑", assembler.getUnresolved())
     }
 
     // --- clear ---
