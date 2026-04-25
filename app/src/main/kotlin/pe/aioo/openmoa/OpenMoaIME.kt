@@ -161,13 +161,14 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                 .filter { it.enabled && it.trigger == capturedComposing }
                 .map { it.expansion }
             val wordsSet = words.toSet()
+            val hotstringSet = hotstringFirst.toSet()
             val finalWords = (hotstringFirst.filter { it !in wordsSet } + words)
                 .take(config.maxSuggestionCount)
             if (finalWords.isEmpty()) {
                 showIdleSuggestionBar(isTextSelected)
             } else {
                 isSuggestionBarActive = true
-                binding.wordSuggestionBar.setSuggestions(finalWords)
+                binding.wordSuggestionBar.setSuggestions(finalWords, hotstringSet)
                 binding.wordSuggestionBar.visibility = View.VISIBLE
             }
         }
@@ -213,8 +214,12 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         }
     }
 
-    private fun onSuggestionPicked(word: String) {
-        if (imeMode == IMEMode.IME_KO) {
+    private fun onSuggestionPicked(word: String, isHotstring: Boolean) {
+        if (isHotstring) {
+            hangulAssembler.clear()
+            composingText = ""
+            currentInputConnection?.commitText(word, 1)
+        } else if (imeMode == IMEMode.IME_KO) {
             koreanUserWordStore.increment(word)
             hangulAssembler.clear()
             composingText = ""

@@ -17,7 +17,7 @@ class SuggestionBarView @JvmOverloads constructor(
     attrs: AttributeSet? = null,
 ) : HorizontalScrollView(context, attrs) {
 
-    var onPick: ((String) -> Unit)? = null
+    var onPick: ((String, Boolean) -> Unit)? = null
 
     private val density = context.resources.displayMetrics.density
     private var currentTextColor: Int = Color.BLACK
@@ -31,10 +31,10 @@ class SuggestionBarView @JvmOverloads constructor(
         addView(container, LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT))
     }
 
-    fun setSuggestions(words: List<String>) {
+    fun setSuggestions(words: List<String>, hotstringExpansions: Set<String> = emptySet()) {
         container.removeAllViews()
         scrollTo(0, 0)
-        words.forEach { word -> container.addView(buildWordView(word)) }
+        words.forEach { word -> container.addView(buildWordView(word, word in hotstringExpansions)) }
     }
 
     fun showClipboard(text: String, onPaste: (String) -> Unit) {
@@ -56,7 +56,7 @@ class SuggestionBarView @JvmOverloads constructor(
         scrollTo(0, 0)
     }
 
-    private fun buildWordView(word: String): TextView {
+    private fun buildWordView(word: String, isHotstring: Boolean): TextView {
         return TextView(context).apply {
             text = word
             textSize = TEXT_SIZE_SP
@@ -69,7 +69,7 @@ class SuggestionBarView @JvmOverloads constructor(
             isClickable = true
             isFocusable = true
             background = RippleDrawable(ColorStateList.valueOf(0x22000000), null, null)
-            setOnClickListener { onPick?.invoke(word) }
+            setOnClickListener { onPick?.invoke(word, isHotstring) }
         }
     }
 
