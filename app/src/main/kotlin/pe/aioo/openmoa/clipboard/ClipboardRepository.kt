@@ -50,6 +50,13 @@ object ClipboardRepository {
     }
 
     @Synchronized
+    fun use(context: Context, id: String) {
+        persist(context, getAll(context).map {
+            if (it.id == id) it.copy(createdAt = System.currentTimeMillis()) else it
+        })
+    }
+
+    @Synchronized
     fun pin(context: Context, id: String) {
         persist(context, getAll(context).map { if (it.id == id) it.copy(pinned = true) else it })
     }
