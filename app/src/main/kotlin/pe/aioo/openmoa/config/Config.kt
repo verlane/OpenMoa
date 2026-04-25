@@ -19,6 +19,8 @@ class Config(private val context: Context) {
     val soundType: SoundType
         get() = SettingsPreferences.getSoundType(context)
     val maxSuggestionCount: Int = 10
+    val minLearnCount: Int
+        get() = SettingsPreferences.getMinLearnCount(context)
     val wordSuggestionEnabled: Boolean
         get() = SettingsPreferences.getWordSuggestionEnabled(context)
     val koreanWordSuggestionEnabled: Boolean

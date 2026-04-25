@@ -35,6 +35,10 @@ import pe.aioo.openmoa.config.SoundVolume
 import pe.aioo.openmoa.config.SpaceLongPressAction
 import pe.aioo.openmoa.quickphrase.QuickPhraseKey
 import pe.aioo.openmoa.quickphrase.QwertyLongKey
+import pe.aioo.openmoa.suggestion.SharedPreferencesUserWordStore
+import pe.aioo.openmoa.suggestion.UserWordStore
+import org.koin.android.ext.android.get
+import org.koin.core.qualifier.named
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
@@ -81,6 +85,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
             ?.setupEnum(SoundVolume.values(), { it.labelResId }, SoundVolume.OFF)
         pref<ListPreference>(SettingsPreferences.KEY_SOUND_TYPE)
             ?.setupEnum(SoundType.values(), { it.labelResId }, SoundType.STANDARD)
+        pref<ListPreference>(SettingsPreferences.KEY_MIN_LEARN_COUNT)?.apply {
+            entries = arrayOf("1", "2", "3", "5")
+            entryValues = arrayOf("1", "2", "3", "5")
+            if (value == null) value = "2"
+        }
     }
 
     private fun setupClipboardListPreferences() {
@@ -114,6 +123,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
         pref<Preference>("pref_hotstring")?.setOnPreferenceClickListener {
             startActivity(Intent(requireContext(), HotstringListActivity::class.java))
+            true
+        }
+        pref<Preference>("pref_learned_words")?.setOnPreferenceClickListener {
+            startActivity(Intent(requireContext(), LearnedWordsActivity::class.java))
             true
         }
         pref<Preference>("pref_data_export")?.setOnPreferenceClickListener {
@@ -211,12 +224,35 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     })
                 }
 
+                val koStore: UserWordStore = get(named("ko"))
+                val enStore: UserWordStore = get(named("en"))
+                val learnedKoObj = JSONObject().also { obj ->
+                    koStore.entries().forEach { (word, count) -> obj.put(word, count) }
+                }
+                val learnedEnObj = JSONObject().also { obj ->
+                    enStore.entries().forEach { (word, count) -> obj.put(word, count) }
+                }
+                val blacklistKoArr = JSONArray().also { arr ->
+                    koStore.blacklist().forEach { arr.put(it) }
+                }
+                val blacklistEnArr = JSONArray().also { arr ->
+                    enStore.blacklist().forEach { arr.put(it) }
+                }
+
                 val jsonText = JSONObject().apply {
-                    put("version", 2)
+                    put("version", 3)
                     put("exportedAt", System.currentTimeMillis())
                     put("settings", settingsObj)
                     put("clipboard", clipboardArray)
                     put("hotstrings", hotstringsArray)
+                    put("learnedWords", JSONObject().apply {
+                        put("ko", learnedKoObj)
+                        put("en", learnedEnObj)
+                    })
+                    put("blacklist", JSONObject().apply {
+                        put("ko", blacklistKoArr)
+                        put("en", blacklistEnArr)
+                    })
                 }.toString(2)
 
                 val resolver = ctx.contentResolver
@@ -299,7 +335,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     ?.use { it.readBytes().toString(Charsets.UTF_8) }
                     ?: throw Exception("openInputStream failed")
                 val root = JSONObject(jsonText)
-                if (root.optInt("version") != 2) throw Exception("Unsupported version")
+                val version = root.optInt("version")
+                if (version != 2 && version != 3) throw Exception("Unsupported version")
                 val settingsObj = root.optJSONObject("settings")
                     ?: throw Exception("Invalid format: missing settings")
 
@@ -337,6 +374,15 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     }
                 }
 
+                val learnedKo = if (version == 3) parseLearnedData(
+                    root.optJSONObject("learnedWords")?.optJSONObject("ko"),
+                    root.optJSONObject("blacklist")?.optJSONArray("ko")
+                ) else null
+                val learnedEn = if (version == 3) parseLearnedData(
+                    root.optJSONObject("learnedWords")?.optJSONObject("en"),
+                    root.optJSONObject("blacklist")?.optJSONArray("en")
+                ) else null
+
                 // 2단계: 일괄 적용
                 val editor = ctx.getSharedPreferences(SettingsPreferences.PREFS_NAME, Context.MODE_PRIVATE).edit()
                 settingsEdits.forEach { (key, value) ->
@@ -348,6 +394,18 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 editor.apply()
                 newHotstrings?.let { HotstringRepository.replaceAll(ctx, it) }
                 newClipboard?.let { ClipboardRepository.replaceAll(ctx, it.filter { e -> e.text.isNotBlank() }) }
+                learnedKo?.let { data ->
+                    val store: UserWordStore = get(named("ko"))
+                    store.clear()
+                    store.importWords(data.words)
+                    data.blacklist.forEach { store.addToBlacklist(it) }
+                }
+                learnedEn?.let { data ->
+                    val store: UserWordStore = get(named("en"))
+                    store.clear()
+                    store.importWords(data.words)
+                    data.blacklist.forEach { store.addToBlacklist(it) }
+                }
 
                 true
             } catch (e: CancellationException) {
@@ -383,6 +441,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
             ctx.getSharedPreferences(SettingsPreferences.PREFS_NAME, Context.MODE_PRIVATE)
                 .edit().clear().apply()
             ClipboardRepository.clearAll(ctx)
+            val koStore: UserWordStore = get(named("ko"))
+            val enStore: UserWordStore = get(named("en"))
+            koStore.clear()
+            enStore.clear()
             withContext(Dispatchers.Main) {
                 if (!isAdded) return@withContext
                 Toast.makeText(ctx, R.string.settings_data_reset_success, Toast.LENGTH_SHORT).show()
@@ -392,4 +454,19 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
         }
     }
+}
+
+private data class LearnedData(
+    val words: Map<String, Int>,
+    val blacklist: Set<String>,
+)
+
+private fun parseLearnedData(wordsObj: JSONObject?, blacklistArr: JSONArray?): LearnedData {
+    val words = mutableMapOf<String, Int>()
+    wordsObj?.keys()?.forEach { key -> words[key] = wordsObj.getInt(key) }
+    val bl = mutableSetOf<String>()
+    if (blacklistArr != null) {
+        for (i in 0 until blacklistArr.length()) bl.add(blacklistArr.getString(i))
+    }
+    return LearnedData(words, bl)
 }

@@ -142,6 +142,20 @@
             app:defaultValue="false"
             app:icon="@drawable/ic_pref_suggest" />
 
+        <ListPreference
+            app:key="min_learn_count"
+            app:title="@string/settings_min_learn_count_title"
+            app:summary="@string/settings_min_learn_count_description"
+            app:useSimpleSummaryProvider="true"
+            android:negativeButtonText="@string/dialog_close"
+            app:icon="@drawable/ic_pref_timer" />
+
+        <Preference
+            app:key="pref_learned_words"
+            app:title="@string/settings_learned_words_title"
+            app:summary="@string/settings_learned_words_description"
+            app:icon="@drawable/ic_pref_suggest" />
+
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/settings_feedback_section">

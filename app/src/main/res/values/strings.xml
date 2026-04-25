@@ -274,4 +274,15 @@
     <string name="dev_tools_haptic_test_medium">보통 테스트</string>
     <string name="dev_tools_haptic_test_strong">강하게 테스트</string>
 
+    <string name="settings_min_learn_count_title">학습 최소 횟수</string>
+    <string name="settings_min_learn_count_description">이 횟수 이상 입력한 단어만 추천에 표시합니다</string>
+    <string name="settings_learned_words_title">학습 단어 관리</string>
+    <string name="settings_learned_words_description">자주 입력한 단어 목록을 확인하고 관리합니다</string>
+    <string name="settings_learned_words_tab_ko">한국어</string>
+    <string name="settings_learned_words_tab_en">영어</string>
+    <string name="settings_learned_words_empty">학습된 단어가 없어요</string>
+    <string name="settings_learned_words_delete_confirm">\'%s\'을(를) 삭제할까요?</string>
+    <string name="suggestion_long_click_remove">이 단어 삭제</string>
+    <string name="suggestion_long_click_blacklist">다시 추천 안 함</string>
+
 </resources>

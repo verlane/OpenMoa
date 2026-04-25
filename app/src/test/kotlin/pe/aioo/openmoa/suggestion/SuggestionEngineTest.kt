@@ -16,7 +16,14 @@ class SuggestionEngineTest {
         val map = entries.toMap()
         return object : UserWordStore {
             override fun increment(word: String) = Unit
-            override suspend fun topN(prefix: String, limit: Int) =
+            override fun decrement(word: String) = Unit
+            override fun remove(word: String) = Unit
+            override fun entries(): List<Pair<String, Int>> = emptyList()
+            override fun importWords(words: Map<String, Int>) = Unit
+            override fun addToBlacklist(word: String) = Unit
+            override fun removeFromBlacklist(word: String) = Unit
+            override fun blacklist(): Set<String> = emptySet()
+            override suspend fun topN(prefix: String, limit: Int, minCount: Int) =
                 map.entries.firstOrNull { prefix.startsWith(it.key) || it.key == prefix }
                     ?.value?.take(limit) ?: emptyList()
             override fun clear() = Unit

@@ -43,7 +43,14 @@ class KoreanSuggestionEngineTest {
     fun `learned words appear before dictionary words`() = runTest {
         val learned = object : UserWordStore {
             override fun increment(word: String) = Unit
-            override suspend fun topN(prefix: String, limit: Int) =
+            override fun decrement(word: String) = Unit
+            override fun remove(word: String) = Unit
+            override fun entries(): List<Pair<String, Int>> = emptyList()
+            override fun importWords(words: Map<String, Int>) = Unit
+            override fun addToBlacklist(word: String) = Unit
+            override fun removeFromBlacklist(word: String) = Unit
+            override fun blacklist(): Set<String> = emptySet()
+            override suspend fun topN(prefix: String, limit: Int, minCount: Int) =
                 if ("사랑".startsWith(prefix)) listOf("사랑").take(limit) else emptyList()
             override fun clear() = Unit
         }

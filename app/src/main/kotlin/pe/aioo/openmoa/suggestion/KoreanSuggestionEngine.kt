@@ -8,19 +8,19 @@ class KoreanSuggestionEngine(
     private val userWordStore: UserWordStore,
     private val maxCount: Int = 5,
 ) {
-    suspend fun suggest(composingText: String, unresolved: String?): List<String> =
+    suspend fun suggest(composingText: String, unresolved: String?, minCount: Int = 1): List<String> =
         withContext(Dispatchers.Default) {
             val (primary, fallback) = KoreanPrefixExtractor.extract(composingText, unresolved)
             if (primary.isEmpty()) return@withContext emptyList()
 
-            val results = searchWithPrefix(primary)
+            val results = searchWithPrefix(primary, minCount)
             if (results.isNotEmpty()) return@withContext results
 
-            if (fallback != null) searchWithPrefix(fallback) else emptyList()
+            if (fallback != null) searchWithPrefix(fallback, minCount) else emptyList()
         }
 
-    private suspend fun searchWithPrefix(prefix: String): List<String> {
-        val learned = userWordStore.topN(prefix, maxCount)
+    private suspend fun searchWithPrefix(prefix: String, minCount: Int = 1): List<String> {
+        val learned = userWordStore.topN(prefix, maxCount, minCount)
         val learnedSet = learned.toSet()
         val fromDict = dictionary.prefix(prefix, maxCount + learnedSet.size)
             .filter { it !in learnedSet }

@@ -18,6 +18,7 @@ class SuggestionBarView @JvmOverloads constructor(
 ) : HorizontalScrollView(context, attrs) {
 
     var onPick: ((String, Boolean) -> Unit)? = null
+    var onWordLongClick: ((String) -> Unit)? = null
 
     private val density = context.resources.displayMetrics.density
     private var currentTextColor: Int = Color.BLACK
@@ -70,6 +71,10 @@ class SuggestionBarView @JvmOverloads constructor(
             isFocusable = true
             background = RippleDrawable(ColorStateList.valueOf(0x22000000), null, null)
             setOnClickListener { onPick?.invoke(word, isHotstring) }
+            setOnLongClickListener {
+                onWordLongClick?.invoke(word)
+                true
+            }
         }
     }
 

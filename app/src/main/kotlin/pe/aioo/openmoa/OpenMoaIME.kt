@@ -49,6 +49,7 @@ import pe.aioo.openmoa.config.Config
 import pe.aioo.openmoa.suggestion.KoreanSuggestionEngine
 import pe.aioo.openmoa.suggestion.SuggestionEngine
 import pe.aioo.openmoa.suggestion.UserWordStore
+import pe.aioo.openmoa.suggestion.WordTokenizer
 import pe.aioo.openmoa.config.HangulInputMode
 import pe.aioo.openmoa.view.feedback.KeyFeedbackPlayer
 import pe.aioo.openmoa.config.KeyboardSkin
@@ -90,6 +91,8 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     private var lastHotstringTrigger: String? = null
     private var lastHotstringExpansion: String? = null
     private var hotstringBuffer = ""
+    private var lastLearnedWord: String? = null
+    private var lastLearnedIsKo: Boolean = false
     private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var suggestionJob: Job? = null
     private var isSuggestionBarActive = false
@@ -155,10 +158,11 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                 delay(250)
             }
             if (composingText != capturedComposing) return@launch
+            val minCount = config.minLearnCount
             val words = if (capturedIsKoMode) {
-                koreanSuggestionEngine.suggest(capturedComposing, capturedUnresolved)
+                koreanSuggestionEngine.suggest(capturedComposing, capturedUnresolved, minCount)
             } else {
-                suggestionEngine.suggest(prefix)
+                suggestionEngine.suggest(prefix, minCount)
             }
             if (!this@OpenMoaIME::binding.isInitialized) return@launch
             val triggerToMatch = if (capturedIsKoMode) capturedComposing else capturedHotstringBuffer
@@ -257,6 +261,52 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         setShiftAutomatically()
     }
 
+    private fun onSuggestionLongClick(word: String) {
+        val isKo = imeMode == IMEMode.IME_KO
+        val store = if (isKo) koreanUserWordStore else userWordStore
+        val anchorView = binding.wordSuggestionBar
+
+        val menuView = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setBackgroundResource(android.R.drawable.dialog_holo_light_frame)
+            val dp8 = (8 * resources.displayMetrics.density).toInt()
+            setPadding(dp8, dp8, dp8, dp8)
+        }
+        val popup = android.widget.PopupWindow(
+            menuView,
+            android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+            android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+            true,
+        )
+
+        fun addItem(label: String, action: () -> Unit) {
+            val dp12 = (12 * resources.displayMetrics.density).toInt()
+            val tv = android.widget.TextView(this).apply {
+                text = label
+                textSize = 15f
+                setPadding(dp12, dp12, dp12, dp12)
+                background = obtainStyledAttributes(
+                    intArrayOf(android.R.attr.selectableItemBackground)
+                ).use { it.getDrawable(0) }
+                isClickable = true
+                isFocusable = true
+                setOnClickListener { popup.dismiss(); action() }
+            }
+            menuView.addView(tv)
+        }
+
+        addItem(getString(R.string.suggestion_long_click_remove)) {
+            store.remove(word)
+            deactivateSuggestionBar()
+        }
+        addItem(getString(R.string.suggestion_long_click_blacklist)) {
+            store.addToBlacklist(word)
+            deactivateSuggestionBar()
+        }
+
+        popup.showAtLocation(anchorView, android.view.Gravity.TOP or android.view.Gravity.CENTER_HORIZONTAL, 0, 0)
+    }
+
     private inline fun <reified T : Serializable> getKeyFromIntent(intent: Intent): T? {
         val extra = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.getSerializableExtra(EXTRA_NAME, Serializable::class.java)
@@ -326,6 +376,11 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                         // Process for special key
                         when (key) {
                             SpecialKey.BACKSPACE -> {
+                                lastLearnedWord?.let {
+                                    if (lastLearnedIsKo) koreanUserWordStore.decrement(it)
+                                    else userWordStore.decrement(it)
+                                    lastLearnedWord = null
+                                }
                                 val undoTrigger = lastHotstringTrigger
                                 val undoExpansion = lastHotstringExpansion
                                 if (undoTrigger != null && undoExpansion != null) {
@@ -570,8 +625,21 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                             // Process for another key
                             lastHotstringTrigger = null
                             lastHotstringExpansion = null
-                            if (key == " " && imeMode == IMEMode.IME_EN && composingText.isNotEmpty()) {
-                                userWordStore.increment(composingText)
+                            lastLearnedWord = null
+                            if (key == " " && !isPasswordField) {
+                                if (imeMode == IMEMode.IME_EN && composingText.isNotEmpty()) {
+                                    WordTokenizer.extractEnglish(composingText)?.let {
+                                        userWordStore.increment(it)
+                                        lastLearnedWord = it
+                                        lastLearnedIsKo = false
+                                    }
+                                } else if (imeMode == IMEMode.IME_KO && composingText.isNotEmpty()) {
+                                    WordTokenizer.extractKorean(composingText)?.let {
+                                        koreanUserWordStore.increment(it)
+                                        lastLearnedWord = it
+                                        lastLearnedIsKo = true
+                                    }
+                                }
                             }
                             if (key != " ") {
                                 hotstringBuffer = (hotstringBuffer + key).takeLast(50)
@@ -674,6 +742,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         val view = layoutInflater.inflate(R.layout.open_moa_ime, null)
         binding = OpenMoaImeBinding.bind(view)
         binding.wordSuggestionBar.onPick = ::onSuggestionPicked
+        binding.wordSuggestionBar.onWordLongClick = { word -> onSuggestionLongClick(word) }
         binding.clipboardPanel.onPaste = { text ->
             finishComposing()
             currentInputConnection?.commitText(text, 1)
@@ -805,12 +874,15 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         super.onStartInputView(info, restarting)
         finishComposing()
         hotstringBuffer = ""
+        lastLearnedWord = null
+        lastLearnedIsKo = false
         isHotstringEnabled = SettingsPreferences.getHotstringEnabled(this)
         val inputType = (info?.inputType ?: 0)
         val variation = inputType and InputType.TYPE_MASK_VARIATION
         isPasswordField = variation == InputType.TYPE_TEXT_VARIATION_PASSWORD ||
             variation == InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD ||
-            variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD ||
+            variation == InputType.TYPE_NUMBER_VARIATION_PASSWORD
         clipboardManager?.removePrimaryClipChangedListener(clipboardListener)
         if (!isPasswordField && config.clipboardEnabled) {
             clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager

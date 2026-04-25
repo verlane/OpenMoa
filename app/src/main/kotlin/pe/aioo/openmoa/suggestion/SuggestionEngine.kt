@@ -8,10 +8,10 @@ class SuggestionEngine(
     private val userWordStore: UserWordStore,
     private val maxCount: Int = 5,
 ) {
-    suspend fun suggest(prefix: String): List<String> = withContext(Dispatchers.Default) {
+    suspend fun suggest(prefix: String, minCount: Int = 1): List<String> = withContext(Dispatchers.Default) {
         if (prefix.isBlank()) return@withContext emptyList()
 
-        val learned = userWordStore.topN(prefix, maxCount)
+        val learned = userWordStore.topN(prefix, maxCount, minCount)
         val learnedSet = learned.toSet()
 
         val fromDict = dictionary.prefix(prefix, maxCount + learnedSet.size)
