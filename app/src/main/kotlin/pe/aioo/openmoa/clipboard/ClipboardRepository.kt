@@ -83,6 +83,16 @@ object ClipboardRepository {
     }
 
     @Synchronized
+    fun replaceAll(context: Context, entries: List<ClipboardEntry>) {
+        persist(context, entries)
+    }
+
+    @Synchronized
+    fun clearAll(context: Context) {
+        persist(context, emptyList())
+    }
+
+    @Synchronized
     fun purgeExpired(context: Context) {
         val expiryMinutes = SettingsPreferences.getClipboardExpiryMinutes(context)
         if (expiryMinutes <= 0) return

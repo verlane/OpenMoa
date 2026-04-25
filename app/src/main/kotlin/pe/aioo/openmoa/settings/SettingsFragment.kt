@@ -1,6 +1,7 @@
 package pe.aioo.openmoa.settings
 
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.provider.MediaStore
@@ -15,8 +16,13 @@ import androidx.preference.SwitchPreferenceCompat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONObject
 import pe.aioo.openmoa.R
+import pe.aioo.openmoa.clipboard.ClipboardEntry
+import pe.aioo.openmoa.clipboard.ClipboardRepository
+import pe.aioo.openmoa.hotstring.HotstringRule
+import pe.aioo.openmoa.hotstring.HotstringRepository
 import pe.aioo.openmoa.config.EnterLongPressAction
 import pe.aioo.openmoa.config.HangulInputMode
 import pe.aioo.openmoa.config.HapticStrength
@@ -171,20 +177,48 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     private fun exportSettings() {
         val ctx = requireContext()
-        val prefs = ctx.getSharedPreferences(SettingsPreferences.PREFS_NAME, android.content.Context.MODE_PRIVATE)
-        val json = JSONObject()
-        prefs.all.forEach { (key, value) ->
-            when (value) {
-                is Boolean -> json.put(key, value)
-                is String -> json.put(key, value)
-                is Int -> json.put(key, value)
-                is Long -> json.put(key, value)
-                is Float -> json.put(key, value.toDouble())
-            }
-        }
-        val jsonText = json.toString(2)
         lifecycleScope.launch(Dispatchers.IO) {
             val msgResId = try {
+                val prefs = ctx.getSharedPreferences(SettingsPreferences.PREFS_NAME, Context.MODE_PRIVATE)
+                val settingsObj = JSONObject()
+                prefs.all.forEach { (key, value) ->
+                    when (value) {
+                        is Boolean -> settingsObj.put(key, value)
+                        is String -> settingsObj.put(key, value)
+                        is Int -> settingsObj.put(key, value)
+                        is Long -> settingsObj.put(key, value)
+                        is Float -> settingsObj.put(key, value.toDouble())
+                    }
+                }
+
+                val clipboardArray = JSONArray()
+                ClipboardRepository.getAll(ctx).forEach { entry ->
+                    clipboardArray.put(JSONObject().apply {
+                        put("id", entry.id)
+                        put("text", entry.text)
+                        put("pinned", entry.pinned)
+                        put("createdAt", entry.createdAt)
+                    })
+                }
+
+                val hotstringsArray = JSONArray()
+                HotstringRepository.getAll(ctx).forEach { rule ->
+                    hotstringsArray.put(JSONObject().apply {
+                        put("id", rule.id)
+                        put("trigger", rule.trigger)
+                        put("expansion", rule.expansion)
+                        put("enabled", rule.enabled)
+                    })
+                }
+
+                val jsonText = JSONObject().apply {
+                    put("version", 2)
+                    put("exportedAt", System.currentTimeMillis())
+                    put("settings", settingsObj)
+                    put("clipboard", clipboardArray)
+                    put("hotstrings", hotstringsArray)
+                }.toString(2)
+
                 val resolver = ctx.contentResolver
                 resolver.query(
                     MediaStore.Downloads.EXTERNAL_CONTENT_URI,
@@ -264,18 +298,57 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 val jsonText = resolver.openInputStream(uri)
                     ?.use { it.readBytes().toString(Charsets.UTF_8) }
                     ?: throw Exception("openInputStream failed")
-                val json = JSONObject(jsonText)
-                val editor = ctx.getSharedPreferences(SettingsPreferences.PREFS_NAME, android.content.Context.MODE_PRIVATE).edit()
-                json.keys().forEach { key ->
+                val root = JSONObject(jsonText)
+                if (root.optInt("version") != 2) throw Exception("Unsupported version")
+                val settingsObj = root.optJSONObject("settings")
+                    ?: throw Exception("Invalid format: missing settings")
+
+                // 1단계: 전체 파싱 (실패 시 적용 없이 예외)
+                val settingsEdits = mutableListOf<Pair<String, Any>>()
+                settingsObj.keys().forEach { key ->
                     if (key !in allowedKeys) return@forEach
                     if (key in booleanKeys) {
-                        editor.putBoolean(key, json.optBoolean(key))
+                        settingsEdits.add(key to settingsObj.optBoolean(key))
                     } else {
-                        val value = json.optString(key)
-                        if (value.isNotEmpty()) editor.putString(key, value)
+                        val value = settingsObj.optString(key)
+                        if (value.isNotEmpty()) settingsEdits.add(key to value)
+                    }
+                }
+                val newHotstrings = root.optJSONArray("hotstrings")?.let { array ->
+                    List(array.length()) { i ->
+                        val obj = array.getJSONObject(i)
+                        HotstringRule(
+                            id = obj.getString("id"),
+                            trigger = obj.getString("trigger"),
+                            expansion = obj.getString("expansion"),
+                            enabled = obj.optBoolean("enabled", true)
+                        )
+                    }
+                }
+                val newClipboard = root.optJSONArray("clipboard")?.let { array ->
+                    List(array.length()) { i ->
+                        val obj = array.getJSONObject(i)
+                        ClipboardEntry(
+                            id = obj.getString("id"),
+                            text = obj.getString("text"),
+                            pinned = obj.optBoolean("pinned", false),
+                            createdAt = obj.optLong("createdAt", System.currentTimeMillis())
+                        )
+                    }
+                }
+
+                // 2단계: 일괄 적용
+                val editor = ctx.getSharedPreferences(SettingsPreferences.PREFS_NAME, Context.MODE_PRIVATE).edit()
+                settingsEdits.forEach { (key, value) ->
+                    when (value) {
+                        is Boolean -> editor.putBoolean(key, value)
+                        is String -> editor.putString(key, value)
                     }
                 }
                 editor.apply()
+                newHotstrings?.let { HotstringRepository.replaceAll(ctx, it) }
+                newClipboard?.let { ClipboardRepository.replaceAll(ctx, it.filter { e -> e.text.isNotBlank() }) }
+
                 true
             } catch (e: CancellationException) {
                 throw e
@@ -306,11 +379,17 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     private fun resetAllSettings() {
         val ctx = requireContext()
-        ctx.getSharedPreferences(SettingsPreferences.PREFS_NAME, android.content.Context.MODE_PRIVATE)
-            .edit().clear().apply()
-        Toast.makeText(ctx, R.string.settings_data_reset_success, Toast.LENGTH_SHORT).show()
-        parentFragmentManager.beginTransaction()
-            .replace(R.id.settingsContainer, SettingsFragment())
-            .commit()
+        lifecycleScope.launch(Dispatchers.IO) {
+            ctx.getSharedPreferences(SettingsPreferences.PREFS_NAME, Context.MODE_PRIVATE)
+                .edit().clear().apply()
+            ClipboardRepository.clearAll(ctx)
+            withContext(Dispatchers.Main) {
+                if (!isAdded) return@withContext
+                Toast.makeText(ctx, R.string.settings_data_reset_success, Toast.LENGTH_SHORT).show()
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.settingsContainer, SettingsFragment())
+                    .commit()
+            }
+        }
     }
 }

@@ -33,6 +33,7 @@ object HotstringRepository {
         }
     }
 
+    @Synchronized
     fun upsert(context: Context, rule: HotstringRule) {
         val rules = getAll(context).toMutableList()
         val index = rules.indexOfFirst { it.id == rule.id }
@@ -40,12 +41,14 @@ object HotstringRepository {
         persist(context, rules)
     }
 
+    @Synchronized
     fun delete(context: Context, id: String) {
         persist(context, getAll(context).filter { it.id != id })
     }
 
     fun newId(): String = UUID.randomUUID().toString()
 
+    @Synchronized
     fun ensureDefaults(context: Context) {
         if (getAll(context).isNotEmpty()) return
         val defaults = listOf(
@@ -59,6 +62,7 @@ object HotstringRepository {
     fun getVersion(context: Context): Long =
         prefs(context).getLong(KEY_VERSION, 0L)
 
+    @Synchronized
     fun getCached(context: Context): List<HotstringRule> {
         val version = getVersion(context)
         if (version != cacheVersion) {
@@ -66,6 +70,11 @@ object HotstringRepository {
             cacheVersion = version
         }
         return cache
+    }
+
+    @Synchronized
+    fun replaceAll(context: Context, rules: List<HotstringRule>) {
+        persist(context, rules)
     }
 
     fun hasTrigger(context: Context, trigger: String, excludeId: String? = null): Boolean =
