@@ -287,7 +287,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                 setPadding(dp12, dp12, dp12, dp12)
                 background = obtainStyledAttributes(
                     intArrayOf(android.R.attr.selectableItemBackground)
-                ).use { it.getDrawable(0) }
+                ).let { it.getDrawable(0).also { _ -> it.recycle() } }
                 isClickable = true
                 isFocusable = true
                 setOnClickListener { popup.dismiss(); action() }

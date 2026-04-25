@@ -11,13 +11,6 @@ object QuickPhraseRepository {
         return if (value.isNullOrEmpty()) key.defaultPhrase else value
     }
 
-    fun setPhrase(context: Context, key: QuickPhraseKey, phrase: String) {
-        context.getSharedPreferences(SettingsPreferences.PREFS_NAME, Context.MODE_PRIVATE)
-            .edit()
-            .putString(key.prefKey, phrase)
-            .apply()
-    }
-
     fun getFirstChar(context: Context, key: QuickPhraseKey): String {
         val phrase = getPhrase(context, key)
         return phrase.firstOrNull()?.toString() ?: ""

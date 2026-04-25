@@ -33,7 +33,7 @@ private fun Int.luminance(): Float =
     (0.299f * Color.red(this) + 0.587f * Color.green(this) + 0.114f * Color.blue(this)) / 255f
 
 private fun Context.selectableBackground() =
-    obtainStyledAttributes(intArrayOf(android.R.attr.selectableItemBackground)).use { it.getDrawable(0) }
+    obtainStyledAttributes(intArrayOf(android.R.attr.selectableItemBackground)).let { it.getDrawable(0).also { _ -> it.recycle() } }
 
 class ClipboardPanelView @JvmOverloads constructor(
     context: Context,

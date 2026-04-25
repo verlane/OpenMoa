@@ -121,7 +121,7 @@ class HotstringListActivity : AppCompatActivity() {
             gravity = Gravity.CENTER_VERTICAL
             setPadding(0, dp16, 0, dp16)
             background = obtainStyledAttributes(intArrayOf(android.R.attr.selectableItemBackground))
-                .use { it.getDrawable(0) }
+                .let { it.getDrawable(0).also { _ -> it.recycle() } }
             isClickable = true
             isFocusable = true
             setOnClickListener { showEditDialog(rule) }

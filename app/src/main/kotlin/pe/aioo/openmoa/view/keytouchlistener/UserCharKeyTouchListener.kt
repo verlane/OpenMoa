@@ -20,7 +20,6 @@ class UserCharKeyTouchListener(
 
     private var isLongPressed = false
     private val handler = Handler(Looper.getMainLooper())
-    private var anchorView: View? = null
 
     private val longPressRunnable = Runnable {
         isLongPressed = true
@@ -37,7 +36,6 @@ class UserCharKeyTouchListener(
     override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
         when (motionEvent.action) {
             MotionEvent.ACTION_DOWN -> {
-                anchorView = view
                 isLongPressed = false
                 previewController?.show(view, userCharKey.getPhrase(context))
                 handler.postDelayed(longPressRunnable, config.longPressThresholdTime)

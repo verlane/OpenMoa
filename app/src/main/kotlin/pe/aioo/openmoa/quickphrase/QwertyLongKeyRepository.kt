@@ -11,10 +11,4 @@ object QwertyLongKeyRepository {
         return if (value.isNullOrEmpty()) key.defaultPhrase else value
     }
 
-    fun setPhrase(context: Context, key: QwertyLongKey, phrase: String) {
-        context.getSharedPreferences(SettingsPreferences.PREFS_NAME, Context.MODE_PRIVATE)
-            .edit()
-            .putString(key.prefKey, phrase)
-            .apply()
-    }
 }
