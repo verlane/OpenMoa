@@ -69,11 +69,6 @@
             android:text="@string/settings_quick_phrase_reset"
             android:textSize="14sp" />
 
-        <View
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1" />
-
         <Button
             android:id="@+id/cancelButton"
             style="?attr/borderlessButtonStyle"
@@ -82,6 +77,11 @@
             android:minWidth="0dp"
             android:text="@string/settings_qwerty_long_key_cancel"
             android:textSize="14sp" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
 
         <Button
             android:id="@+id/confirmButton"

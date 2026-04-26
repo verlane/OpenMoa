@@ -412,7 +412,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                     ?: getKeyFromIntent<SpecialKey>(intent)
                     ?: return
                 val formEditText = activeFormEditText
-                if (formEditText != null && key != SpecialKey.LANGUAGE && key != SpecialKey.HANJA_NUMBER_PUNCTUATION) {
+                if (formEditText != null && key != SpecialKey.LANGUAGE && key != SpecialKey.HANJA_NUMBER_PUNCTUATION && key != SpecialKey.OPEN_SETTINGS) {
                     handleFormKey(key, formEditText)
                     return@onReceive
                 }
@@ -634,6 +634,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                                 }
                             }
                             SpecialKey.OPEN_SETTINGS -> {
+                                hideEditForm()
                                 startActivity(
                                     Intent(this@OpenMoaIME, SettingsActivity::class.java).apply {
                                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -1154,14 +1155,14 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         }
         val btnRow = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
-            addView(cancelBtn, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
             addView(resetBtn, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+            addView(cancelBtn, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
             addView(saveBtn, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
         }
         container.addView(editText, lp)
         container.addView(btnRow, lp)
         container.visibility = View.VISIBLE
-        applyFormSkin(container, listOf(editText), listOf(cancelBtn, resetBtn, saveBtn))
+        applyFormSkin(container, listOf(editText), listOf(resetBtn, cancelBtn, saveBtn))
         editText.requestFocus()
         activeFormEditText = editText
     }
@@ -1199,14 +1200,14 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         }
         val btnRow = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
-            addView(cancelBtn, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
             addView(resetBtn, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+            addView(cancelBtn, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
             addView(saveBtn, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
         }
         container.addView(editText, lp)
         container.addView(btnRow, lp)
         container.visibility = View.VISIBLE
-        applyFormSkin(container, listOf(editText), listOf(cancelBtn, resetBtn, saveBtn))
+        applyFormSkin(container, listOf(editText), listOf(resetBtn, cancelBtn, saveBtn))
         editText.requestFocus()
         activeFormEditText = editText
     }

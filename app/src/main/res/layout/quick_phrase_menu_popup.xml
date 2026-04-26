@@ -9,22 +9,6 @@
     android:alpha="0.9">
 
     <TextView
-        android:id="@+id/phrasePreviewItem"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:minWidth="60dp"
-        android:minHeight="44dp"
-        android:gravity="center"
-        android:textSize="14sp"
-        android:textColor="@color/key_foreground"
-        android:padding="8dp" />
-
-    <View
-        android:layout_width="1dp"
-        android:layout_height="match_parent"
-        android:background="@color/keyboard_background" />
-
-    <TextView
         android:id="@+id/editItem"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -35,6 +19,22 @@
         android:textStyle="bold"
         android:textColor="@color/key_foreground"
         android:text="@string/quick_phrase_menu_edit"
+        android:padding="8dp" />
+
+    <View
+        android:layout_width="1dp"
+        android:layout_height="match_parent"
+        android:background="@color/keyboard_background" />
+
+    <TextView
+        android:id="@+id/phrasePreviewItem"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="60dp"
+        android:minHeight="44dp"
+        android:gravity="center"
+        android:textSize="14sp"
+        android:textColor="@color/key_foreground"
         android:padding="8dp" />
 
     <View

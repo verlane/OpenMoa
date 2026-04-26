@@ -44,6 +44,8 @@
                 android:orientation="vertical"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true">
@@ -71,6 +73,8 @@
                 android:orientation="vertical"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true">
@@ -98,6 +102,8 @@
                 android:orientation="vertical"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true">
@@ -125,6 +131,8 @@
                 android:orientation="vertical"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true">
@@ -152,6 +160,8 @@
                 android:orientation="vertical"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true">
@@ -179,6 +189,8 @@
                 android:orientation="vertical"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true">
@@ -206,6 +218,8 @@
                 android:orientation="vertical"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true">
@@ -233,6 +247,8 @@
                 android:orientation="vertical"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true">
@@ -260,6 +276,8 @@
                 android:orientation="vertical"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true">
@@ -302,6 +320,8 @@
                 android:orientation="vertical"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true">
@@ -329,6 +349,8 @@
                 android:orientation="vertical"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true">
@@ -356,6 +378,8 @@
                 android:orientation="vertical"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true">
@@ -383,6 +407,8 @@
                 android:orientation="vertical"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true">
@@ -410,6 +436,8 @@
                 android:orientation="vertical"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true">
@@ -437,6 +465,8 @@
                 android:orientation="vertical"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true">
@@ -464,6 +494,8 @@
                 android:orientation="vertical"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true">
