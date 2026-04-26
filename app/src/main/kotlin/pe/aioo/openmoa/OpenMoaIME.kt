@@ -104,7 +104,12 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     private var clipboardManager: ClipboardManager? = null
     private val clipboardListener = ClipboardManager.OnPrimaryClipChangedListener {
         if (!isPasswordField && config.clipboardEnabled) {
-            getClipboardText()?.let { ClipboardRepository.add(this, it) }
+            getClipboardText()?.let {
+                ClipboardRepository.add(this, it)
+                if (isClipboardPanelVisible && this::binding.isInitialized) {
+                    binding.clipboardPanel.refresh(this)
+                }
+            }
         }
     }
 
