@@ -1,8 +1,6 @@
 package pe.aioo.openmoa.suggestion
 
 import android.content.Context
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -27,7 +25,6 @@ class SharedPreferencesUserWordStore(
     }
     private val words: MutableMap<String, Int> by lazy { loadWords() }
     private val blacklistSet: MutableSet<String> by lazy { loadBlacklist() }
-    private val mutex = Mutex()
 
     private fun loadWords(): MutableMap<String, Int> {
         val json = prefs.getString(wordsKey, null) ?: return mutableMapOf()
@@ -115,7 +112,7 @@ class SharedPreferencesUserWordStore(
     override suspend fun topN(prefix: String, limit: Int, minCount: Int): List<String> {
         if (prefix.isEmpty()) return emptyList()
         val normalized = normalize(prefix)
-        return mutex.withLock {
+        return synchronized(this) {
             words.entries
                 .filter {
                     it.key.startsWith(normalized) &&
@@ -159,15 +156,16 @@ class SharedPreferencesUserWordStore(
 
     fun seedIfNeeded(seedWords: List<String>, seedCount: Int) {
         val versionKey = "seed_version_${language.name.lowercase()}"
-        if (prefs.getInt(versionKey, 0) >= SEED_VERSION) return
         synchronized(this) {
+            if (prefs.getInt(versionKey, 0) >= SEED_VERSION) return
             seedWords
-                .filter { it.isNotBlank() && !words.containsKey(normalize(it)) && normalize(it) !in blacklistSet }
-                .forEach { words[normalize(it)] = seedCount }
+                .mapNotNull { raw -> normalize(raw).takeIf { raw.isNotBlank() } }
+                .filter { !words.containsKey(it) && it !in blacklistSet }
+                .forEach { words[it] = seedCount }
             if (words.size > MAX_WORDS) evict()
             persistWords()
+            prefs.edit().putInt(versionKey, SEED_VERSION).apply()
         }
-        prefs.edit().putInt(versionKey, SEED_VERSION).apply()
     }
 
     companion object {
