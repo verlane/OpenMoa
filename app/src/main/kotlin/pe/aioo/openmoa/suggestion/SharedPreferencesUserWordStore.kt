@@ -157,8 +157,22 @@ class SharedPreferencesUserWordStore(
         toRemove.forEach { words.remove(it) }
     }
 
+    fun seedIfNeeded(seedWords: List<String>, seedCount: Int) {
+        val versionKey = "seed_version_${language.name.lowercase()}"
+        if (prefs.getInt(versionKey, 0) >= SEED_VERSION) return
+        synchronized(this) {
+            seedWords
+                .filter { it.isNotBlank() && !words.containsKey(normalize(it)) && normalize(it) !in blacklistSet }
+                .forEach { words[normalize(it)] = seedCount }
+            if (words.size > MAX_WORDS) evict()
+            persistWords()
+        }
+        prefs.edit().putInt(versionKey, SEED_VERSION).apply()
+    }
+
     companion object {
         private const val MAX_WORDS = 5000
         private const val EVICT_MARGIN = 100
+        private const val SEED_VERSION = 1
     }
 }

@@ -174,8 +174,35 @@ class WordTokenizerTest {
 
     @Test
     fun `extractEnglish 영문 외 문자 포함 시 null 반환`() {
-        assertNull(WordTokenizer.extractEnglish("hello123"))
         assertNull(WordTokenizer.extractEnglish("안녕"))
+        assertNull(WordTokenizer.extractEnglish("hello!"))
+    }
+
+    @Test
+    fun `extractEnglish 숫자 포함 단어 반환`() {
+        assertEquals("hello123", WordTokenizer.extractEnglish("hello123"))
+        assertEquals("11st.co.kr", WordTokenizer.extractEnglish("11st.co.kr"))
+    }
+
+    @Test
+    fun `extractEnglish 도메인 형태 반환`() {
+        assertEquals("gmail.com", WordTokenizer.extractEnglish("gmail.com"))
+        assertEquals("naver.com", WordTokenizer.extractEnglish("naver.com"))
+        assertEquals("github.com", WordTokenizer.extractEnglish("github.com"))
+    }
+
+    @Test
+    fun `extractEnglish 이메일 형태 반환`() {
+        assertEquals("user@gmail.com", WordTokenizer.extractEnglish("user@gmail.com"))
+    }
+
+    @Test
+    fun `extractEnglish 잘못된 도메인 형태는 null 반환`() {
+        assertNull(WordTokenizer.extractEnglish(".gmail.com"))
+        assertNull(WordTokenizer.extractEnglish("gmail."))
+        assertNull(WordTokenizer.extractEnglish("gmail..com"))
+        assertNull(WordTokenizer.extractEnglish("user@@gmail.com"))
+        assertNull(WordTokenizer.extractEnglish("user@gmail@com"))
     }
 
     @Test

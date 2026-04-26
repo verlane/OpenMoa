@@ -30,7 +30,27 @@ object WordTokenizer {
     fun extractEnglish(text: String): String? {
         val trimmed = text.trim()
         if (trimmed.length < MIN_ENGLISH_LENGTH || trimmed.length > MAX_LENGTH) return null
-        if (!trimmed.all { it.isLetter() && it.code < 128 }) return null
+
+        if (!trimmed.first().isAsciiLetterOrDigit() || !trimmed.last().isAsciiLetterOrDigit()) return null
+
+        val specials = setOf('.', '@', '-')
+        var prevWasSpecial = false
+        var atCount = 0
+        for (ch in trimmed) {
+            when {
+                ch.isLetter() && ch.code < 128 -> prevWasSpecial = false
+                ch.isDigit() && ch.code < 128 -> prevWasSpecial = false
+                ch in specials -> {
+                    if (prevWasSpecial) return null
+                    if (ch == '@' && ++atCount > 1) return null
+                    prevWasSpecial = true
+                }
+                else -> return null
+            }
+        }
+
         return trimmed.lowercase()
     }
+
+    private fun Char.isAsciiLetterOrDigit() = (isLetter() || isDigit()) && code < 128
 }
