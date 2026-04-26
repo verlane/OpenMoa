@@ -34,6 +34,24 @@ object SkinApplier {
         return InsetDrawable(roundedDrawable(color, 4 * density), (2 * density).toInt())
     }
 
+    fun buildKeySelector(ctx: Context, skin: KeyboardSkin): StateListDrawable {
+        val density = ctx.resources.displayMetrics.density
+        val normalColor = ContextCompat.getColor(ctx, skin.keyBgColorRes)
+        val pressedColor = ContextCompat.getColor(ctx, skin.keyBgPressedColorRes)
+        val insetPx = (2 * density).toInt()
+        val cornerPx = 4 * density
+        return StateListDrawable().apply {
+            addState(
+                intArrayOf(android.R.attr.state_pressed),
+                InsetDrawable(roundedDrawable(pressedColor, cornerPx), insetPx),
+            )
+            addState(
+                android.util.StateSet.WILD_CARD,
+                InsetDrawable(roundedDrawable(normalColor, cornerPx), insetPx),
+            )
+        }
+    }
+
     fun fgColor(ctx: Context, skin: KeyboardSkin): Int =
         ContextCompat.getColor(ctx, skin.keyFgColorRes)
 

@@ -53,6 +53,15 @@
         android:layout_marginBottom="2dp"
         android:visibility="gone" />
 
+    <LinearLayout
+        android:id="@+id/imeEditFormContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="0dp"
+        android:visibility="gone"
+        style="@style/KeyboardStyle" />
+
     <FrameLayout
         android:id="@+id/keyboardContainer"
         android:layout_width="match_parent"

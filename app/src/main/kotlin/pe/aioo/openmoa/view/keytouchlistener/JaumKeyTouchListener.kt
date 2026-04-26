@@ -27,6 +27,8 @@ class JaumKeyTouchListener(
     private val jaumPreviewResolver: ((String) -> String)? = null,
 ) : BaseKeyTouchListener(context) {
 
+    var onEditPhraseRequest: ((QuickPhraseKey) -> Unit)? = null
+
     init {
         require(quickPhraseKey == null || numberChar == null) {
             "quickPhraseKey and numberChar cannot both be set"
@@ -123,12 +125,17 @@ class JaumKeyTouchListener(
                                 sendKeyMessage(StringKeyMessage(QuickPhraseRepository.getPhrase(context, phraseKey)))
                             }
                             QuickPhraseMenuPopup.MenuItem.EDIT -> {
-                                val intent = Intent(context, PhraseEditActivity::class.java).apply {
-                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    putExtra(PhraseEditActivity.EXTRA_TYPE, PhraseEditActivity.TYPE_KOREAN)
-                                    putExtra(PhraseEditActivity.EXTRA_KEY, phraseKey.name)
+                                val handler = onEditPhraseRequest
+                                if (handler != null) {
+                                    handler(phraseKey)
+                                } else {
+                                    val intent = Intent(context, PhraseEditActivity::class.java).apply {
+                                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        putExtra(PhraseEditActivity.EXTRA_TYPE, PhraseEditActivity.TYPE_KOREAN)
+                                        putExtra(PhraseEditActivity.EXTRA_KEY, phraseKey.name)
+                                    }
+                                    context.startActivity(intent)
                                 }
-                                context.startActivity(intent)
                             }
                             else -> Unit
                         }

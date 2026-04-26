@@ -58,7 +58,14 @@ import pe.aioo.openmoa.databinding.OpenMoaImeBinding
 import pe.aioo.openmoa.hangul.HangulAssembler
 import pe.aioo.openmoa.hotstring.HotstringMatcher
 import pe.aioo.openmoa.hotstring.HotstringRepository
-import pe.aioo.openmoa.clipboard.ClipboardEditActivity
+import pe.aioo.openmoa.hotstring.HotstringRule
+import pe.aioo.openmoa.quickphrase.QuickPhraseKey
+import pe.aioo.openmoa.quickphrase.QuickPhraseRepository
+import android.widget.Button
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.Toast
+import pe.aioo.openmoa.clipboard.ClipboardEntry
 import pe.aioo.openmoa.clipboard.ClipboardRepository
 import pe.aioo.openmoa.settings.SettingsActivity
 import pe.aioo.openmoa.settings.SettingsPreferences
@@ -99,6 +106,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     private var isTextSelected = false
     private var isClipboardPanelVisible = false
     private var suggestionLongPressPopup: android.widget.PopupWindow? = null
+    private var activeFormEditText: EditText? = null
     private var currentSuggestions: List<String> = emptyList()
     private var currentHotstringExpansions: Set<String> = emptySet()
     private var clipboardManager: ClipboardManager? = null
@@ -122,6 +130,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     private fun showClipboardPanel() {
         if (!this::binding.isInitialized) return
         if (!config.clipboardEnabled) return
+        hideEditForm()
         isClipboardPanelVisible = true
         finishComposing()
         deactivateSuggestionBar()
@@ -401,6 +410,11 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                 val key = getKeyFromIntent<String>(intent)
                     ?: getKeyFromIntent<SpecialKey>(intent)
                     ?: return
+                val formEditText = activeFormEditText
+                if (formEditText != null) {
+                    handleFormKey(key, formEditText)
+                    return@onReceive
+                }
                 val beforeComposingText = composingText
                 when (key) {
                     is SpecialKey -> {
@@ -782,22 +796,11 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         binding.clipboardPanel.onClose = { hideClipboardPanel() }
         binding.clipboardPanel.onEdit = { entry ->
             hideClipboardPanel()
-            startActivity(
-                Intent(this, ClipboardEditActivity::class.java).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    putExtra(ClipboardEditActivity.EXTRA_ENTRY_ID, entry.id)
-                    putExtra(ClipboardEditActivity.EXTRA_ENTRY_TEXT, entry.text)
-                }
-            )
+            showClipboardEditForm(entry)
         }
         binding.clipboardPanel.onAddHotstring = { entry ->
             hideClipboardPanel()
-            startActivity(
-                Intent(this, pe.aioo.openmoa.settings.HotstringListActivity::class.java).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    putExtra(pe.aioo.openmoa.settings.HotstringListActivity.EXTRA_EXPANSION, entry.text)
-                }
-            )
+            showHotstringAddForm(entry)
         }
         binding.clipboardPanel.onOpenUrl = { url ->
             runCatching {
@@ -812,6 +815,9 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 )
             }.onFailure { android.util.Log.w("OpenMoaIME", "Failed to open email: $email", it) }
+        }
+        (keyboardViews[IMEMode.IME_KO] as? OpenMoaView)?.onEditPhraseRequest = { phraseKey ->
+            showPhraseEditForm(phraseKey)
         }
         applyKeyboardLayout()
         setKeyboard(imeMode)
@@ -1001,9 +1007,269 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     override fun onFinishInputView(finishingInput: Boolean) {
         super.onFinishInputView(finishingInput)
         deactivateSuggestionBar()
+        hideEditForm()
         if (isClipboardPanelVisible) hideClipboardPanel()
         clipboardManager?.removePrimaryClipChangedListener(clipboardListener)
         clipboardManager = null
+    }
+
+    private fun showClipboardEditForm(entry: ClipboardEntry) {
+        if (!this::binding.isInitialized) return
+        finishComposing()
+        val container = binding.imeEditFormContainer
+        container.removeAllViews()
+        val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+        val editText = EditText(this).apply {
+            setText(entry.text)
+            setSelection(entry.text.length)
+            minLines = 2
+            maxLines = 4
+        }
+        val saveBtn = Button(this).apply {
+            text = getString(R.string.clipboard_edit_save)
+            setOnClickListener {
+                val newText = editText.text.toString()
+                if (newText.isBlank()) {
+                    Toast.makeText(this@OpenMoaIME, getString(R.string.clipboard_edit_empty_error), Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                ClipboardRepository.update(this@OpenMoaIME, entry.id, newText)
+                hideEditForm()
+                showClipboardPanel()
+            }
+        }
+        val cancelBtn = Button(this).apply {
+            text = getString(R.string.clipboard_edit_cancel)
+            setOnClickListener {
+                hideEditForm()
+                showClipboardPanel()
+            }
+        }
+        val btnRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            addView(cancelBtn, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+            addView(saveBtn, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        }
+        container.addView(editText, lp)
+        container.addView(btnRow, lp)
+        container.visibility = View.VISIBLE
+        applyFormSkin(container, listOf(editText), listOf(cancelBtn, saveBtn))
+        editText.requestFocus()
+        activeFormEditText = editText
+    }
+
+    private fun showHotstringAddForm(entry: ClipboardEntry) {
+        if (!this::binding.isInitialized) return
+        finishComposing()
+        val container = binding.imeEditFormContainer
+        container.removeAllViews()
+        val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+        val triggerEditText = EditText(this).apply {
+            hint = getString(R.string.settings_hotstring_trigger_hint)
+            setSingleLine()
+        }
+        val expansionEditText = EditText(this).apply {
+            setText(entry.text)
+            setSelection(entry.text.length)
+            hint = getString(R.string.settings_hotstring_expansion_hint)
+            setSingleLine()
+        }
+        val saveBtn = Button(this).apply {
+            text = getString(R.string.clipboard_edit_save)
+            setOnClickListener {
+                val trigger = triggerEditText.text.toString().trim()
+                val expansion = expansionEditText.text.toString()
+                when {
+                    trigger.isEmpty() -> Toast.makeText(this@OpenMoaIME, getString(R.string.settings_hotstring_trigger_empty), Toast.LENGTH_SHORT).show()
+                    expansion.isEmpty() -> Toast.makeText(this@OpenMoaIME, getString(R.string.settings_hotstring_expansion_empty), Toast.LENGTH_SHORT).show()
+                    else -> {
+                        val existing = HotstringRepository.getAll(this@OpenMoaIME).firstOrNull { it.trigger == trigger }
+                        HotstringRepository.upsert(this@OpenMoaIME, HotstringRule(existing?.id ?: HotstringRepository.newId(), trigger, expansion))
+                        hideEditForm()
+                        showClipboardPanel()
+                    }
+                }
+            }
+        }
+        val cancelBtn = Button(this).apply {
+            text = getString(R.string.clipboard_edit_cancel)
+            setOnClickListener {
+                hideEditForm()
+                showClipboardPanel()
+            }
+        }
+        val btnRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            addView(cancelBtn, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+            addView(saveBtn, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        }
+        container.addView(triggerEditText, lp)
+        container.addView(expansionEditText, lp)
+        container.addView(btnRow, lp)
+        container.visibility = View.VISIBLE
+        applyFormSkin(container, listOf(triggerEditText, expansionEditText), listOf(cancelBtn, saveBtn))
+        triggerEditText.requestFocus()
+        activeFormEditText = triggerEditText
+    }
+
+    private fun showPhraseEditForm(phraseKey: QuickPhraseKey) {
+        if (!this::binding.isInitialized) return
+        finishComposing()
+        val container = binding.imeEditFormContainer
+        container.removeAllViews()
+        val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+        val currentPhrase = QuickPhraseRepository.getPhrase(this, phraseKey)
+        val editText = EditText(this).apply {
+            setText(currentPhrase)
+            setSelection(currentPhrase.length)
+            setSingleLine()
+            hint = getString(R.string.settings_quick_phrase_edit_hint)
+        }
+        val saveBtn = Button(this).apply {
+            text = getString(R.string.clipboard_edit_save)
+            setOnClickListener {
+                val newPhrase = editText.text.toString()
+                phraseKey.setPhrase(this@OpenMoaIME, newPhrase.ifEmpty { phraseKey.defaultPhrase })
+                (keyboardViews[IMEMode.IME_KO] as? OpenMoaView)?.refreshQuickPhraseBadges()
+                hideEditForm()
+            }
+        }
+        val cancelBtn = Button(this).apply {
+            text = getString(R.string.clipboard_edit_cancel)
+            setOnClickListener { hideEditForm() }
+        }
+        val resetBtn = Button(this).apply {
+            text = getString(R.string.settings_quick_phrase_reset)
+            setOnClickListener {
+                editText.setText(phraseKey.defaultPhrase)
+                editText.setSelection(phraseKey.defaultPhrase.length)
+            }
+        }
+        val btnRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            addView(cancelBtn, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+            addView(resetBtn, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+            addView(saveBtn, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        }
+        container.addView(editText, lp)
+        container.addView(btnRow, lp)
+        container.visibility = View.VISIBLE
+        applyFormSkin(container, listOf(editText), listOf(cancelBtn, resetBtn, saveBtn))
+        editText.requestFocus()
+        activeFormEditText = editText
+    }
+
+    private fun handleFormKey(key: Any, editText: EditText) {
+        val cursor = editText.selectionStart.coerceAtLeast(0)
+        val selEnd = editText.selectionEnd.coerceAtLeast(cursor)
+        when (key) {
+            is SpecialKey -> when (key) {
+                SpecialKey.BACKSPACE -> {
+                    if (cursor < selEnd) {
+                        hangulAssembler.clear()
+                        editText.text.delete(cursor, selEnd)
+                        return
+                    }
+                    val unresolved = hangulAssembler.getUnresolved()
+                    if (unresolved != null) {
+                        hangulAssembler.removeLastJamo()
+                        val newUnresolved = hangulAssembler.getUnresolved()
+                        val start = (cursor - unresolved.length).coerceAtLeast(0)
+                        editText.text.replace(start, cursor, newUnresolved ?: "")
+                    } else {
+                        if (cursor > 0) editText.text.delete(cursor - 1, cursor)
+                    }
+                }
+                SpecialKey.DELETE -> {
+                    hangulAssembler.clear()
+                    if (cursor < selEnd) {
+                        editText.text.delete(cursor, selEnd)
+                    } else if (cursor < editText.text.length) {
+                        editText.text.delete(cursor, cursor + 1)
+                    }
+                }
+                SpecialKey.ENTER -> {
+                    hangulAssembler.clear()
+                    if (editText.maxLines > 1) {
+                        editText.text.replace(cursor, selEnd, "\n")
+                    }
+                }
+                else -> hangulAssembler.clear()
+            }
+            is String -> {
+                when {
+                    key.matches(HangulAssembler.JAMO_REGEX) -> {
+                        val actualCursor: Int
+                        if (cursor < selEnd) {
+                            hangulAssembler.clear()
+                            editText.text.delete(cursor, selEnd)
+                            actualCursor = editText.selectionStart.coerceAtLeast(0)
+                        } else {
+                            actualCursor = cursor
+                        }
+                        val unresolved = hangulAssembler.getUnresolved()
+                        val replaceStart = if (unresolved != null) {
+                            (actualCursor - unresolved.length).coerceAtLeast(0)
+                        } else {
+                            actualCursor
+                        }
+                        val resolved = hangulAssembler.appendJamo(key)
+                        val newUnresolved = hangulAssembler.getUnresolved() ?: ""
+                        editText.text.replace(replaceStart, actualCursor, (resolved ?: "") + newUnresolved)
+                    }
+                    else -> {
+                        hangulAssembler.clear()
+                        editText.text.replace(cursor, selEnd, key)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun applyFormSkin(container: LinearLayout, editTexts: List<EditText>, buttons: List<Button>) {
+        val skin = SettingsPreferences.getKeyboardSkin(this)
+        val fgColor = SkinApplier.fgColor(this, skin)
+        val mutedColor = ContextCompat.getColor(this, skin.keyFgMutedColorRes)
+        val bgColor = SkinApplier.keyboardBgColor(this, skin)
+        val density = resources.displayMetrics.density
+        val dp2 = (2 * density).toInt()
+        val dp4 = (4 * density).toInt()
+        val dp8 = (8 * density).toInt()
+        val btnHeight = (36 * density).toInt()
+        container.setBackgroundColor(bgColor)
+        for (et in editTexts) {
+            et.setTextColor(fgColor)
+            et.setHintTextColor(mutedColor)
+            et.background = SkinApplier.buildKeyDrawable(this, skin, pressed = false)
+            et.setPadding(dp8, dp4, dp8, dp4)
+            (et.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
+                lp.setMargins(dp2, dp2, dp2, dp2)
+                et.layoutParams = lp
+            }
+        }
+        for (btn in buttons) {
+            btn.setTextColor(fgColor)
+            btn.background = SkinApplier.buildKeySelector(this, skin)
+            btn.textSize = 14f
+            btn.minHeight = 0
+            btn.minimumHeight = 0
+            btn.setPadding(dp4, 0, dp4, 0)
+            btn.layoutParams?.let { lp ->
+                lp.height = btnHeight
+                btn.layoutParams = lp
+            }
+        }
+    }
+
+    private fun hideEditForm() {
+        if (!this::binding.isInitialized) return
+        activeFormEditText = null
+        hangulAssembler.clear()
+        composingText = ""
+        binding.imeEditFormContainer.apply {
+            visibility = View.GONE
+            removeAllViews()
+        }
     }
 
     override fun onDestroy() {
@@ -1119,6 +1385,13 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         binding.keyboardFrameLayout.layoutParams = params
         binding.clipboardPanel.layoutParams = android.widget.FrameLayout.LayoutParams(keyboardWidth, keyboardHeight).apply {
             gravity = keyboardGravity
+        }
+        val dp4 = (4 * resources.displayMetrics.density).toInt()
+        binding.imeEditFormContainer.layoutParams = LinearLayout.LayoutParams(
+            keyboardWidth, LinearLayout.LayoutParams.WRAP_CONTENT
+        ).apply {
+            gravity = keyboardGravity
+            bottomMargin = dp4
         }
         if (this::binding.isInitialized) {
             val fg = SkinApplier.fgColor(this, skin)
