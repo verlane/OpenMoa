@@ -7,6 +7,7 @@ import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import pe.aioo.openmoa.R
 import pe.aioo.openmoa.databinding.ActivityPhraseEditBinding
+import pe.aioo.openmoa.quickphrase.NumberLongKey
 import pe.aioo.openmoa.quickphrase.PhraseKey
 import pe.aioo.openmoa.quickphrase.QuickPhraseKey
 import pe.aioo.openmoa.quickphrase.QwertyLongKey
@@ -20,6 +21,7 @@ class PhraseEditActivity : AppCompatActivity() {
         const val TYPE_KOREAN = "KOREAN"
         const val TYPE_ENGLISH = "ENGLISH"
         const val TYPE_USER_CHAR = "USER_CHAR"
+        const val TYPE_NUMBER = "NUMBER"
     }
 
     private lateinit var binding: ActivityPhraseEditBinding
@@ -37,11 +39,13 @@ class PhraseEditActivity : AppCompatActivity() {
         keys = when (type) {
             TYPE_ENGLISH -> QwertyLongKey.values()
             TYPE_USER_CHAR -> UserCharKey.values()
+            TYPE_NUMBER -> NumberLongKey.values()
             else -> QuickPhraseKey.values()
         }
 
         binding.editTitle.text = when (type) {
             TYPE_USER_CHAR -> getString(R.string.user_char_edit_title)
+            TYPE_NUMBER -> getString(R.string.number_long_key_edit_title)
             else -> getString(R.string.quick_phrase_edit_title)
         }
 

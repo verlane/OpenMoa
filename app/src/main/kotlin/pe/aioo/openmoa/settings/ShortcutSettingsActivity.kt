@@ -7,6 +7,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import pe.aioo.openmoa.R
 import pe.aioo.openmoa.databinding.ActivityShortcutSettingsBinding
+import pe.aioo.openmoa.quickphrase.NumberLongKey
 import pe.aioo.openmoa.quickphrase.PhraseKey
 import pe.aioo.openmoa.quickphrase.QuickPhraseKey
 import pe.aioo.openmoa.quickphrase.QwertyLongKey
@@ -42,6 +43,7 @@ class ShortcutSettingsActivity : AppCompatActivity() {
         QwertyLongKey.values().forEach { key ->
             qwertyLongKeyItemView(key).setOnClickListener { showEditDialog(key) }
         }
+        buildNumberLongKeyItems()
     }
 
     private fun refreshAllDisplays() {
@@ -50,6 +52,62 @@ class ShortcutSettingsActivity : AppCompatActivity() {
         }
         QwertyLongKey.values().forEach { key ->
             qwertyLongKeyValueView(key).text = key.getPhrase(this)
+        }
+        refreshNumberLongKeyDisplays()
+    }
+
+    private fun buildNumberLongKeyItems() {
+        val container = binding.numberLongKeyContainer
+        container.removeAllViews()
+        NumberLongKey.values().forEach { key ->
+            val dp12 = (12 * resources.displayMetrics.density).toInt()
+            val dp16 = (16 * resources.displayMetrics.density).toInt()
+            val labelView = android.widget.TextView(this).apply {
+                text = getString(R.string.settings_number_long_key_label_format, key.digit)
+                textSize = 16f
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+            }
+            val valueView = android.widget.TextView(this).apply {
+                id = android.view.View.generateViewId()
+                tag = key.name
+                text = key.getPhrase(this@ShortcutSettingsActivity)
+                textSize = 14f
+                setTextColor(android.graphics.Color.parseColor("#888888"))
+                setPadding(0, (2 * resources.displayMetrics.density).toInt(), 0, 0)
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+            }
+            val itemView = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                setPadding(dp16, dp12, dp16, dp12)
+                isClickable = true
+                isFocusable = true
+                setBackgroundResource(android.R.attr.selectableItemBackground.let {
+                    val tv = android.util.TypedValue()
+                    theme.resolveAttribute(it, tv, true)
+                    tv.resourceId
+                })
+                addView(labelView)
+                addView(valueView)
+                setOnClickListener { showEditDialog(key) }
+            }
+            container.addView(itemView)
+        }
+    }
+
+    private fun refreshNumberLongKeyDisplays() {
+        val container = binding.numberLongKeyContainer
+        for (i in 0 until container.childCount) {
+            val item = container.getChildAt(i) as? LinearLayout ?: continue
+            val valueView = item.getChildAt(1) as? android.widget.TextView ?: continue
+            val keyName = valueView.tag as? String ?: continue
+            val key = NumberLongKey.values().find { it.name == keyName } ?: continue
+            valueView.text = key.getPhrase(this)
         }
     }
 

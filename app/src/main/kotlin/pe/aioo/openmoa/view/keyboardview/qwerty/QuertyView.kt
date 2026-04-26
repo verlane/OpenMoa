@@ -11,6 +11,7 @@ import pe.aioo.openmoa.R
 import pe.aioo.openmoa.config.Config
 import pe.aioo.openmoa.view.message.SpecialKey
 import pe.aioo.openmoa.databinding.QuertyViewBinding
+import pe.aioo.openmoa.quickphrase.NumberLongKey
 import pe.aioo.openmoa.quickphrase.QwertyLongKey
 import pe.aioo.openmoa.quickphrase.QwertyLongKeyRepository
 import pe.aioo.openmoa.view.keytouchlistener.CrossKeyTouchListener
@@ -54,14 +55,19 @@ class QuertyView : ConstraintLayout, KoinComponent {
     private var previewController: KeyPreviewController? = null
     private var currentSkin: KeyboardSkin = KeyboardSkin.DEFAULT
     private val configurableLongKeyListeners = mutableListOf<QwertyKeyTouchListener>()
+    private val numberRowListeners = mutableListOf<QwertyKeyTouchListener>()
     private var enterKeyListener: EnterKeyTouchListener? = null
     private var languageKeyListener: LanguageKeyTouchListener? = null
     private val prefs by lazy {
         context.getSharedPreferences(SettingsPreferences.PREFS_NAME, Context.MODE_PRIVATE)
     }
-    private val prefKeySet = QwertyLongKey.values().map { it.prefKey }.toSet()
+    private val allConfigurablePrefKeys =
+        QwertyLongKey.values().map { it.prefKey }.toSet() +
+        NumberLongKey.values().map { it.prefKey }.toSet()
     private val prefChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-        if (key in prefKeySet && ::binding.isInitialized) updateConfigurableKeyHints()
+        if (key in allConfigurablePrefKeys && ::binding.isInitialized) {
+            updateConfigurableKeyHints()
+        }
     }
     private val configurableLongKeyPairs by lazy {
         listOf(
@@ -69,6 +75,15 @@ class QuertyView : ConstraintLayout, KoinComponent {
             binding.cKey to QwertyLongKey.C, binding.vKey to QwertyLongKey.V,
             binding.bKey to QwertyLongKey.B, binding.nKey to QwertyLongKey.N,
             binding.mKey to QwertyLongKey.M,
+        )
+    }
+    private val numberRowPairs by lazy {
+        listOf(
+            binding.oneKey to NumberLongKey.NUM_1, binding.twoKey to NumberLongKey.NUM_2,
+            binding.threeKey to NumberLongKey.NUM_3, binding.fourKey to NumberLongKey.NUM_4,
+            binding.fiveKey to NumberLongKey.NUM_5, binding.sixKey to NumberLongKey.NUM_6,
+            binding.sevenKey to NumberLongKey.NUM_7, binding.eightKey to NumberLongKey.NUM_8,
+            binding.nineKey to NumberLongKey.NUM_9, binding.zeroKey to NumberLongKey.NUM_0,
         )
     }
 
@@ -79,6 +94,7 @@ class QuertyView : ConstraintLayout, KoinComponent {
         previewController = KeyPreviewController({ config.keyPreviewEnabled }, currentSkin)
         setShiftStatus(ShiftKeyStatus.DISABLED, true)
         setOnTouchListeners()
+        updateConfigurableKeyHints()
         SkinApplier.apply(this, currentSkin)
     }
 
@@ -92,6 +108,7 @@ class QuertyView : ConstraintLayout, KoinComponent {
         prefs.unregisterOnSharedPreferenceChangeListener(prefChangeListener)
         previewController?.cancel()
         configurableLongKeyListeners.forEach { it.cancel() }
+        numberRowListeners.forEach { it.cancel() }
         enterKeyListener?.cancel()
         languageKeyListener?.cancel()
     }
@@ -100,12 +117,16 @@ class QuertyView : ConstraintLayout, KoinComponent {
         super.onWindowFocusChanged(hasWindowFocus)
         if (!hasWindowFocus) {
             configurableLongKeyListeners.forEach { it.cancel() }
+            numberRowListeners.forEach { it.cancel() }
         }
     }
 
     private fun updateConfigurableKeyHints() {
         configurableLongKeyPairs.forEach { (view, longKeyEnum) ->
             view.keyHint = QwertyLongKeyRepository.getPhrase(context, longKeyEnum).take(1)
+        }
+        numberRowPairs.forEach { (view, longKey) ->
+            view.keyHint = longKey.getPhrase(context).take(1)
         }
     }
 
@@ -145,22 +166,33 @@ class QuertyView : ConstraintLayout, KoinComponent {
 
     @SuppressLint("ClickableViewAccessibility")
     private fun setOnTouchListeners() {
-        listOf(
-            binding.oneKey, binding.twoKey, binding.threeKey, binding.fourKey, binding.fiveKey,
-            binding.sixKey, binding.sevenKey, binding.eightKey, binding.nineKey, binding.zeroKey,
-        ).map {
-            it.apply {
-                setOnTouchListener(FunctionalKeyTouchListener(context, previewController = previewController) {
-                    val key = text.toString()
-                    setShiftStatus(
-                        when (shiftKeyStatus) {
-                            ShiftKeyStatus.ENABLED -> ShiftKeyStatus.DISABLED
-                            else -> shiftKeyStatus
-                        }
-                    )
+        numberRowListeners.clear()
+        numberRowPairs.forEach { (view, longKey) ->
+            val popup = QuickPhraseMenuPopup(context)
+            val listener = QwertyKeyTouchListener(
+                context,
+                previewController,
+                longKeyProvider = { longKey.getPhrase(context) },
+                onTap = {
+                    val key = view.text.toString()
+                    setShiftStatus(when (shiftKeyStatus) {
+                        ShiftKeyStatus.ENABLED -> ShiftKeyStatus.DISABLED
+                        else -> shiftKeyStatus
+                    })
                     StringKeyMessage(key)
-                })
-            }
+                },
+                quickPhraseMenuPopup = popup,
+                onEdit = {
+                    val intent = Intent(context, PhraseEditActivity::class.java).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        putExtra(PhraseEditActivity.EXTRA_TYPE, PhraseEditActivity.TYPE_NUMBER)
+                        putExtra(PhraseEditActivity.EXTRA_KEY, longKey.name)
+                    }
+                    context.startActivity(intent)
+                },
+            )
+            numberRowListeners.add(listener)
+            view.setOnTouchListener(listener)
         }
         setAlphaKeyTouchListeners()
         binding.apply {

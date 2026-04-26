@@ -166,8 +166,12 @@
     <string name="settings_qwerty_long_key_m_label">m 단축키</string>
     <string name="settings_qwerty_long_key_edit_hint">단축키를 입력하세요</string>
     <string name="settings_qwerty_long_key_reset">기본값</string>
-<string name="settings_qwerty_long_key_save">저장</string>
+    <string name="settings_qwerty_long_key_save">저장</string>
     <string name="settings_qwerty_long_key_cancel">취소</string>
+    <string name="settings_number_long_key_section">숫자 롱키</string>
+    <string name="settings_number_long_key_label_format">%s 롱키</string>
+    <string name="number_long_key_edit_hint">롱키 입력값을 입력하세요</string>
+    <string name="number_long_key_edit_title">숫자 롱키 수정</string>
 
     <string name="settings_word_suggestion_title">영어 단어 추천</string>
     <string name="settings_word_suggestion_description">영어 입력 시 키보드 위에 추천 단어를 표시합니다</string>
