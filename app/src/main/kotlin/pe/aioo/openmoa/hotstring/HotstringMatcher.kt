@@ -7,9 +7,13 @@ object HotstringMatcher {
         return rules
             .filter { it.enabled && it.trigger.isNotEmpty() }
             .sortedByDescending { it.trigger.length }
-            .firstOrNull { buffer.endsWith(it.trigger) }
+            .firstOrNull {
+                if (!buffer.endsWith(it.trigger)) return@firstOrNull false
+                val pos = buffer.length - it.trigger.length
+                pos == 0 || buffer[pos - 1].isWhitespace()
+            }
     }
 
     fun bufferLengthNeeded(rules: List<HotstringRule>): Int =
-        rules.filter { it.enabled }.maxOfOrNull { it.trigger.length } ?: 0
+        (rules.filter { it.enabled }.maxOfOrNull { it.trigger.length } ?: 0) + 1
 }
