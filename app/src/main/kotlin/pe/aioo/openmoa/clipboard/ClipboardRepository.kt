@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import org.json.JSONArray
 import org.json.JSONObject
 import pe.aioo.openmoa.settings.SettingsPreferences
-import java.util.UUID
 
 object ClipboardRepository {
 
@@ -34,36 +33,22 @@ object ClipboardRepository {
     fun add(context: Context, text: String) {
         if (text.isBlank()) return
         val maxItems = SettingsPreferences.getClipboardMaxItems(context)
-        val entries = getAll(context).toMutableList()
-
-        val existingIndex = entries.indexOfFirst { it.text == text }
-        if (existingIndex >= 0) {
-            val existing = entries.removeAt(existingIndex)
-            entries.add(0, existing.copy(createdAt = System.currentTimeMillis()))
-        } else {
-            entries.add(0, ClipboardEntry(id = UUID.randomUUID().toString(), text = text))
-        }
-
-        val pinned = entries.filter { it.pinned }
-        val unpinned = entries.filter { !it.pinned }.take(maxItems)
-        persist(context, pinned + unpinned)
+        persist(context, reorderOnAdd(getAll(context), text, System.currentTimeMillis(), maxItems))
     }
 
     @Synchronized
     fun use(context: Context, id: String) {
-        persist(context, getAll(context).map {
-            if (it.id == id) it.copy(createdAt = System.currentTimeMillis()) else it
-        })
+        persist(context, reorderOnUse(getAll(context), id, System.currentTimeMillis()))
     }
 
     @Synchronized
     fun pin(context: Context, id: String) {
-        persist(context, getAll(context).map { if (it.id == id) it.copy(pinned = true) else it })
+        persist(context, togglePin(getAll(context), id, pinned = true))
     }
 
     @Synchronized
     fun unpin(context: Context, id: String) {
-        persist(context, getAll(context).map { if (it.id == id) it.copy(pinned = false) else it })
+        persist(context, togglePin(getAll(context), id, pinned = false))
     }
 
     @Synchronized

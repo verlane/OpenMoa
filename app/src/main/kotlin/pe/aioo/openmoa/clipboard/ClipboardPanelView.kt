@@ -235,9 +235,7 @@ class ClipboardPanelView @JvmOverloads constructor(
             Filter.URL -> allWithType.filter { it.type == EntryType.URL }
             Filter.EMAIL -> allWithType.filter { it.type == EntryType.EMAIL }
         }
-        val newItems = filtered.sortedWith(
-            compareByDescending<DisplayEntry> { it.entry.pinned }.thenByDescending { it.entry.createdAt }
-        )
+        val newItems = filtered
         val diff = DiffUtil.calculateDiff(DisplayEntryDiff(itemAdapter.items, newItems))
         itemAdapter.items = newItems
         diff.dispatchUpdatesTo(itemAdapter)
