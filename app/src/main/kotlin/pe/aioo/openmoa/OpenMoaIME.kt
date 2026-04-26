@@ -98,6 +98,9 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     private var isSuggestionBarActive = false
     private var isTextSelected = false
     private var isClipboardPanelVisible = false
+    private var suggestionLongPressPopup: android.widget.PopupWindow? = null
+    private var currentSuggestions: List<String> = emptyList()
+    private var currentHotstringExpansions: Set<String> = emptySet()
     private var clipboardManager: ClipboardManager? = null
     private val clipboardListener = ClipboardManager.OnPrimaryClipChangedListener {
         if (!isPasswordField && config.clipboardEnabled) {
@@ -177,6 +180,8 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                 showIdleSuggestionBar(isTextSelected)
             } else {
                 isSuggestionBarActive = true
+                currentSuggestions = finalWords
+                currentHotstringExpansions = hotstringSet
                 binding.wordSuggestionBar.setSuggestions(finalWords, hotstringSet)
                 binding.wordSuggestionBar.visibility = View.VISIBLE
             }
@@ -272,12 +277,14 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
             val dp8 = (8 * resources.displayMetrics.density).toInt()
             setPadding(dp8, dp8, dp8, dp8)
         }
+        suggestionLongPressPopup?.dismiss()
         val popup = android.widget.PopupWindow(
             menuView,
             android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
             android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
-            true,
+            false,
         )
+        suggestionLongPressPopup = popup
 
         fun addItem(label: String, action: () -> Unit) {
             val dp12 = (12 * resources.displayMetrics.density).toInt()
@@ -290,21 +297,39 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                 ).let { it.getDrawable(0).also { _ -> it.recycle() } }
                 isClickable = true
                 isFocusable = true
-                setOnClickListener { popup.dismiss(); action() }
+                setOnClickListener {
+                    popup.dismiss()
+                    action()
+                }
             }
             menuView.addView(tv)
         }
 
         addItem(getString(R.string.suggestion_long_click_remove)) {
             store.remove(word)
-            deactivateSuggestionBar()
+            refreshAfterSuggestionEdit(word)
         }
         addItem(getString(R.string.suggestion_long_click_blacklist)) {
             store.addToBlacklist(word)
-            deactivateSuggestionBar()
+            refreshAfterSuggestionEdit(word)
         }
 
-        popup.showAtLocation(anchorView, android.view.Gravity.TOP or android.view.Gravity.CENTER_HORIZONTAL, 0, 0)
+        menuView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
+        val xoff = anchorView.width / 2 - menuView.measuredWidth / 2
+        val yoff = -(menuView.measuredHeight + anchorView.height)
+        popup.showAsDropDown(anchorView, xoff, yoff)
+    }
+
+    private fun refreshAfterSuggestionEdit(removedWord: String) {
+        val updated = currentSuggestions.filter { it != removedWord }
+        currentSuggestions = updated
+        if (updated.isNotEmpty()) {
+            binding.wordSuggestionBar.setSuggestions(updated, currentHotstringExpansions)
+        } else if (composingText.isNotEmpty()) {
+            refreshSuggestions(composingText)
+        } else {
+            showIdleSuggestionBar(isTextSelected)
+        }
     }
 
     private inline fun <reified T : Serializable> getKeyFromIntent(intent: Intent): T? {
@@ -367,6 +392,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         super.onCreate()
         broadcastReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
+                suggestionLongPressPopup?.dismiss()
                 val key = getKeyFromIntent<String>(intent)
                     ?: getKeyFromIntent<SpecialKey>(intent)
                     ?: return
@@ -872,6 +898,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
 
     override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
         super.onStartInputView(info, restarting)
+        suggestionLongPressPopup?.dismiss()
         finishComposing()
         hotstringBuffer = ""
         lastLearnedWord = null
