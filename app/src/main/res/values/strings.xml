@@ -171,8 +171,11 @@
 
     <string name="settings_word_suggestion_title">영어 단어 추천</string>
     <string name="settings_word_suggestion_description">영어 입력 시 키보드 위에 추천 단어를 표시합니다</string>
+    <string name="settings_word_suggestion_on">켜짐 - 영어 입력 시 추천 단어를 표시합니다</string>
     <string name="settings_korean_word_suggestion_title">한국어 단어 추천</string>
     <string name="settings_korean_word_suggestion_description">한국어 입력 시 키보드 위에 추천 단어를 표시합니다</string>
+    <string name="settings_korean_word_suggestion_on">켜짐 - 한국어 입력 시 추천 단어를 표시합니다</string>
+    <string name="settings_suggestion_off">꺼짐</string>
     <string name="settings_hotstring_title">자동 치환</string>
     <string name="settings_hotstring_description">단축 글자 입력 후 스페이스를 누르면 지정한 단어로 바꿔줍니다</string>
     <string name="settings_hotstring_manage_title">자동 치환</string>
@@ -280,8 +283,22 @@
     <string name="settings_learned_words_description">자주 입력한 단어 목록을 확인하고 관리합니다</string>
     <string name="settings_learned_words_tab_ko">한국어</string>
     <string name="settings_learned_words_tab_en">영어</string>
+    <string name="settings_learned_words_tab_blacklist">차단 목록</string>
     <string name="settings_learned_words_empty">학습된 단어가 없어요</string>
+    <string name="settings_learned_words_blacklist_empty">차단된 단어가 없어요</string>
     <string name="settings_learned_words_delete_confirm">\'%s\'을(를) 삭제할까요?</string>
+    <string name="settings_learned_words_add">+ 단어 추가</string>
+    <string name="settings_learned_words_add_hint_ko">단어를 입력하세요 (한국어, 2글자 이상)</string>
+    <string name="settings_learned_words_add_hint_en">Enter a word (English, 4+ chars)</string>
+    <string name="settings_learned_words_add_invalid_ko">한국어 2글자 이상이어야 해요</string>
+    <string name="settings_learned_words_add_invalid_en">영어 4글자 이상이어야 해요</string>
+    <string name="settings_learned_words_add_duplicate">이미 있는 단어예요</string>
+    <string name="settings_learned_words_delete_all">전체 삭제</string>
+    <string name="settings_learned_words_delete_all_confirm">현재 탭의 단어를 모두 삭제할까요?</string>
+    <string name="settings_learned_words_blacklist_release">차단 해제</string>
+    <string name="settings_learned_words_blacklist_release_confirm">\'%s\'의 차단을 해제할까요?</string>
+    <string name="settings_lang_label_ko">한</string>
+    <string name="settings_lang_label_en">영</string>
     <string name="suggestion_long_click_remove">이 단어 삭제</string>
     <string name="suggestion_long_click_blacklist">다시 추천 안 함</string>
 

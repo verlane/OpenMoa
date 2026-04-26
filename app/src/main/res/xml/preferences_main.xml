@@ -131,14 +131,16 @@
         <SwitchPreferenceCompat
             app:key="word_suggestion_enabled"
             app:title="@string/settings_word_suggestion_title"
-            app:summary="@string/settings_word_suggestion_description"
+            app:summaryOn="@string/settings_word_suggestion_on"
+            app:summaryOff="@string/settings_suggestion_off"
             app:defaultValue="false"
             app:icon="@drawable/ic_pref_suggest" />
 
         <SwitchPreferenceCompat
             app:key="korean_word_suggestion_enabled"
             app:title="@string/settings_korean_word_suggestion_title"
-            app:summary="@string/settings_korean_word_suggestion_description"
+            app:summaryOn="@string/settings_korean_word_suggestion_on"
+            app:summaryOff="@string/settings_suggestion_off"
             app:defaultValue="false"
             app:icon="@drawable/ic_pref_suggest" />
 

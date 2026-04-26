@@ -97,15 +97,14 @@ class WordTokenizerTest {
     }
 
     @Test
-    fun `한 글자 단어는 조사 제거 안 함 (너무 짧아서)`() {
-        // "가" 에서 "가" 는 "가(조사)" 인지 단어인지 모름 - 2글자 이상만 제거
-        assertEquals("가", WordTokenizer.extractKorean("가"))
+    fun `한 글자 한국어는 null 반환`() {
+        assertNull(WordTokenizer.extractKorean("가"))
     }
 
     @Test
-    fun `두 글자일 때 조사 제거하면 한 글자 남는 경우 원본 반환`() {
-        // "은" 이 "은(동사)" + 없음 인지 모름 → 결과가 1글자면 원본 반환
-        assertEquals("은", WordTokenizer.extractKorean("은"))
+    fun `조사 제거 후 한 글자 남으면 null 반환`() {
+        assertNull(WordTokenizer.extractKorean("은"))
+        assertNull(WordTokenizer.extractKorean("나는"))
     }
 
     @Test
@@ -146,6 +145,18 @@ class WordTokenizerTest {
     }
 
     @Test
+    fun `extractEnglish 3글자 이하는 null 반환`() {
+        assertNull(WordTokenizer.extractEnglish("a"))
+        assertNull(WordTokenizer.extractEnglish("ab"))
+        assertNull(WordTokenizer.extractEnglish("abc"))
+    }
+
+    @Test
+    fun `extractEnglish 4글자 이상 반환`() {
+        assertEquals("word", WordTokenizer.extractEnglish("word"))
+    }
+
+    @Test
     fun `extractEnglish 순수 영문 소문자 그대로 반환`() {
         assertEquals("hello", WordTokenizer.extractEnglish("hello"))
     }
@@ -165,5 +176,25 @@ class WordTokenizerTest {
     fun `extractEnglish 영문 외 문자 포함 시 null 반환`() {
         assertNull(WordTokenizer.extractEnglish("hello123"))
         assertNull(WordTokenizer.extractEnglish("안녕"))
+    }
+
+    @Test
+    fun `extractEnglish 앞뒤 공백 제거 후 처리`() {
+        assertEquals("hello", WordTokenizer.extractEnglish("  hello  "))
+    }
+
+    @Test
+    fun `extractKorean 조사만으로 구성된 경우 null 반환`() {
+        assertNull(WordTokenizer.extractKorean("에서"))
+    }
+
+    @Test
+    fun `extractKorean 최소 글자수 경계값 - 정확히 2글자는 반환`() {
+        assertEquals("사랑", WordTokenizer.extractKorean("사랑"))
+    }
+
+    @Test
+    fun `extractEnglish 최소 글자수 경계값 - 정확히 4글자는 반환`() {
+        assertEquals("test", WordTokenizer.extractEnglish("test"))
     }
 }

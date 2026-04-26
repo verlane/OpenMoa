@@ -5,6 +5,7 @@ interface UserWordStore {
     fun increment(word: String)
     fun decrement(word: String)
     fun remove(word: String)
+    fun contains(word: String): Boolean
     fun entries(): List<Pair<String, Int>>
     fun importWords(words: Map<String, Int>)
     fun addToBlacklist(word: String)
@@ -18,6 +19,7 @@ class NoOpUserWordStore : UserWordStore {
     override fun increment(word: String) = Unit
     override fun decrement(word: String) = Unit
     override fun remove(word: String) = Unit
+    override fun contains(word: String): Boolean = false
     override fun entries(): List<Pair<String, Int>> = emptyList()
     override fun importWords(words: Map<String, Int>) = Unit
     override fun addToBlacklist(word: String) = Unit
@@ -45,6 +47,8 @@ class InMemoryUserWordStore : UserWordStore {
     override fun remove(word: String) {
         words.remove(word)
     }
+
+    override fun contains(word: String): Boolean = words.containsKey(word)
 
     override fun entries(): List<Pair<String, Int>> = words.entries.map { it.key to it.value }
 

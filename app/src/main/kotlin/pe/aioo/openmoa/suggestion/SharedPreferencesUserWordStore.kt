@@ -86,6 +86,10 @@ class SharedPreferencesUserWordStore(
         }
     }
 
+    override fun contains(word: String): Boolean = synchronized(this) {
+        words.containsKey(normalize(word))
+    }
+
     override fun entries(): List<Pair<String, Int>> = synchronized(this) {
         words.entries.map { it.key to it.value }
     }
