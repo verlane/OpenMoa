@@ -70,10 +70,10 @@ class JaumKeyTouchListener(
                 isLongPressed = false
                 cachedGestureThreshold = config.gestureThreshold
                 moeumGestureProcessor.clear()
-                previewController?.show(view, jaumPreviewResolver?.invoke(key) ?: key)
                 if (quickPhraseKey != null || numberChar != null) {
                     handler.postDelayed(longPressRunnable, config.longPressThresholdTime)
                 }
+                previewController?.show(view, jaumPreviewResolver?.invoke(key) ?: key)
             }
             MotionEvent.ACTION_MOVE -> {
                 if (isLongPressed && numberChar != null) {

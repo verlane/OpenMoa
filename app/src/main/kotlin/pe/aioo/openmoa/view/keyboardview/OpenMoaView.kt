@@ -333,11 +333,11 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
     private val touchYCorrection by lazy { 8f * resources.displayMetrics.density }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        val corrected = MotionEvent.obtain(ev).also { it.offsetLocation(0f, -touchYCorrection) }
+        ev.offsetLocation(0f, -touchYCorrection)
         return try {
-            dispatchCorrectedTouchEvent(corrected)
+            dispatchCorrectedTouchEvent(ev)
         } finally {
-            corrected.recycle()
+            ev.offsetLocation(0f, touchYCorrection)
         }
     }
 
