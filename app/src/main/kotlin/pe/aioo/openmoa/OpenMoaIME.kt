@@ -205,27 +205,31 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
             } else {
                 null
             }
+            val triggerMatchedTrimmed = triggerMatched.map { it.trim() }.toSet()
             val expansionMatched = enabledRules
                 .filter { rule ->
-                    rule.expansion !in triggerMatched &&
-                    (syllablePrefix.length >= 2 && rule.expansion.startsWith(syllablePrefix) ||
-                    chosungPattern != null &&
-                        HangulSyllable.matchesChosungPattern(rule.expansion, chosungPattern))
+                    rule.expansion.trim() !in triggerMatchedTrimmed &&
+                    (
+                        (syllablePrefix.length >= 2 && rule.expansion.startsWith(syllablePrefix)) ||
+                        (chosungPattern != null && HangulSyllable.matchesChosungPattern(rule.expansion, chosungPattern))
+                    )
                 }
-                .map { it.expansion }
+                .map { it.expansion }  // 원본 유지 (trailing space 포함)
 
-            val hotstringSet = (triggerMatched + expansionMatched).toSet()
-            val wordsSet = words.toSet()
-            val finalWords = (triggerMatched + expansionMatched.filter { it !in wordsSet } + words)
-                .distinct()
+            // trim 기준으로 중복 제거하되 원본 값 보존 — 자동 치환 우선
+            val hotstringExpansions = (triggerMatched + expansionMatched).distinctBy { it.trim() }
+            val hotstringTrimmedSet = hotstringExpansions.map { it.trim() }.toSet()
+            val hotstringExpansionSet = hotstringExpansions.toSet()
+            val finalWords = (hotstringExpansions + words.filter { it.trim() !in hotstringTrimmedSet })
+                .distinctBy { it.trim() }
                 .take(config.maxSuggestionCount)
             if (finalWords.isEmpty()) {
                 showIdleSuggestionBar(isTextSelected)
             } else {
                 isSuggestionBarActive = true
                 currentSuggestions = finalWords
-                currentHotstringExpansions = hotstringSet
-                binding.wordSuggestionBar.setSuggestions(finalWords, hotstringSet)
+                currentHotstringExpansions = hotstringExpansionSet
+                binding.wordSuggestionBar.setSuggestions(finalWords, hotstringExpansionSet)
                 binding.wordSuggestionBar.visibility = View.VISIBLE
             }
         }
