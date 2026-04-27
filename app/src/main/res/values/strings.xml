@@ -302,6 +302,10 @@
     <string name="settings_learned_words_delete_all_confirm">현재 탭의 단어를 모두 삭제할까요?</string>
     <string name="settings_learned_words_blacklist_release">차단 해제</string>
     <string name="settings_learned_words_blacklist_release_confirm">\'%s\'의 차단을 해제할까요?</string>
+    <string name="settings_learned_words_prune_30">최근 30일 미사용 단어 삭제</string>
+    <string name="settings_learned_words_prune_confirm">최근 30일 동안 사용하지 않은 단어를 삭제할까요?</string>
+    <string name="settings_learned_words_prune_result">%d개 단어를 정리했어요</string>
+    <string name="settings_learned_words_prune_none">정리할 단어가 없어요</string>
     <string name="settings_lang_label_ko">한</string>
     <string name="settings_lang_label_en">영</string>
     <string name="suggestion_long_click_remove">이 단어 삭제</string>

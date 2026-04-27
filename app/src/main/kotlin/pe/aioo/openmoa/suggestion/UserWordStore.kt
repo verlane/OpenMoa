@@ -13,6 +13,8 @@ interface UserWordStore {
     fun removeFromBlacklist(word: String)
     fun blacklist(): Set<String>
     fun clear()
+    fun flush() = Unit
+    fun pruneOlderThan(days: Int): Int = 0
 }
 
 class NoOpUserWordStore : UserWordStore {

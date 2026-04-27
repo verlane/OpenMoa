@@ -10,6 +10,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import org.koin.android.ext.android.get
@@ -57,14 +58,16 @@ class LearnedWordsActivity : AppCompatActivity() {
     }
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        menu.findItem(R.id.menu_delete_all)?.isVisible = currentTab != Tab.BLACKLIST
+        val isWordTab = currentTab != Tab.BLACKLIST
+        menu.findItem(R.id.menu_delete_all)?.isVisible = isWordTab
+        menu.findItem(R.id.menu_prune_30)?.isVisible = isWordTab
         return super.onPrepareOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.menu_delete_all) {
-            showDeleteAllConfirm()
-            return true
+        when (item.itemId) {
+            R.id.menu_delete_all -> { showDeleteAllConfirm(); return true }
+            R.id.menu_prune_30 -> { showPruneConfirm(); return true }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -266,6 +269,28 @@ class LearnedWordsActivity : AppCompatActivity() {
             }
         }
         dialog.show()
+    }
+
+    private fun showPruneConfirm() {
+        val store = when (currentTab) {
+            Tab.KO -> koStore
+            Tab.EN -> enStore
+            Tab.BLACKLIST -> return
+        }
+        AlertDialog.Builder(this)
+            .setMessage(R.string.settings_learned_words_prune_confirm)
+            .setPositiveButton(R.string.dialog_confirm) { _, _ ->
+                val removed = store.pruneOlderThan(30)
+                val msg = if (removed > 0) {
+                    getString(R.string.settings_learned_words_prune_result, removed)
+                } else {
+                    getString(R.string.settings_learned_words_prune_none)
+                }
+                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                if (removed > 0) refreshList()
+            }
+            .setNegativeButton(R.string.settings_qwerty_long_key_cancel, null)
+            .show()
     }
 
     private fun showBlacklistReleaseConfirm(word: String, isEn: Boolean) {

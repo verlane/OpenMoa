@@ -1053,6 +1053,8 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         if (isClipboardPanelVisible) hideClipboardPanel()
         clipboardManager?.removePrimaryClipChangedListener(clipboardListener)
         clipboardManager = null
+        userWordStore.flush()
+        koreanUserWordStore.flush()
     }
 
     private fun showClipboardEditForm(entry: ClipboardEntry) {
@@ -1331,6 +1333,8 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         if (this::broadcastReceiver.isInitialized) {
             LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
         }
+        userWordStore.flush()
+        koreanUserWordStore.flush()
         feedbackPlayer.release()
         serviceScope.cancel()
         super.onDestroy()
