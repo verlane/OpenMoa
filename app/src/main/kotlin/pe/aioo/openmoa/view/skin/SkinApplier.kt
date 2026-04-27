@@ -55,6 +55,9 @@ object SkinApplier {
     fun fgColor(ctx: Context, skin: KeyboardSkin): Int =
         ContextCompat.getColor(ctx, skin.keyFgColorRes)
 
+    fun keyBgColor(ctx: Context, skin: KeyboardSkin): Int =
+        ContextCompat.getColor(ctx, skin.keyBgColorRes)
+
     fun fgAccentColor(ctx: Context, skin: KeyboardSkin): Int =
         ContextCompat.getColor(ctx, skin.keyFgAccentColorRes)
 

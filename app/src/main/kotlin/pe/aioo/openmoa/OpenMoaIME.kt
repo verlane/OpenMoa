@@ -260,7 +260,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                 binding.wordSuggestionBar.showClipboard(clipText) { text ->
                     finishComposing()
                     currentInputConnection?.commitText(text, 1)
-                    deactivateSuggestionBar()
+                    binding.wordSuggestionBar.showClipboardIconOnly()
                 }
             } else {
                 binding.wordSuggestionBar.showEmpty()
@@ -752,6 +752,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                         }
                     }
                 }
+                if (this@OpenMoaIME::binding.isInitialized) binding.wordSuggestionBar.resetUndoRedo()
                 if (beforeComposingText != composingText) {
                     currentInputConnection?.setComposingText(composingText, 1)
                 }
@@ -825,6 +826,20 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         binding = OpenMoaImeBinding.bind(view)
         binding.wordSuggestionBar.onPick = ::onSuggestionPicked
         binding.wordSuggestionBar.onWordLongClick = { word -> onSuggestionLongClick(word) }
+        binding.wordSuggestionBar.onCursorLeft = {
+            if (!isTextEmpty()) sendKeyDownUpEvent(KeyEvent.KEYCODE_DPAD_LEFT)
+        }
+        binding.wordSuggestionBar.onCursorRight = {
+            if (!isTextEmpty()) sendKeyDownUpEvent(KeyEvent.KEYCODE_DPAD_RIGHT)
+        }
+        binding.wordSuggestionBar.onUndoRedo = { isUndo ->
+            if (isUndo) currentInputConnection?.performContextMenuAction(android.R.id.undo)
+            else currentInputConnection?.performContextMenuAction(android.R.id.redo)
+        }
+        binding.wordSuggestionBar.onSettings = {
+            startActivity(Intent(this, SettingsActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        }
+        binding.wordSuggestionBar.onOpenClipboardPanel = { showClipboardPanel() }
         binding.clipboardPanel.onPaste = { text ->
             finishComposing()
             currentInputConnection?.commitText(text, 1)
@@ -1458,10 +1473,16 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
             gravity = keyboardGravity
             bottomMargin = dp4
         }
+        (binding.wordSuggestionBar.layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
+            lp.width = keyboardWidth
+            lp.gravity = keyboardGravity
+            binding.wordSuggestionBar.layoutParams = lp
+        }
         if (this::binding.isInitialized) {
             val fg = SkinApplier.fgColor(this, skin)
             val bg = SkinApplier.keyboardBgColor(this, skin)
-            binding.wordSuggestionBar.applyColors(fg, bg)
+            val keyBg = SkinApplier.keyBgColor(this, skin)
+            binding.wordSuggestionBar.applyColors(fg, bg, keyBg)
             binding.clipboardPanel.applyColors(fg, bg)
             binding.wordSuggestionBar.visibility = View.VISIBLE
         }
