@@ -8,43 +8,33 @@ import android.view.MotionEvent
 import android.view.View
 import pe.aioo.openmoa.view.message.SpecialKey
 import pe.aioo.openmoa.view.message.SpecialKeyMessage
-import java.util.Timer
 
 class LanguageKeyTouchListener(context: Context) : BaseKeyTouchListener(context) {
 
-    @Volatile
     private var longPressTriggered = false
-    private var timer: Timer? = null
-    private val mainHandler = Handler(Looper.getMainLooper())
+    private val handler = Handler(Looper.getMainLooper())
+    private var longPressRunnable: Runnable? = null
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
         when (motionEvent.action) {
             MotionEvent.ACTION_DOWN -> {
                 longPressTriggered = false
-                var elapsed = 0L
-                timer = kotlin.concurrent.timer(period = config.longPressRepeatTime) {
-                    elapsed += config.longPressRepeatTime
-                    if (elapsed >= config.longPressThresholdTime) {
-                        longPressTriggered = true
-                        cancel()
-                        mainHandler.post {
-                            sendKeyMessage(SpecialKeyMessage(SpecialKey.OPEN_SETTINGS))
-                        }
-                    }
-                }
+                longPressRunnable = Runnable {
+                    longPressTriggered = true
+                    longPressRunnable = null
+                    sendKeyMessage(SpecialKeyMessage(SpecialKey.OPEN_SETTINGS))
+                }.also { handler.postDelayed(it, config.longPressThresholdTime) }
             }
             MotionEvent.ACTION_UP -> {
-                timer?.cancel()
-                timer = null
+                cancelLongPress()
                 if (!longPressTriggered) {
                     sendKeyMessage(SpecialKeyMessage(SpecialKey.LANGUAGE))
                 }
                 longPressTriggered = false
             }
             MotionEvent.ACTION_CANCEL -> {
-                timer?.cancel()
-                timer = null
+                cancelLongPress()
                 longPressTriggered = false
             }
         }
@@ -52,9 +42,13 @@ class LanguageKeyTouchListener(context: Context) : BaseKeyTouchListener(context)
     }
 
     fun cancel() {
-        timer?.cancel()
-        timer = null
+        cancelLongPress()
         longPressTriggered = false
+    }
+
+    private fun cancelLongPress() {
+        longPressRunnable?.let { handler.removeCallbacks(it) }
+        longPressRunnable = null
     }
 
 
