@@ -30,8 +30,9 @@ import pe.aioo.openmoa.view.keytouchlistener.LanguageKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.RepeatKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.SimpleKeyTouchListener
 import pe.aioo.openmoa.view.keytouchlistener.SpaceKeyTouchListener
-import pe.aioo.openmoa.view.keytouchlistener.UserCharKeyTouchListener
+import pe.aioo.openmoa.quickphrase.PhraseKey
 import pe.aioo.openmoa.quickphrase.UserCharKey
+import pe.aioo.openmoa.view.keytouchlistener.QwertyKeyTouchListener
 import pe.aioo.openmoa.view.message.SpecialKeyMessage
 import pe.aioo.openmoa.view.message.StringKeyMessage
 import pe.aioo.openmoa.quickphrase.QuickPhraseKey
@@ -73,7 +74,7 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
     private lateinit var previewController: KeyPreviewController
     private var enterKeyListener: EnterKeyTouchListener? = null
     var jaumPreviewResolver: ((String) -> String)? = null
-    var onEditPhraseRequest: ((QuickPhraseKey) -> Unit)? = null
+    var onEditPhraseRequest: ((PhraseKey) -> Unit)? = null
 
     private fun resolveJaumPreview(key: String): String = jaumPreviewResolver?.invoke(key) ?: key
 
@@ -172,8 +173,17 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
             JaumKeyTouchListener(context, key, previewController, phraseKey, quickPhraseMenuPopup, jaumPreviewResolver = resolver)
                 .also { it.onEditPhraseRequest = { k -> onEditPhraseRequest?.invoke(k) } }
         }
+        val userCharListener = { userCharKey: UserCharKey ->
+            QwertyKeyTouchListener(
+                context, previewController,
+                longKeyProvider = { userCharKey.getPhrase(context) },
+                onTap = { StringKeyMessage(userCharKey.getPhrase(context)) },
+                quickPhraseMenuPopup = QuickPhraseMenuPopup(context),
+                onEdit = { onEditPhraseRequest?.invoke(userCharKey) },
+            )
+        }
         b.apply {
-            tildeKey.setOnTouchListener(UserCharKeyTouchListener(context, UserCharKey.TILDE, previewController))
+            tildeKey.setOnTouchListener(userCharListener(UserCharKey.TILDE))
             ssangbieupKey.setOnTouchListener(phraseListener("ㅃ", QuickPhraseKey.SSANGBIEUP))
             ssangjieutKey.setOnTouchListener(phraseListener("ㅉ", QuickPhraseKey.SSANGJIEUT))
             ssangdigeutKey.setOnTouchListener(phraseListener("ㄸ", QuickPhraseKey.SSANGDIGEUT))
@@ -182,7 +192,7 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
             emojiKey.setOnTouchListener(
                 SimpleKeyTouchListener(context, SpecialKeyMessage(SpecialKey.EMOJI))
             )
-            caretKey.setOnTouchListener(UserCharKeyTouchListener(context, UserCharKey.CARET, previewController))
+            caretKey.setOnTouchListener(userCharListener(UserCharKey.CARET))
             bieupKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅂ", previewController, numberChar = "1", jaumPreviewResolver = resolver))
             jieutKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅈ", previewController, numberChar = "2", jaumPreviewResolver = resolver))
             digeutKey.setOnTouchListener(JaumKeyTouchListener(context, "ㄷ", previewController, numberChar = "3", jaumPreviewResolver = resolver))
@@ -191,17 +201,13 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
             backspaceKey.setOnTouchListener(
                 RepeatKeyTouchListener(context, SpecialKeyMessage(SpecialKey.BACKSPACE))
             )
-            semicolonKey.setOnTouchListener(
-                UserCharKeyTouchListener(context, UserCharKey.SEMICOLON, previewController)
-            )
+            semicolonKey.setOnTouchListener(userCharListener(UserCharKey.SEMICOLON))
             mieumKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅁ", previewController, numberChar = "6", jaumPreviewResolver = resolver))
             nieunKey.setOnTouchListener(JaumKeyTouchListener(context, "ㄴ", previewController, numberChar = "7", jaumPreviewResolver = resolver))
             ieungKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅇ", previewController, numberChar = "8", jaumPreviewResolver = resolver))
             rieulKey.setOnTouchListener(JaumKeyTouchListener(context, "ㄹ", previewController, numberChar = "9", jaumPreviewResolver = resolver))
             hieutKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅎ", previewController, numberChar = "0", jaumPreviewResolver = resolver))
-            asteriskKey.setOnTouchListener(
-                UserCharKeyTouchListener(context, UserCharKey.ASTERISK, previewController)
-            )
+            asteriskKey.setOnTouchListener(userCharListener(UserCharKey.ASTERISK))
             kieukKey.setOnTouchListener(phraseListener("ㅋ", QuickPhraseKey.KIEUK))
             tieutKey.setOnTouchListener(phraseListener("ㅌ", QuickPhraseKey.TIEUT))
             chieutKey.setOnTouchListener(phraseListener("ㅊ", QuickPhraseKey.CHIEUT))
@@ -258,37 +264,38 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
             JaumKeyTouchListener(context, key, previewController, phraseKey, quickPhraseMenuPopup, jaumPreviewResolver = resolver)
                 .also { it.onEditPhraseRequest = { k -> onEditPhraseRequest?.invoke(k) } }
         }
+        val userCharListener = { userCharKey: UserCharKey ->
+            QwertyKeyTouchListener(
+                context, previewController,
+                longKeyProvider = { userCharKey.getPhrase(context) },
+                onTap = { StringKeyMessage(userCharKey.getPhrase(context)) },
+                quickPhraseMenuPopup = QuickPhraseMenuPopup(context),
+                onEdit = { onEditPhraseRequest?.invoke(userCharKey) },
+            )
+        }
         b.apply {
-            tildeKey.setOnTouchListener(UserCharKeyTouchListener(context, UserCharKey.TILDE, previewController))
+            tildeKey.setOnTouchListener(userCharListener(UserCharKey.TILDE))
             ssangbieupKey.setOnTouchListener(phraseListener("ㅃ", QuickPhraseKey.SSANGBIEUP))
             ssangjieutKey.setOnTouchListener(phraseListener("ㅉ", QuickPhraseKey.SSANGJIEUT))
             ssangdigeutKey.setOnTouchListener(phraseListener("ㄸ", QuickPhraseKey.SSANGDIGEUT))
             ssanggiyeokKey.setOnTouchListener(phraseListener("ㄲ", QuickPhraseKey.SSANGGIYEOK))
             ssangsiotKey.setOnTouchListener(phraseListener("ㅆ", QuickPhraseKey.SSANGSIOT))
-            exclamationKey.setOnTouchListener(
-                UserCharKeyTouchListener(context, UserCharKey.EXCLAMATION, previewController)
-            )
-            caretKey.setOnTouchListener(UserCharKeyTouchListener(context, UserCharKey.CARET, previewController))
+            exclamationKey.setOnTouchListener(userCharListener(UserCharKey.EXCLAMATION))
+            caretKey.setOnTouchListener(userCharListener(UserCharKey.CARET))
             bieupKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅂ", previewController, numberChar = "1", jaumPreviewResolver = resolver))
             jieutKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅈ", previewController, numberChar = "2", jaumPreviewResolver = resolver))
             digeutKey.setOnTouchListener(JaumKeyTouchListener(context, "ㄷ", previewController, numberChar = "3", jaumPreviewResolver = resolver))
             giyeokKey.setOnTouchListener(JaumKeyTouchListener(context, "ㄱ", previewController, numberChar = "4", jaumPreviewResolver = resolver))
             siotKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅅ", previewController, numberChar = "5", jaumPreviewResolver = resolver))
-            questionKey.setOnTouchListener(
-                UserCharKeyTouchListener(context, UserCharKey.QUESTION, previewController)
-            )
-            semicolonKey.setOnTouchListener(
-                UserCharKeyTouchListener(context, UserCharKey.SEMICOLON, previewController)
-            )
+            questionKey.setOnTouchListener(userCharListener(UserCharKey.QUESTION))
+            semicolonKey.setOnTouchListener(userCharListener(UserCharKey.SEMICOLON))
             mieumKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅁ", previewController, numberChar = "6", jaumPreviewResolver = resolver))
             nieunKey.setOnTouchListener(JaumKeyTouchListener(context, "ㄴ", previewController, numberChar = "7", jaumPreviewResolver = resolver))
             ieungKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅇ", previewController, numberChar = "8", jaumPreviewResolver = resolver))
             rieulKey.setOnTouchListener(JaumKeyTouchListener(context, "ㄹ", previewController, numberChar = "9", jaumPreviewResolver = resolver))
             hieutKey.setOnTouchListener(JaumKeyTouchListener(context, "ㅎ", previewController, numberChar = "0", jaumPreviewResolver = resolver))
-            dotKey.setOnTouchListener(UserCharKeyTouchListener(context, UserCharKey.DOT, previewController))
-            asteriskKey.setOnTouchListener(
-                UserCharKeyTouchListener(context, UserCharKey.ASTERISK, previewController)
-            )
+            dotKey.setOnTouchListener(userCharListener(UserCharKey.DOT))
+            asteriskKey.setOnTouchListener(userCharListener(UserCharKey.ASTERISK))
             kieukKey.setOnTouchListener(phraseListener("ㅋ", QuickPhraseKey.KIEUK))
             tieutKey.setOnTouchListener(phraseListener("ㅌ", QuickPhraseKey.TIEUT))
             chieutKey.setOnTouchListener(phraseListener("ㅊ", QuickPhraseKey.CHIEUT))

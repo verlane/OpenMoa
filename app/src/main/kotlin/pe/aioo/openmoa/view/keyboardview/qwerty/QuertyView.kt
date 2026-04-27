@@ -25,8 +25,7 @@ import pe.aioo.openmoa.view.keytouchlistener.SpaceKeyTouchListener
 import pe.aioo.openmoa.view.message.SpecialKeyMessage
 import pe.aioo.openmoa.view.message.StringKeyMessage
 import pe.aioo.openmoa.config.KeyboardSkin
-import android.content.Intent
-import pe.aioo.openmoa.settings.PhraseEditActivity
+import pe.aioo.openmoa.quickphrase.PhraseKey
 import pe.aioo.openmoa.settings.SettingsPreferences
 import pe.aioo.openmoa.view.preview.KeyPreviewController
 import pe.aioo.openmoa.view.preview.QuickPhraseMenuPopup
@@ -50,6 +49,7 @@ class QuertyView : ConstraintLayout, KoinComponent {
         init()
     }
 
+    var onEditPhraseRequest: ((PhraseKey) -> Unit)? = null
     private var shiftKeyStatus = ShiftKeyStatus.DISABLED
     private lateinit var binding: QuertyViewBinding
     private var previewController: KeyPreviewController? = null
@@ -182,14 +182,7 @@ class QuertyView : ConstraintLayout, KoinComponent {
                     StringKeyMessage(key)
                 },
                 quickPhraseMenuPopup = popup,
-                onEdit = {
-                    val intent = Intent(context, PhraseEditActivity::class.java).apply {
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        putExtra(PhraseEditActivity.EXTRA_TYPE, PhraseEditActivity.TYPE_NUMBER)
-                        putExtra(PhraseEditActivity.EXTRA_KEY, longKey.name)
-                    }
-                    context.startActivity(intent)
-                },
+                onEdit = { onEditPhraseRequest?.invoke(longKey) },
             )
             numberRowListeners.add(listener)
             view.setOnTouchListener(listener)
@@ -282,14 +275,7 @@ class QuertyView : ConstraintLayout, KoinComponent {
                     StringKeyMessage(key)
                 },
                 quickPhraseMenuPopup = popup,
-                onEdit = {
-                    val intent = Intent(context, PhraseEditActivity::class.java).apply {
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        putExtra(PhraseEditActivity.EXTRA_TYPE, PhraseEditActivity.TYPE_ENGLISH)
-                        putExtra(PhraseEditActivity.EXTRA_KEY, longKeyEnum.name)
-                    }
-                    context.startActivity(intent)
-                }
+                onEdit = { onEditPhraseRequest?.invoke(longKeyEnum) }
             )
             configurableLongKeyListeners.add(listener)
             view.apply {

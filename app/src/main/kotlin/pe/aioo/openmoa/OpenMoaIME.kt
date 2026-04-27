@@ -60,8 +60,9 @@ import pe.aioo.openmoa.hotstring.HotstringMatcher
 import pe.aioo.openmoa.hotstring.HotstringRepository
 import pe.aioo.openmoa.hotstring.HotstringRule
 import pe.aioo.openmoa.quickphrase.NumberLongKey
+import pe.aioo.openmoa.quickphrase.PhraseKey
 import pe.aioo.openmoa.quickphrase.QuickPhraseKey
-import pe.aioo.openmoa.quickphrase.QuickPhraseRepository
+import pe.aioo.openmoa.quickphrase.UserCharKey
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -358,13 +359,12 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     }
 
     private fun sendKeyDownUpEvent(keyCode: Int, metaState: Int = 0, withShift: Boolean = false) {
+        val ic = currentInputConnection ?: return
         var eventTime = SystemClock.uptimeMillis()
         if (withShift) {
-            currentInputConnection.sendKeyEvent(
-                KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_SHIFT_LEFT)
-            )
+            ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_SHIFT_LEFT))
         }
-        currentInputConnection.sendKeyEvent(
+        ic.sendKeyEvent(
             KeyEvent(
                 eventTime,
                 eventTime,
@@ -378,7 +378,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
             )
         )
         eventTime = SystemClock.uptimeMillis()
-        currentInputConnection.sendKeyEvent(
+        ic.sendKeyEvent(
             KeyEvent(
                 eventTime,
                 eventTime,
@@ -392,14 +392,12 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
             )
         )
         if (withShift) {
-            currentInputConnection.sendKeyEvent(
-                KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_SHIFT_LEFT)
-            )
+            ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_SHIFT_LEFT))
         }
     }
 
     private fun isTextEmpty(): Boolean {
-        val text = currentInputConnection.getExtractedText(ExtractedTextRequest(), 0)
+        val text = currentInputConnection?.getExtractedText(ExtractedTextRequest(), 0)
         return (text?.text ?: "") == ""
     }
 
@@ -818,14 +816,17 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                 )
             }.onFailure { android.util.Log.w("OpenMoaIME", "Failed to open email: $email", it) }
         }
-        (keyboardViews[IMEMode.IME_KO] as? OpenMoaView)?.onEditPhraseRequest = { phraseKey ->
-            showPhraseEditForm(phraseKey)
+        (keyboardViews[IMEMode.IME_KO] as? OpenMoaView)?.onEditPhraseRequest = { key ->
+            showPhraseEditForm(key)
+        }
+        (keyboardViews[IMEMode.IME_EN] as? QuertyView)?.onEditPhraseRequest = { key ->
+            showPhraseEditForm(key)
         }
         (keyboardViews[IMEMode.IME_KO_NUMBER] as? NumberView)?.onEditNumberLongKeyRequest = { key ->
-            showNumberLongKeyEditForm(key)
+            showPhraseEditForm(key)
         }
         (keyboardViews[IMEMode.IME_KO_PUNCTUATION] as? PunctuationView)?.onEditNumberLongKeyRequest = { key ->
-            showNumberLongKeyEditForm(key)
+            showPhraseEditForm(key)
         }
         applyKeyboardLayout()
         setKeyboard(imeMode)
@@ -1014,6 +1015,8 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
 
     override fun onFinishInputView(finishingInput: Boolean) {
         super.onFinishInputView(finishingInput)
+        suggestionLongPressPopup?.dismiss()
+        suggestionLongPressPopup = null
         deactivateSuggestionBar()
         hideEditForm()
         if (isClipboardPanelVisible) hideClipboardPanel()
@@ -1120,25 +1123,38 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         activeFormEditText = triggerEditText
     }
 
-    private fun showPhraseEditForm(phraseKey: QuickPhraseKey) {
+    private fun showPhraseEditForm(key: PhraseKey) {
         if (!this::binding.isInitialized) return
         finishComposing()
         val container = binding.imeEditFormContainer
         container.removeAllViews()
         val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-        val currentPhrase = QuickPhraseRepository.getPhrase(this, phraseKey)
+        val currentPhrase = key.getPhrase(this)
         val editText = EditText(this).apply {
             setText(currentPhrase)
             setSelection(currentPhrase.length)
             setSingleLine()
-            hint = getString(R.string.settings_quick_phrase_edit_hint)
+            hint = when (key) {
+                is QuickPhraseKey -> getString(R.string.settings_quick_phrase_edit_hint)
+                else -> getString(R.string.number_long_key_edit_hint)
+            }
         }
         val saveBtn = Button(this).apply {
             text = getString(R.string.clipboard_edit_save)
             setOnClickListener {
-                val newPhrase = editText.text.toString()
-                phraseKey.setPhrase(this@OpenMoaIME, newPhrase.ifEmpty { phraseKey.defaultPhrase })
-                (keyboardViews[IMEMode.IME_KO] as? OpenMoaView)?.refreshQuickPhraseBadges()
+                val raw = editText.text.toString()
+                val phrase = if (key is UserCharKey) {
+                    if (raw.isEmpty()) key.defaultPhrase
+                    else raw.substring(0, raw.offsetByCodePoints(0, 1))
+                } else {
+                    raw.ifEmpty { key.defaultPhrase }
+                }
+                key.setPhrase(this@OpenMoaIME, phrase)
+                when (key) {
+                    is QuickPhraseKey -> (keyboardViews[IMEMode.IME_KO] as? OpenMoaView)?.refreshQuickPhraseBadges()
+                    is UserCharKey -> (keyboardViews[IMEMode.IME_KO] as? OpenMoaView)?.refreshUserCharLabels()
+                    else -> Unit
+                }
                 hideEditForm()
             }
         }
@@ -1149,53 +1165,8 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         val resetBtn = Button(this).apply {
             text = getString(R.string.settings_quick_phrase_reset)
             setOnClickListener {
-                editText.setText(phraseKey.defaultPhrase)
-                editText.setSelection(phraseKey.defaultPhrase.length)
-            }
-        }
-        val btnRow = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            addView(resetBtn, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
-            addView(cancelBtn, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
-            addView(saveBtn, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
-        }
-        container.addView(editText, lp)
-        container.addView(btnRow, lp)
-        container.visibility = View.VISIBLE
-        applyFormSkin(container, listOf(editText), listOf(resetBtn, cancelBtn, saveBtn))
-        editText.requestFocus()
-        activeFormEditText = editText
-    }
-
-    private fun showNumberLongKeyEditForm(longKey: NumberLongKey) {
-        if (!this::binding.isInitialized) return
-        finishComposing()
-        val container = binding.imeEditFormContainer
-        container.removeAllViews()
-        val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-        val currentPhrase = longKey.getPhrase(this)
-        val editText = EditText(this).apply {
-            setText(currentPhrase)
-            setSelection(currentPhrase.length)
-            setSingleLine()
-            hint = getString(R.string.number_long_key_edit_hint)
-        }
-        val saveBtn = Button(this).apply {
-            text = getString(R.string.clipboard_edit_save)
-            setOnClickListener {
-                longKey.setPhrase(this@OpenMoaIME, editText.text.toString().ifEmpty { longKey.defaultPhrase })
-                hideEditForm()
-            }
-        }
-        val cancelBtn = Button(this).apply {
-            text = getString(R.string.clipboard_edit_cancel)
-            setOnClickListener { hideEditForm() }
-        }
-        val resetBtn = Button(this).apply {
-            text = getString(R.string.settings_quick_phrase_reset)
-            setOnClickListener {
-                editText.setText(longKey.defaultPhrase)
-                editText.setSelection(longKey.defaultPhrase.length)
+                editText.setText(key.defaultPhrase)
+                editText.setSelection(key.defaultPhrase.length)
             }
         }
         val btnRow = LinearLayout(this).apply {
