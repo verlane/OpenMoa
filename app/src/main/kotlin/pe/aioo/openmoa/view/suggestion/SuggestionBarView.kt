@@ -127,10 +127,13 @@ class SuggestionBarView @JvmOverloads constructor(
         scrollView.scrollTo(0, 0)
         leftActions.visibility = VISIBLE
         rightActions.visibility = VISIBLE
-        val maxLen = if (text.any { it.code in 0xAC00..0xD7A3 || it.code in 0x3130..0x318F }) {
-            MAX_CLIPBOARD_LEN_KO
-        } else {
-            MAX_CLIPBOARD_LEN_EN
+        val isOneHand = SettingsPreferences.getOneHandMode(context).isReduced
+        val isKorean = text.any { it.code in 0xAC00..0xD7A3 || it.code in 0x3130..0x318F }
+        val maxLen = when {
+            isKorean && isOneHand -> MAX_CLIPBOARD_LEN_KO_ONE_HAND
+            isKorean -> MAX_CLIPBOARD_LEN_KO
+            isOneHand -> MAX_CLIPBOARD_LEN_EN_ONE_HAND
+            else -> MAX_CLIPBOARD_LEN_EN
         }
         val preview = if (text.length > maxLen) text.take(maxLen) + "…" else text
         container.addView(buildClipboardChip(preview, text, onPaste))
@@ -353,6 +356,8 @@ class SuggestionBarView @JvmOverloads constructor(
         private const val ICON_PADDING_V_DP = 4
         private const val MAX_CLIPBOARD_LEN_KO = 7
         private const val MAX_CLIPBOARD_LEN_EN = 12
+        private const val MAX_CLIPBOARD_LEN_KO_ONE_HAND = 3
+        private const val MAX_CLIPBOARD_LEN_EN_ONE_HAND = 6
         private const val REPEAT_DELAY_MS = 500L
         private const val REPEAT_INTERVAL_MS = 50L
     }
