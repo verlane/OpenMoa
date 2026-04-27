@@ -2,6 +2,7 @@ package pe.aioo.openmoa.suggestion
 
 interface UserWordStore {
     suspend fun topN(prefix: String, limit: Int, minCount: Int = 1): List<String>
+    suspend fun topNChosung(pattern: String, limit: Int, minCount: Int = 1): List<String> = emptyList()
     fun increment(word: String)
     fun decrement(word: String)
     fun remove(word: String)
@@ -70,6 +71,19 @@ class InMemoryUserWordStore : UserWordStore {
         if (prefix.isEmpty()) return emptyList()
         return words.entries
             .filter { it.key.startsWith(prefix) && it.value >= minCount && it.key !in blacklistSet }
+            .sortedByDescending { it.value }
+            .take(limit)
+            .map { it.key }
+    }
+
+    override suspend fun topNChosung(pattern: String, limit: Int, minCount: Int): List<String> {
+        if (pattern.isEmpty()) return emptyList()
+        return words.entries
+            .filter { (word, count) ->
+                count >= minCount &&
+                word !in blacklistSet &&
+                HangulSyllable.matchesChosungPattern(word, pattern)
+            }
             .sortedByDescending { it.value }
             .take(limit)
             .map { it.key }

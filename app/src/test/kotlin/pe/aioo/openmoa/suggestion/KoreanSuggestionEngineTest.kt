@@ -10,6 +10,9 @@ class KoreanSuggestionEngineTest {
     private fun fakeKoDictionary(vararg words: String): Dictionary = object : Dictionary {
         override suspend fun prefix(prefix: String, limit: Int): List<String> =
             words.filter { it.startsWith(prefix) }.take(limit)
+
+        override suspend fun chosung(pattern: String, limit: Int): List<String> =
+            words.filter { HangulSyllable.matchesChosungPattern(it, pattern) }.take(limit)
     }
 
     @Test
@@ -62,6 +65,39 @@ class KoreanSuggestionEngineTest {
         )
         val result = engine.suggest("사", null)
         assertEquals("사랑", result.first())
+    }
+
+    @Test
+    fun `chosung input returns matching words from dictionary`() = runTest {
+        val engine = KoreanSuggestionEngine(
+            fakeKoDictionary("고구마", "고기", "사과"),
+            NoOpUserWordStore()
+        )
+        val result = engine.suggest("ㄱㄱㅁ", null)
+        assertEquals(listOf("고구마"), result)
+    }
+
+    @Test
+    fun `chosung input returns learned words before dictionary words`() = runTest {
+        val store = InMemoryUserWordStore().apply {
+            repeat(3) { increment("고구마") }
+        }
+        val engine = KoreanSuggestionEngine(
+            fakeKoDictionary("고기마", "고구마"),
+            store
+        )
+        val result = engine.suggest("ㄱㄱㅁ", null)
+        assertEquals("고구마", result.first())
+    }
+
+    @Test
+    fun `chosung returns empty when no match`() = runTest {
+        val engine = KoreanSuggestionEngine(
+            fakeKoDictionary("사과", "바나나"),
+            NoOpUserWordStore()
+        )
+        val result = engine.suggest("ㄱㄱㅁ", null)
+        assertTrue(result.isEmpty())
     }
 
     @Test

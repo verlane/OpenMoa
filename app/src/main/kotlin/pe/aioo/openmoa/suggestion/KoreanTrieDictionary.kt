@@ -100,4 +100,34 @@ class KoreanTrieDictionary : Dictionary {
             collectWords(child, current + char, results, limit)
         }
     }
+
+    override suspend fun chosung(pattern: String, limit: Int): List<String> {
+        if (pattern.isEmpty() || !HangulSyllable.isAllChosung(pattern)) return emptyList()
+        ensureLoaded()
+        val localRoot = root ?: return emptyList()
+        val results = mutableListOf<String>()
+        collectChosung(localRoot, "", pattern, 0, results, limit)
+        return results
+    }
+
+    private fun collectChosung(
+        node: Node,
+        current: String,
+        pattern: String,
+        depth: Int,
+        results: MutableList<String>,
+        limit: Int,
+    ) {
+        if (results.size >= limit) return
+        if (depth == pattern.length) {
+            collectWords(node, current, results, limit)
+            return
+        }
+        val range = HangulSyllable.syllableRangeForChosung(pattern[depth])
+        if (range.isEmpty()) return
+        for ((c, child) in node.children.subMap(range.first, true, range.last, true)) {
+            if (results.size >= limit) break
+            collectChosung(child, current + c, pattern, depth + 1, results, limit)
+        }
+    }
 }

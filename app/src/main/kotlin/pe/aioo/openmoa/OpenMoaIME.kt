@@ -46,6 +46,8 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.qualifier.named
 import pe.aioo.openmoa.config.Config
+import pe.aioo.openmoa.suggestion.HangulSyllable
+import pe.aioo.openmoa.suggestion.KoreanPrefixExtractor
 import pe.aioo.openmoa.suggestion.KoreanSuggestionEngine
 import pe.aioo.openmoa.suggestion.SuggestionEngine
 import pe.aioo.openmoa.suggestion.UserWordStore
@@ -185,12 +187,37 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
             }
             if (!this@OpenMoaIME::binding.isInitialized) return@launch
             val triggerToMatch = if (capturedIsKoMode) capturedComposing else capturedHotstringBuffer
-            val hotstringFirst = HotstringRepository.getCached(this@OpenMoaIME)
-                .filter { it.enabled && it.trigger == triggerToMatch }
+            val enabledRules = HotstringRepository.getCached(this@OpenMoaIME).filter { it.enabled }
+
+            // 1순위: 트리거 정확 매칭
+            val triggerMatched = enabledRules
+                .filter { it.trigger == triggerToMatch }
                 .map { it.expansion }
+
+            // 2순위: 확장어가 현재 입력(prefix)으로 시작하는 경우
+            val syllablePrefix = if (capturedIsKoMode) {
+                KoreanPrefixExtractor.extract(capturedComposing, capturedUnresolved).first
+            } else {
+                prefix
+            }
+            val chosungPattern = if (capturedIsKoMode && HangulSyllable.isAllChosung(capturedComposing)) {
+                capturedComposing
+            } else {
+                null
+            }
+            val expansionMatched = enabledRules
+                .filter { rule ->
+                    rule.expansion !in triggerMatched &&
+                    (syllablePrefix.length >= 2 && rule.expansion.startsWith(syllablePrefix) ||
+                    chosungPattern != null &&
+                        HangulSyllable.matchesChosungPattern(rule.expansion, chosungPattern))
+                }
+                .map { it.expansion }
+
+            val hotstringSet = (triggerMatched + expansionMatched).toSet()
             val wordsSet = words.toSet()
-            val hotstringSet = hotstringFirst.toSet()
-            val finalWords = (hotstringFirst.filter { it !in wordsSet } + words)
+            val finalWords = (triggerMatched + expansionMatched.filter { it !in wordsSet } + words)
+                .distinct()
                 .take(config.maxSuggestionCount)
             if (finalWords.isEmpty()) {
                 showIdleSuggestionBar(isTextSelected)

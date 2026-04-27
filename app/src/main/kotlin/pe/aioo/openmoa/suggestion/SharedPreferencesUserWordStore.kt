@@ -125,6 +125,21 @@ class SharedPreferencesUserWordStore(
         }
     }
 
+    override suspend fun topNChosung(pattern: String, limit: Int, minCount: Int): List<String> {
+        if (pattern.isEmpty()) return emptyList()
+        return synchronized(this) {
+            words.entries
+                .filter { (word, count) ->
+                    count >= minCount &&
+                    word !in blacklistSet &&
+                    HangulSyllable.matchesChosungPattern(word, pattern)
+                }
+                .sortedByDescending { it.value }
+                .take(limit)
+                .map { it.key }
+        }
+    }
+
     override fun importWords(words: Map<String, Int>) {
         synchronized(this) {
             words.forEach { (word, count) ->
