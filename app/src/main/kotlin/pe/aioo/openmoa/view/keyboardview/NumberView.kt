@@ -2,6 +2,7 @@ package pe.aioo.openmoa.view.keyboardview
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.AttributeSet
 import androidx.constraintlayout.widget.ConstraintLayout
 import org.koin.core.component.KoinComponent
@@ -49,6 +50,15 @@ class NumberView : ConstraintLayout, KoinComponent {
     private val numberKeyListeners = mutableListOf<QwertyKeyTouchListener>()
     private var enterKeyListener: EnterKeyTouchListener? = null
     private var languageKeyListener: LanguageKeyTouchListener? = null
+    private val prefs by lazy {
+        context.getSharedPreferences(SettingsPreferences.PREFS_NAME, Context.MODE_PRIVATE)
+    }
+    private val numberPrefKeys = NumberLongKey.values().map { it.prefKey }.toSet()
+    private val prefChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key in numberPrefKeys && ::binding.isInitialized) {
+            updateKeyHints()
+        }
+    }
 
     private fun init() {
         inflate(context, R.layout.number_view, this)
@@ -104,12 +114,32 @@ class NumberView : ConstraintLayout, KoinComponent {
         }
     }
 
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        prefs.registerOnSharedPreferenceChangeListener(prefChangeListener)
+    }
+
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
+        prefs.unregisterOnSharedPreferenceChangeListener(prefChangeListener)
         previewController?.cancel()
         numberKeyListeners.forEach { it.cancel() }
         enterKeyListener?.cancel()
         languageKeyListener?.cancel()
+    }
+
+    private fun updateKeyHints() {
+        binding.apply {
+            listOf(
+                oneKey to NumberLongKey.NUM_1, twoKey to NumberLongKey.NUM_2,
+                threeKey to NumberLongKey.NUM_3, fourKey to NumberLongKey.NUM_4,
+                fiveKey to NumberLongKey.NUM_5, sixKey to NumberLongKey.NUM_6,
+                sevenKey to NumberLongKey.NUM_7, eightKey to NumberLongKey.NUM_8,
+                nineKey to NumberLongKey.NUM_9, zeroKey to NumberLongKey.NUM_0,
+            ).forEach { (view, longKey) ->
+                view.keyHint = longKey.getPhrase(context).take(1)
+            }
+        }
     }
 
 }

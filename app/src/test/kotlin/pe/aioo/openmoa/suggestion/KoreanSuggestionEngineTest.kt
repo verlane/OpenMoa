@@ -45,6 +45,7 @@ class KoreanSuggestionEngineTest {
             override fun increment(word: String) = Unit
             override fun decrement(word: String) = Unit
             override fun remove(word: String) = Unit
+            override fun contains(word: String): Boolean = false
             override fun entries(): List<Pair<String, Int>> = emptyList()
             override fun importWords(words: Map<String, Int>) = Unit
             override fun addToBlacklist(word: String) = Unit

@@ -2,6 +2,7 @@ package pe.aioo.openmoa.view.keyboardview
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.AttributeSet
 import androidx.constraintlayout.widget.ConstraintLayout
 import org.koin.core.component.KoinComponent
@@ -51,6 +52,15 @@ class PunctuationView : ConstraintLayout, KoinComponent {
     private var enterKeyListener: EnterKeyTouchListener? = null
     private var languageKeyListener: LanguageKeyTouchListener? = null
     private var page = 0
+    private val prefs by lazy {
+        context.getSharedPreferences(SettingsPreferences.PREFS_NAME, Context.MODE_PRIVATE)
+    }
+    private val numberPrefKeys = NumberLongKey.values().map { it.prefKey }.toSet()
+    private val prefChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key in numberPrefKeys && ::binding.isInitialized && page == 0) {
+            updateTopRowHints()
+        }
+    }
 
     private fun init() {
         inflate(context, R.layout.punctuation_view, this)
@@ -61,12 +71,35 @@ class PunctuationView : ConstraintLayout, KoinComponent {
         SkinApplier.apply(this, SettingsPreferences.getKeyboardSkin(context))
     }
 
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        prefs.registerOnSharedPreferenceChangeListener(prefChangeListener)
+    }
+
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
+        prefs.unregisterOnSharedPreferenceChangeListener(prefChangeListener)
         previewController?.cancel()
         topRowNumberListeners.forEach { it.cancel() }
         enterKeyListener?.cancel()
         languageKeyListener?.cancel()
+    }
+
+    private fun updateTopRowHints() {
+        val topRowViews = listOf(
+            binding.qKey, binding.wKey, binding.eKey, binding.rKey, binding.tKey,
+            binding.yKey, binding.uKey, binding.iKey, binding.oKey, binding.pKey,
+        )
+        val longKeys = listOf(
+            NumberLongKey.NUM_1, NumberLongKey.NUM_2, NumberLongKey.NUM_3,
+            NumberLongKey.NUM_4, NumberLongKey.NUM_5, NumberLongKey.NUM_6,
+            NumberLongKey.NUM_7, NumberLongKey.NUM_8, NumberLongKey.NUM_9,
+            NumberLongKey.NUM_0,
+        )
+        topRowViews.zip(longKeys).forEach { (view, longKey) ->
+            (view as? pe.aioo.openmoa.view.keyboardview.qwerty.HintKeyView)?.keyHint =
+                longKey.getPhrase(context).take(1)
+        }
     }
 
     fun setPageOrNextPage(newPage: Int? = null, isInitialize: Boolean = false) {
