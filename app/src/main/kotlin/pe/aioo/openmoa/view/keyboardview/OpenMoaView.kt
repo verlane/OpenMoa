@@ -330,7 +330,18 @@ class OpenMoaView : ConstraintLayout, KoinComponent {
         }
     }
 
+    private val touchYCorrection by lazy { 8f * resources.displayMetrics.density }
+
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        val corrected = MotionEvent.obtain(ev).also { it.offsetLocation(0f, -touchYCorrection) }
+        return try {
+            dispatchCorrectedTouchEvent(corrected)
+        } finally {
+            corrected.recycle()
+        }
+    }
+
+    private fun dispatchCorrectedTouchEvent(ev: MotionEvent): Boolean {
         if (!isMoakeyMode) {
             val b = twoHandBinding ?: return super.dispatchTouchEvent(ev)
             touchedMoeum.let { moeum ->

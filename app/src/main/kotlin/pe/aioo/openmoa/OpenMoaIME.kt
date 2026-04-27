@@ -239,12 +239,16 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         if (!this::binding.isInitialized) return
         isSuggestionBarActive = false
         binding.wordSuggestionBar.setSuggestions(emptyList())
-        binding.wordSuggestionBar.visibility = View.GONE
+        showIdleSuggestionBar(isTextSelected)
     }
 
     private fun showIdleSuggestionBar(hasSelection: Boolean) {
         if (!this::binding.isInitialized) return
-        if (!isSuggestionBarActive) return
+        if (isPasswordField) {
+            binding.wordSuggestionBar.showEmpty()
+            binding.wordSuggestionBar.visibility = View.VISIBLE
+            return
+        }
         if (hasSelection) {
             binding.wordSuggestionBar.showSelectionActions(
                 onCut = { sendKeyDownUpEvent(KeyEvent.KEYCODE_X, KeyEvent.META_CTRL_ON) },
@@ -463,8 +467,9 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                                     lastHotstringExpansion = null
                                     hotstringBuffer = ""
                                     finishComposing()
-                                    currentInputConnection.deleteSurroundingText(undoExpansion.length, 0)
-                                    currentInputConnection.commitText(undoTrigger, 1)
+                                    val ic = currentInputConnection ?: return@onReceive
+                                    ic.deleteSurroundingText(undoExpansion.length, 0)
+                                    ic.commitText(undoTrigger, 1)
                                     return@onReceive
                                 }
                                 hotstringBuffer = hotstringBuffer.dropLast(1)
@@ -500,7 +505,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                                     EditorInfo.IME_ACTION_SEARCH,
                                     EditorInfo.IME_ACTION_SEND,
                                     EditorInfo.IME_ACTION_DONE -> {
-                                        currentInputConnection.performEditorAction(action)
+                                        currentInputConnection?.performEditorAction(action)
                                     }
                                     else -> {
                                         sendKeyDownUpEvent(KeyEvent.KEYCODE_ENTER)
@@ -723,6 +728,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                                 hotstringBuffer = ""
                             }
                             finishComposing()
+                            val ic = currentInputConnection ?: return@onReceive
                             if (key == " ") {
                                 if (tryExpandHotstring()) {
                                     lastSpaceTime = 0L
@@ -730,24 +736,24 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                                     val autoEnabled = SettingsPreferences.getAutoSpacePeriod(this@OpenMoaIME)
                                     val now = SystemClock.elapsedRealtime()
                                     if (autoEnabled && now - lastSpaceTime < 1000L &&
-                                        currentInputConnection.getTextBeforeCursor(1, 0) == " ") {
-                                        currentInputConnection.deleteSurroundingText(1, 0)
-                                        currentInputConnection.commitText(". ", 1)
+                                        ic.getTextBeforeCursor(1, 0) == " ") {
+                                        ic.deleteSurroundingText(1, 0)
+                                        ic.commitText(". ", 1)
                                         lastSpaceTime = 0L
                                     } else {
-                                        currentInputConnection.commitText(key, 1)
+                                        ic.commitText(key, 1)
                                         lastSpaceTime = if (autoEnabled) now else 0L
                                     }
                                 }
                             } else {
-                                currentInputConnection.commitText(key, 1)
+                                ic.commitText(key, 1)
                                 lastSpaceTime = 0L
                             }
                         }
                     }
                 }
                 if (beforeComposingText != composingText) {
-                    currentInputConnection.setComposingText(composingText, 1)
+                    currentInputConnection?.setComposingText(composingText, 1)
                 }
                 if (composingText.isNotEmpty()) {
                     refreshSuggestions(composingText)
@@ -1457,6 +1463,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
             val bg = SkinApplier.keyboardBgColor(this, skin)
             binding.wordSuggestionBar.applyColors(fg, bg)
             binding.clipboardPanel.applyColors(fg, bg)
+            binding.wordSuggestionBar.visibility = View.VISIBLE
         }
     }
 
