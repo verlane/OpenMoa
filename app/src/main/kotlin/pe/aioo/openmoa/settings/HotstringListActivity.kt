@@ -113,13 +113,13 @@ class HotstringListActivity : AppCompatActivity() {
     }
 
     private fun createRuleView(rule: HotstringRule): View {
-        val dp16 = (16 * resources.displayMetrics.density).toInt()
+        val dp12 = (12 * resources.displayMetrics.density).toInt()
         val dp8 = (8 * resources.displayMetrics.density).toInt()
 
         val row = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            setPadding(0, dp16, 0, dp16)
+            setPadding(0, dp12, 0, dp12)
             background = obtainStyledAttributes(intArrayOf(android.R.attr.selectableItemBackground))
                 .let { it.getDrawable(0).also { _ -> it.recycle() } }
             isClickable = true
