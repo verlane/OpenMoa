@@ -252,7 +252,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     private fun showIdleSuggestionBar(hasSelection: Boolean) {
         if (!this::binding.isInitialized) return
         if (isPasswordField) {
-            binding.wordSuggestionBar.showEmpty()
+            binding.wordSuggestionBar.showEmpty(showClipboardIcon = false)
             binding.wordSuggestionBar.visibility = View.VISIBLE
             return
         }

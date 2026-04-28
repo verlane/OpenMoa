@@ -115,6 +115,7 @@ class SuggestionBarView @JvmOverloads constructor(
 
     fun setSuggestions(words: List<String>, hotstringExpansions: Set<String> = emptySet()) {
         container.removeAllViews()
+        container.gravity = Gravity.CENTER_VERTICAL or Gravity.START
         scrollView.scrollTo(0, 0)
         val showFunctionKeys = words.isEmpty()
         leftActions.visibility = if (showFunctionKeys) VISIBLE else GONE
@@ -124,6 +125,7 @@ class SuggestionBarView @JvmOverloads constructor(
 
     fun showClipboard(text: String, onPaste: (String) -> Unit) {
         container.removeAllViews()
+        container.gravity = Gravity.CENTER
         scrollView.scrollTo(0, 0)
         leftActions.visibility = VISIBLE
         rightActions.visibility = VISIBLE
@@ -141,21 +143,27 @@ class SuggestionBarView @JvmOverloads constructor(
 
     fun showClipboardIconOnly() {
         container.removeAllViews()
+        container.gravity = Gravity.CENTER
         scrollView.scrollTo(0, 0)
         leftActions.visibility = VISIBLE
         rightActions.visibility = VISIBLE
         container.addView(buildClipboardIconButton(), LinearLayout.LayoutParams(iconBtnW, LinearLayout.LayoutParams.MATCH_PARENT))
     }
 
-    fun showEmpty() {
+    fun showEmpty(showClipboardIcon: Boolean = true) {
         container.removeAllViews()
+        container.gravity = Gravity.CENTER
         scrollView.scrollTo(0, 0)
         leftActions.visibility = VISIBLE
         rightActions.visibility = VISIBLE
+        if (showClipboardIcon) {
+            container.addView(buildClipboardIconButton(), LinearLayout.LayoutParams(iconBtnW, LinearLayout.LayoutParams.MATCH_PARENT))
+        }
     }
 
     fun showSelectionActions(onCut: () -> Unit, onCopy: () -> Unit) {
         container.removeAllViews()
+        container.gravity = Gravity.CENTER
         scrollView.scrollTo(0, 0)
         leftActions.visibility = VISIBLE
         rightActions.visibility = VISIBLE
