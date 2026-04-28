@@ -214,6 +214,13 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                         (chosungPattern != null && HangulSyllable.matchesChosungPattern(rule.expansion, chosungPattern))
                     )
                 }
+                .sortedBy { rule ->
+                    when {
+                        triggerToMatch.startsWith(rule.trigger) -> 0
+                        rule.trigger.startsWith(triggerToMatch) -> 1
+                        else -> 2
+                    }
+                }
                 .map { it.expansion }  // 원본 유지 (trailing space 포함)
 
             // trim 기준으로 중복 제거하되 원본 값 보존 — 자동 치환 우선
