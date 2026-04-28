@@ -111,6 +111,11 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     private var isClipboardPanelVisible = false
     private var suggestionLongPressPopup: android.widget.PopupWindow? = null
     private var activeFormEditText: EditText? = null
+    private data class TextState(val text: String, val cursor: Int)
+    private val formUndoStack = ArrayDeque<TextState>()
+    private val formRedoStack = ArrayDeque<TextState>()
+    private var isFormUndoRedo = false
+    private var pendingUndoState: TextState? = null
     private var currentSuggestions: List<String> = emptyList()
     private var currentHotstringExpansions: Set<String> = emptySet()
     private var clipboardManager: ClipboardManager? = null
@@ -181,12 +186,12 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
             if (composingText != capturedComposing) return@launch
             val minCount = config.minLearnCount
             val words = if (capturedIsKoMode) {
-                koreanSuggestionEngine.suggest(capturedComposing, capturedUnresolved, minCount)
+                koreanSuggestionEngine.suggest(prefix, capturedUnresolved, minCount)
             } else {
                 suggestionEngine.suggest(prefix, minCount)
             }
             if (!this@OpenMoaIME::binding.isInitialized) return@launch
-            val triggerToMatch = if (capturedIsKoMode) capturedComposing else capturedHotstringBuffer
+            val triggerToMatch = if (capturedIsKoMode) prefix else capturedHotstringBuffer
             val enabledRules = HotstringRepository.getCached(this@OpenMoaIME).filter { it.enabled }
 
             // 1순위: 트리거 정확 매칭
@@ -196,12 +201,12 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
 
             // 2순위: 확장어가 현재 입력(prefix)으로 시작하는 경우
             val syllablePrefix = if (capturedIsKoMode) {
-                KoreanPrefixExtractor.extract(capturedComposing, capturedUnresolved).first
+                KoreanPrefixExtractor.extract(prefix, capturedUnresolved).first
             } else {
                 prefix
             }
-            val chosungPattern = if (capturedIsKoMode && HangulSyllable.isAllChosung(capturedComposing)) {
-                capturedComposing
+            val chosungPattern = if (capturedIsKoMode && HangulSyllable.isAllChosung(prefix)) {
+                prefix
             } else {
                 null
             }
@@ -265,9 +270,20 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
             val clipText = getClipboardText()
             if (clipText != null) {
                 binding.wordSuggestionBar.showClipboard(clipText) { text ->
-                    finishComposing()
-                    currentInputConnection?.commitText(text, 1)
-                    binding.wordSuggestionBar.showClipboardIconOnly()
+                    val formEditText = activeFormEditText
+                    if (formEditText != null) {
+                        val cursor = formEditText.selectionStart.coerceAtLeast(0)
+                        val selEnd = formEditText.selectionEnd.coerceAtLeast(cursor)
+                        hangulAssembler.clear()
+                        composingText = ""
+                        formEditText.text.replace(cursor, selEnd, text)
+                        formEditText.setSelection(cursor + text.length)
+                        refreshFormSuggestions(formEditText)
+                    } else {
+                        finishComposing()
+                        currentInputConnection?.commitText(text, 1)
+                        binding.wordSuggestionBar.showClipboardIconOnly()
+                    }
                 }
             } else {
                 binding.wordSuggestionBar.showEmpty()
@@ -287,6 +303,17 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     }
 
     private fun onSuggestionPicked(word: String, isHotstring: Boolean) {
+        val formEditText = activeFormEditText
+        if (formEditText != null) {
+            val cursor = formEditText.selectionStart.coerceAtLeast(0)
+            val textBefore = formEditText.text.substring(0, cursor)
+            val wordStart = textBefore.indexOfLast { it == ' ' || it == '\n' } + 1
+            hangulAssembler.clear()
+            formEditText.text.replace(wordStart, cursor, word)
+            formEditText.setSelection(wordStart + word.length)
+            refreshFormSuggestions(formEditText)
+            return
+        }
         if (isHotstring) {
             if (imeMode == IMEMode.IME_EN) {
                 val trigger = hotstringBuffer
@@ -834,14 +861,52 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         binding.wordSuggestionBar.onPick = ::onSuggestionPicked
         binding.wordSuggestionBar.onWordLongClick = { word -> onSuggestionLongClick(word) }
         binding.wordSuggestionBar.onCursorLeft = {
-            if (!isTextEmpty()) sendKeyDownUpEvent(KeyEvent.KEYCODE_DPAD_LEFT)
+            val formEditText = activeFormEditText
+            if (formEditText != null) {
+                val selStart = formEditText.selectionStart.coerceAtLeast(0)
+                val selEnd = formEditText.selectionEnd.coerceAtLeast(selStart)
+                if (selStart != selEnd) {
+                    formEditText.setSelection(selStart)
+                } else if (selStart > 0) {
+                    formEditText.setSelection(selStart - 1)
+                }
+            } else if (!isTextEmpty()) {
+                sendKeyDownUpEvent(KeyEvent.KEYCODE_DPAD_LEFT)
+            }
         }
         binding.wordSuggestionBar.onCursorRight = {
-            if (!isTextEmpty()) sendKeyDownUpEvent(KeyEvent.KEYCODE_DPAD_RIGHT)
+            val formEditText = activeFormEditText
+            if (formEditText != null) {
+                val selStart = formEditText.selectionStart.coerceAtLeast(0)
+                val selEnd = formEditText.selectionEnd.coerceAtLeast(selStart)
+                if (selStart != selEnd) {
+                    formEditText.setSelection(selEnd)
+                } else if (selEnd < formEditText.text.length) {
+                    formEditText.setSelection(selEnd + 1)
+                }
+            } else if (!isTextEmpty()) {
+                sendKeyDownUpEvent(KeyEvent.KEYCODE_DPAD_RIGHT)
+            }
         }
         binding.wordSuggestionBar.onUndoRedo = { isUndo ->
-            if (isUndo) currentInputConnection?.performContextMenuAction(android.R.id.undo)
-            else currentInputConnection?.performContextMenuAction(android.R.id.redo)
+            val formEditText = activeFormEditText
+            if (formEditText != null) {
+                val stack = if (isUndo) formUndoStack else formRedoStack
+                val counterStack = if (isUndo) formRedoStack else formUndoStack
+                if (stack.isNotEmpty()) {
+                    val current = TextState(formEditText.text.toString(), formEditText.selectionStart.coerceAtLeast(0))
+                    counterStack.addLast(current)
+                    isFormUndoRedo = true
+                    val state = stack.removeLast()
+                    formEditText.setText(state.text)
+                    formEditText.setSelection(state.cursor.coerceAtMost(state.text.length))
+                    isFormUndoRedo = false
+                    refreshFormSuggestions(formEditText)
+                }
+            } else {
+                if (isUndo) currentInputConnection?.performContextMenuAction(android.R.id.undo)
+                else currentInputConnection?.performContextMenuAction(android.R.id.redo)
+            }
         }
         binding.wordSuggestionBar.onSettings = {
             startActivity(Intent(this, SettingsActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
@@ -1094,8 +1159,11 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         val editText = EditText(this).apply {
             setText(entry.text)
             setSelection(entry.text.length)
-            minLines = 2
+            isSingleLine = false
+            minLines = 1
             maxLines = 4
+            gravity = android.view.Gravity.TOP
+            isVerticalScrollBarEnabled = true
         }
         val saveBtn = Button(this).apply {
             text = getString(R.string.clipboard_edit_save)
@@ -1126,8 +1194,12 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         container.addView(btnRow, lp)
         container.visibility = View.VISIBLE
         applyFormSkin(container, listOf(editText), listOf(cancelBtn, saveBtn))
+        formUndoStack.clear()
+        formRedoStack.clear()
+        attachFormUndoWatcher(editText)
         editText.requestFocus()
         activeFormEditText = editText
+        refreshFormSuggestions(editText)
     }
 
     private fun showHotstringAddForm(entry: ClipboardEntry) {
@@ -1180,8 +1252,18 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         container.addView(btnRow, lp)
         container.visibility = View.VISIBLE
         applyFormSkin(container, listOf(triggerEditText, expansionEditText), listOf(cancelBtn, saveBtn))
+        val focusListener = android.view.View.OnFocusChangeListener { view, hasFocus ->
+            if (hasFocus) activeFormEditText = view as EditText
+        }
+        triggerEditText.onFocusChangeListener = focusListener
+        expansionEditText.onFocusChangeListener = focusListener
+        formUndoStack.clear()
+        formRedoStack.clear()
+        attachFormUndoWatcher(triggerEditText)
+        attachFormUndoWatcher(expansionEditText)
         triggerEditText.requestFocus()
         activeFormEditText = triggerEditText
+        refreshFormSuggestions(triggerEditText)
     }
 
     private fun showPhraseEditForm(key: PhraseKey) {
@@ -1240,8 +1322,20 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         container.addView(btnRow, lp)
         container.visibility = View.VISIBLE
         applyFormSkin(container, listOf(editText), listOf(resetBtn, cancelBtn, saveBtn))
+        formUndoStack.clear()
+        formRedoStack.clear()
+        attachFormUndoWatcher(editText)
         editText.requestFocus()
         activeFormEditText = editText
+        refreshFormSuggestions(editText)
+    }
+
+    private fun refreshFormSuggestions(editText: EditText) {
+        val cursor = editText.selectionStart.coerceAtLeast(0)
+        val textBefore = editText.text.substring(0, cursor)
+        val wordStart = textBefore.indexOfLast { it == ' ' || it == '\n' } + 1
+        val word = textBefore.substring(wordStart)
+        if (word.isNotEmpty()) refreshSuggestions(word) else deactivateSuggestionBar()
     }
 
     private fun handleFormKey(key: Any, editText: EditText) {
@@ -1309,6 +1403,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                 }
             }
         }
+        refreshFormSuggestions(editText)
     }
 
     private fun applyFormSkin(container: LinearLayout, editTexts: List<EditText>, buttons: List<Button>) {
@@ -1346,9 +1441,31 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         }
     }
 
+    private fun attachFormUndoWatcher(editText: EditText) {
+        editText.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                if (!isFormUndoRedo) {
+                    pendingUndoState = TextState(s.toString(), editText.selectionStart.coerceAtLeast(0))
+                }
+            }
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                if (!isFormUndoRedo) {
+                    pendingUndoState?.let {
+                        formUndoStack.addLast(it)
+                        formRedoStack.clear()
+                    }
+                    pendingUndoState = null
+                }
+            }
+        })
+    }
+
     private fun hideEditForm() {
         if (!this::binding.isInitialized) return
         activeFormEditText = null
+        formUndoStack.clear()
+        formRedoStack.clear()
         hangulAssembler.clear()
         composingText = ""
         binding.imeEditFormContainer.apply {
