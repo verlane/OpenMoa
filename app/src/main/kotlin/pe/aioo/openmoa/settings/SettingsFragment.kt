@@ -3,8 +3,10 @@ package pe.aioo.openmoa.settings
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
@@ -61,6 +63,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     override fun onResume() {
         super.onResume()
         updateGestureAngleSummary()
+        updateOverlayPermissionSummary()
     }
 
     private fun setupListPreferences() {
@@ -141,6 +144,32 @@ class SettingsFragment : PreferenceFragmentCompat() {
             showResetConfirmDialog()
             true
         }
+        pref<Preference>("pref_overlay_permission")?.setOnPreferenceClickListener {
+            launchOverlayPermissionSettings()
+            true
+        }
+    }
+
+    private fun launchOverlayPermissionSettings() {
+        val ctx = requireContext()
+        val intent = Intent(
+            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+            Uri.parse("package:${ctx.packageName}"),
+        ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        try {
+            startActivity(intent)
+        } catch (_: Exception) {
+            startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION))
+        }
+    }
+
+    private fun updateOverlayPermissionSummary() {
+        val ctx = requireContext()
+        val granted = Settings.canDrawOverlays(ctx)
+        pref<Preference>("pref_overlay_permission")?.setSummary(
+            if (granted) R.string.settings_overlay_permission_summary_granted
+            else R.string.settings_overlay_permission_summary_denied
+        )
     }
 
     private fun setupVersionPreference() {

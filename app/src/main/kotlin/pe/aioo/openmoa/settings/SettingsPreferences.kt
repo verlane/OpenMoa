@@ -44,6 +44,13 @@ object SettingsPreferences {
     const val KEY_CLIPBOARD_EXPIRY_MINUTES = "clipboard_expiry_minutes"
     const val KEY_MIN_LEARN_COUNT = "min_learn_count"
     const val KEY_LANDSCAPE_QWERTY = "landscape_qwerty"
+    const val KEY_FLOATING_INDICATOR_ENABLED = "floating_indicator_enabled"
+    const val KEY_HW_LANGUAGE_SWITCH_ENABLED = "hw_language_switch_enabled"
+    const val KEY_HW_RALT_ENABLED = "hw_ralt_enabled"
+    const val KEY_HW_SHIFT_SPACE_ENABLED = "hw_shift_space_enabled"
+    const val KEY_FLOATING_INDICATOR_X = "floating_indicator_x"
+    const val KEY_FLOATING_INDICATOR_Y = "floating_indicator_y"
+    const val KEY_OVERLAY_PERMISSION_NOTIFIED = "overlay_permission_notified"
 
     val ALL_KEYS = setOf(
         KEY_HANGUL_INPUT_MODE,
@@ -71,6 +78,13 @@ object SettingsPreferences {
         KEY_CLIPBOARD_EXPIRY_MINUTES,
         KEY_MIN_LEARN_COUNT,
         KEY_LANDSCAPE_QWERTY,
+        KEY_FLOATING_INDICATOR_ENABLED,
+        KEY_HW_LANGUAGE_SWITCH_ENABLED,
+        KEY_HW_RALT_ENABLED,
+        KEY_HW_SHIFT_SPACE_ENABLED,
+        KEY_FLOATING_INDICATOR_X,
+        KEY_FLOATING_INDICATOR_Y,
+        KEY_OVERLAY_PERMISSION_NOTIFIED,
     ) + UserCharKey.values().map { it.prefKey }.toSet()
 
     private fun prefs(context: Context) =
@@ -198,6 +212,54 @@ object SettingsPreferences {
 
     fun getClipboardExpiryMinutes(context: Context): Int =
         prefs(context).getString(KEY_CLIPBOARD_EXPIRY_MINUTES, null)?.toIntOrNull() ?: 60
+
+    fun getFloatingIndicatorEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_FLOATING_INDICATOR_ENABLED, true)
+
+    fun setFloatingIndicatorEnabled(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(KEY_FLOATING_INDICATOR_ENABLED, enabled).apply()
+    }
+
+    fun getHwLanguageSwitchEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_HW_LANGUAGE_SWITCH_ENABLED, true)
+
+    fun setHwLanguageSwitchEnabled(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(KEY_HW_LANGUAGE_SWITCH_ENABLED, enabled).apply()
+    }
+
+    fun getHwRAltEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_HW_RALT_ENABLED, true)
+
+    fun setHwRAltEnabled(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(KEY_HW_RALT_ENABLED, enabled).apply()
+    }
+
+    fun getHwShiftSpaceEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_HW_SHIFT_SPACE_ENABLED, true)
+
+    fun setHwShiftSpaceEnabled(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(KEY_HW_SHIFT_SPACE_ENABLED, enabled).apply()
+    }
+
+    fun getFloatingIndicatorPosition(context: Context): Pair<Int, Int>? {
+        val p = prefs(context)
+        if (!p.contains(KEY_FLOATING_INDICATOR_X) || !p.contains(KEY_FLOATING_INDICATOR_Y)) return null
+        return p.getInt(KEY_FLOATING_INDICATOR_X, 0) to p.getInt(KEY_FLOATING_INDICATOR_Y, 0)
+    }
+
+    fun setFloatingIndicatorPosition(context: Context, x: Int, y: Int) {
+        prefs(context).edit()
+            .putInt(KEY_FLOATING_INDICATOR_X, x)
+            .putInt(KEY_FLOATING_INDICATOR_Y, y)
+            .apply()
+    }
+
+    fun getOverlayPermissionNotified(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_OVERLAY_PERMISSION_NOTIFIED, false)
+
+    fun setOverlayPermissionNotified(context: Context, notified: Boolean) {
+        prefs(context).edit().putBoolean(KEY_OVERLAY_PERMISSION_NOTIFIED, notified).apply()
+    }
 
     fun save(context: Context, key: String, value: String) {
         prefs(context).edit().putString(key, value).apply()

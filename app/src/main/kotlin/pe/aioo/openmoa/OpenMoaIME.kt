@@ -13,6 +13,8 @@ import android.graphics.drawable.Icon
 import android.inputmethodservice.InputMethodService
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
 import android.view.inputmethod.InputMethodManager
 import android.text.InputType
@@ -59,6 +61,7 @@ import pe.aioo.openmoa.config.OneHandMode
 import pe.aioo.openmoa.view.keyboardview.qwerty.QuertyKoView
 import pe.aioo.openmoa.databinding.OpenMoaImeBinding
 import pe.aioo.openmoa.hangul.HangulAssembler
+import pe.aioo.openmoa.hardware.HardwareKeyboardController
 import pe.aioo.openmoa.hotstring.HotstringMatcher
 import pe.aioo.openmoa.hotstring.HotstringRepository
 import pe.aioo.openmoa.hotstring.HotstringRule
@@ -95,6 +98,48 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     private val hangulAssembler = HangulAssembler()
     private var imeMode = IMEMode.IME_KO
     private var previousImeMode = IMEMode.IME_KO
+    private val hardwareKeyboardController by lazy {
+        HardwareKeyboardController(
+            context = this,
+            onToggleLanguageRequested = { toggleLanguage() },
+            currentImeMode = { imeMode },
+            onJamoInput = { jamo -> dispatchHardwareJamo(jamo) },
+        )
+    }
+
+    private fun dispatchHardwareJamo(jamo: String) {
+        if (!this::broadcastReceiver.isInitialized) return
+        broadcastReceiver.onReceive(
+            this,
+            Intent(INTENT_ACTION).apply { putExtra(EXTRA_NAME, jamo) }
+        )
+    }
+
+    private fun isRealInputContext(attribute: EditorInfo?): Boolean {
+        if (attribute == null) return false
+        if (attribute.inputType == InputType.TYPE_NULL) return false
+        return true
+    }
+
+    private val inputBindingPollHandler = Handler(Looper.getMainLooper())
+    private val inputBindingPollRunnable = object : Runnable {
+        override fun run() {
+            if (currentInputBinding == null || currentInputConnection == null) {
+                hardwareKeyboardController.onInputFinished()
+                return
+            }
+            inputBindingPollHandler.postDelayed(this, INPUT_POLL_INTERVAL_MS)
+        }
+    }
+
+    private fun startInputBindingPoll() {
+        inputBindingPollHandler.removeCallbacks(inputBindingPollRunnable)
+        inputBindingPollHandler.postDelayed(inputBindingPollRunnable, INPUT_POLL_INTERVAL_MS)
+    }
+
+    private fun stopInputBindingPoll() {
+        inputBindingPollHandler.removeCallbacks(inputBindingPollRunnable)
+    }
     private var composingText = ""
     private var lastSpaceTime = 0L
     private var lastAppliedSkin: KeyboardSkin = KeyboardSkin.DEFAULT
@@ -558,21 +603,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                                 }
                             }
                             SpecialKey.LANGUAGE -> {
-                                setKeyboard(
-                                    when (imeMode) {
-                                        IMEMode.IME_KO -> IMEMode.IME_EN
-                                        IMEMode.IME_EN -> IMEMode.IME_KO
-                                        IMEMode.IME_KO_PUNCTUATION,
-                                        IMEMode.IME_KO_NUMBER,
-                                        IMEMode.IME_KO_ARROW,
-                                        IMEMode.IME_KO_PHONE,
-                                        IMEMode.IME_EMOJI -> IMEMode.IME_KO
-                                        IMEMode.IME_EN_PUNCTUATION,
-                                        IMEMode.IME_EN_NUMBER,
-                                        IMEMode.IME_EN_ARROW,
-                                        IMEMode.IME_EN_PHONE -> IMEMode.IME_EN
-                                    }
-                                )
+                                toggleLanguage()
                             }
                             SpecialKey.HANJA_NUMBER_PUNCTUATION -> {
                                 setKeyboard(
@@ -833,21 +864,28 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     }
 
     private fun setKeyboard(mode: IMEMode) {
-        finishComposing()
-        hotstringBuffer = ""
-        deactivateSuggestionBar()
-        keyboardViews[mode]?.let {
-            when (it) {
-                is PunctuationView -> it.setPageOrNextPage(0)
-                is PhoneView -> it.setPageOrNextPage(0)
-                is ArrowView -> {
-                    it.setSelectingOrToggleSelecting(false)
-                    it.refreshOneHandMode()
+        if (this::keyboardViews.isInitialized && this::binding.isInitialized) {
+            finishComposing()
+            hotstringBuffer = ""
+            deactivateSuggestionBar()
+            keyboardViews[mode]?.let {
+                when (it) {
+                    is PunctuationView -> it.setPageOrNextPage(0)
+                    is PhoneView -> it.setPageOrNextPage(0)
+                    is ArrowView -> {
+                        it.setSelectingOrToggleSelecting(false)
+                        it.refreshOneHandMode()
+                    }
                 }
+                binding.keyboardFrameLayout.setKeyboardView(it)
             }
-            binding.keyboardFrameLayout.setKeyboardView(it)
         }
         imeMode = mode
+        hardwareKeyboardController.onLanguageChanged()
+    }
+
+    private fun toggleLanguage() {
+        setKeyboard(imeMode.resolveLanguageSwitchTarget())
     }
 
     private fun setShiftAutomatically() {
@@ -1233,6 +1271,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         clipboardManager = null
         userWordStore.flush()
         koreanUserWordStore.flush()
+        if (finishingInput) hardwareKeyboardController.onInputFinished()
     }
 
     private fun showClipboardEditForm(entry: ClipboardEntry) {
@@ -1560,9 +1599,11 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     }
 
     override fun onDestroy() {
+        stopInputBindingPoll()
         if (this::broadcastReceiver.isInitialized) {
             LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
         }
+        hardwareKeyboardController.onDestroy()
         userWordStore.flush()
         koreanUserWordStore.flush()
         feedbackPlayer.release()
@@ -1580,6 +1621,51 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                 setKeyboard(imeMode)
             }
         }
+        hardwareKeyboardController.onConfigurationChanged()
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        if (hardwareKeyboardController.onKeyDown(event)) return true
+        return super.onKeyDown(keyCode, event)
+    }
+
+    override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
+        if (hardwareKeyboardController.onKeyUp(event)) return true
+        return super.onKeyUp(keyCode, event)
+    }
+
+    override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
+        super.onStartInput(attribute, restarting)
+        if (restarting) return
+        if (isRealInputContext(attribute)) {
+            hardwareKeyboardController.onInputStarted()
+            startInputBindingPoll()
+        } else {
+            hardwareKeyboardController.onInputFinished()
+            stopInputBindingPoll()
+        }
+    }
+
+    override fun onFinishInput() {
+        super.onFinishInput()
+        hardwareKeyboardController.onInputFinished()
+        stopInputBindingPoll()
+    }
+
+    override fun onUnbindInput() {
+        super.onUnbindInput()
+        hardwareKeyboardController.onInputFinished()
+        stopInputBindingPoll()
+    }
+
+    override fun onWindowShown() {
+        super.onWindowShown()
+        hardwareKeyboardController.onWindowShown()
+    }
+
+    override fun onWindowHidden() {
+        super.onWindowHidden()
+        hardwareKeyboardController.onWindowHidden()
     }
 
     @SuppressLint("RestrictedApi")
@@ -1764,6 +1850,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     companion object {
         const val INTENT_ACTION = "keyInput"
         const val EXTRA_NAME = "key"
+        private const val INPUT_POLL_INTERVAL_MS = 3000L
 
         private const val SIMPLE_MULTI_TAP_MS = 400L
 
