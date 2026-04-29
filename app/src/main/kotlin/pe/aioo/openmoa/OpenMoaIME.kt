@@ -1048,12 +1048,21 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         lastLearnedWord = null
         lastLearnedIsKo = false
         isHotstringEnabled = SettingsPreferences.getHotstringEnabled(this)
-        val inputType = (info?.inputType ?: 0)
+        val inputType = info?.inputType ?: 0
+        val inputClass = inputType and InputType.TYPE_MASK_CLASS
         val variation = inputType and InputType.TYPE_MASK_VARIATION
-        isPasswordField = variation == InputType.TYPE_TEXT_VARIATION_PASSWORD ||
-            variation == InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD ||
-            variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD ||
-            variation == InputType.TYPE_NUMBER_VARIATION_PASSWORD
+        // TYPE_TEXT_VARIATION_URI(0x10)와 TYPE_NUMBER_VARIATION_PASSWORD(0x10)가 같은 값이라
+        // inputClass로 구분 필요 (URI 필드가 password로 잘못 잡히는 버그 방지, 예: Chrome URL=0x80011)
+        // PHONE/DATETIME 클래스에는 password variation이 없으므로 else->false 안전
+        isPasswordField = when (inputClass) {
+            InputType.TYPE_CLASS_TEXT ->
+                variation == InputType.TYPE_TEXT_VARIATION_PASSWORD ||
+                variation == InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD ||
+                variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            InputType.TYPE_CLASS_NUMBER ->
+                variation == InputType.TYPE_NUMBER_VARIATION_PASSWORD
+            else -> false
+        }
         clipboardManager?.removePrimaryClipChangedListener(clipboardListener)
         if (!isPasswordField && config.clipboardEnabled) {
             clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
