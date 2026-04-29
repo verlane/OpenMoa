@@ -43,6 +43,7 @@ object SettingsPreferences {
     const val KEY_CLIPBOARD_MAX_ITEMS = "clipboard_max_items"
     const val KEY_CLIPBOARD_EXPIRY_MINUTES = "clipboard_expiry_minutes"
     const val KEY_MIN_LEARN_COUNT = "min_learn_count"
+    const val KEY_LANDSCAPE_QWERTY = "landscape_qwerty"
 
     val ALL_KEYS = setOf(
         KEY_HANGUL_INPUT_MODE,
@@ -69,6 +70,7 @@ object SettingsPreferences {
         KEY_CLIPBOARD_MAX_ITEMS,
         KEY_CLIPBOARD_EXPIRY_MINUTES,
         KEY_MIN_LEARN_COUNT,
+        KEY_LANDSCAPE_QWERTY,
     ) + UserCharKey.values().map { it.prefKey }.toSet()
 
     private fun prefs(context: Context) =
@@ -179,6 +181,13 @@ object SettingsPreferences {
 
     fun setClipboardEnabled(context: Context, enabled: Boolean) {
         prefs(context).edit().putBoolean(KEY_CLIPBOARD_ENABLED, enabled).apply()
+    }
+
+    fun getLandscapeQwerty(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_LANDSCAPE_QWERTY, false)
+
+    fun setLandscapeQwerty(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(KEY_LANDSCAPE_QWERTY, enabled).apply()
     }
 
     fun getMinLearnCount(context: Context): Int =

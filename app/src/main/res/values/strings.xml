@@ -105,6 +105,10 @@
     <string name="settings_input_mode_two_hand_moakey">양손 모아키(기본)</string>
     <string name="settings_input_mode_moakey">모아키</string>
     <string name="settings_input_mode_moakey_plus">모아키+</string>
+    <string name="settings_input_mode_qwerty">한글 쿼티(2벌식)</string>
+    <string name="settings_input_mode_qwerty_simple">한글 쿼티(2벌식 단모음)</string>
+    <string name="settings_landscape_qwerty_title">가로 모드 한글 쿼티</string>
+    <string name="settings_landscape_qwerty_description">가로 모드일 때 한글 자판을 쿼티로 표시합니다</string>
 
     <string name="settings_keyboard_section">키보드 설정</string>
     <string name="settings_keypad_height_title">키패드 높이 조절</string>

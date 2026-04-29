@@ -56,6 +56,7 @@ import pe.aioo.openmoa.config.HangulInputMode
 import pe.aioo.openmoa.view.feedback.KeyFeedbackPlayer
 import pe.aioo.openmoa.config.KeyboardSkin
 import pe.aioo.openmoa.config.OneHandMode
+import pe.aioo.openmoa.view.keyboardview.qwerty.QuertyKoView
 import pe.aioo.openmoa.databinding.OpenMoaImeBinding
 import pe.aioo.openmoa.hangul.HangulAssembler
 import pe.aioo.openmoa.hotstring.HotstringMatcher
@@ -104,6 +105,8 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     private var hotstringBuffer = ""
     private var lastLearnedWord: String? = null
     private var lastLearnedIsKo: Boolean = false
+    private var lastSimpleJamo: String? = null
+    private var lastSimpleJamoTime: Long = 0L
     private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var suggestionJob: Job? = null
     private var isSuggestionBarActive = false
@@ -134,6 +137,12 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         currentInputConnection?.finishComposingText()
         hangulAssembler.clear()
         composingText = ""
+        resetSimpleMultiTap()
+    }
+
+    private fun resetSimpleMultiTap() {
+        lastSimpleJamo = null
+        lastSimpleJamoTime = 0L
     }
 
     private fun showClipboardPanel() {
@@ -486,6 +495,8 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                 val beforeComposingText = composingText
                 when (key) {
                     is SpecialKey -> {
+                        // 단모음 multi-tap 상태는 자모 키 연속 입력에서만 의미가 있음
+                        resetSimpleMultiTap()
                         // Process for special key
                         when (key) {
                             SpecialKey.BACKSPACE -> {
@@ -724,20 +735,37 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                             hotstringBuffer = (hotstringBuffer + key).takeLast(50)
                         } else if (key.matches(HangulAssembler.JAMO_REGEX)) {
                             // Process for Jamo key
+                            // 단모음 모드 multi-tap 합성: 같은 자모를 임계 시간 내 두 번 누르면
+                            // 직전 자모를 합성 자모로 교체 (음절 보존)
+                            val now = SystemClock.uptimeMillis()
+                            val withinThreshold = now - lastSimpleJamoTime <= SIMPLE_MULTI_TAP_MS
+                            val combined = if (
+                                isSimpleQwertyKoActive() && withinThreshold && lastSimpleJamo == key
+                            ) SIMPLE_MULTI_TAP_MAP[key] else null
                             hangulAssembler.getUnresolved()?.let {
                                 composingText = composingText.substring(
                                     0, composingText.length - it.length
                                 )
                             }
-                            hangulAssembler.appendJamo(key)?.let {
-                                composingText += it
+                            if (combined != null) {
+                                hangulAssembler.replaceLastJamo(combined)?.let {
+                                    composingText += it
+                                }
+                                lastSimpleJamo = combined
+                            } else {
+                                hangulAssembler.appendJamo(key)?.let {
+                                    composingText += it
+                                }
+                                hangulAssembler.getUnresolved()?.let {
+                                    composingText += it
+                                }
+                                lastSimpleJamo = key
                             }
-                            hangulAssembler.getUnresolved()?.let {
-                                composingText += it
-                            }
+                            lastSimpleJamoTime = now
                             hotstringBuffer = (hotstringBuffer + key).takeLast(50)
                         } else {
                             // Process for another key
+                            resetSimpleMultiTap()
                             lastHotstringTrigger = null
                             lastHotstringExpansion = null
                             lastLearnedWord = null
@@ -824,6 +852,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
 
     private fun setShiftAutomatically() {
         if (!config.autoCapitalizeEnglish) return
+        if (imeMode != IMEMode.IME_EN) return
         keyboardViews[imeMode]?.let { view ->
             if (view is QuertyView) {
                 currentInputConnection?.let { inputConnection ->
@@ -957,6 +986,29 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         return view
     }
 
+    private data class KoLayout(val useQwerty: Boolean, val simpleQwerty: Boolean)
+
+    private fun resolveKoLayout(): KoLayout {
+        val savedMode = SettingsPreferences.getHangulInputMode(this)
+        if (savedMode.isQwertyLayout) {
+            return KoLayout(useQwerty = true, simpleQwerty = savedMode.isSimpleQwerty)
+        }
+        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        if (isLandscape && SettingsPreferences.getLandscapeQwerty(this)) {
+            return KoLayout(useQwerty = true, simpleQwerty = false)
+        }
+        return KoLayout(useQwerty = false, simpleQwerty = false)
+    }
+
+    private fun buildKoView(): View {
+        val layout = resolveKoLayout()
+        return if (layout.useQwerty) {
+            QuertyKoView(this).also { it.simple = layout.simpleQwerty }
+        } else {
+            OpenMoaView(this).also { it.jaumPreviewResolver = hangulAssembler::previewWithAppended }
+        }
+    }
+
     private fun buildKeyboardViews(): MutableMap<IMEMode, View> {
         val punctuationView = PunctuationView(this)
         val numberView = NumberView(this)
@@ -964,7 +1016,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         val phoneView = PhoneView(this)
         val emojiView = EmojiView(this)
         return mutableMapOf(
-            IMEMode.IME_KO to OpenMoaView(this).also { it.jaumPreviewResolver = hangulAssembler::previewWithAppended },
+            IMEMode.IME_KO to buildKoView(),
             IMEMode.IME_EN to QuertyView(this),
             IMEMode.IME_KO_PUNCTUATION to punctuationView,
             IMEMode.IME_EN_PUNCTUATION to punctuationView,
@@ -986,14 +1038,38 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         setKeyboard(imeMode)
     }
 
-    private fun refreshOpenMoaViewIfNeeded() {
+    private fun refreshKoViewIfNeeded() {
+        val layout = resolveKoLayout()
+        val currentView = keyboardViews[IMEMode.IME_KO]
+        val currentQwerty = currentView as? QuertyKoView
+        if (layout.useQwerty != (currentQwerty != null)) {
+            keyboardViews = keyboardViews + (IMEMode.IME_KO to buildKoView())
+            wireKoViewCallbacks()
+            return
+        }
+        if (currentQwerty != null) {
+            if (currentQwerty.simple != layout.simpleQwerty) {
+                keyboardViews = keyboardViews + (IMEMode.IME_KO to buildKoView())
+                wireKoViewCallbacks()
+            }
+            return
+        }
+        val openMoa = currentView as? OpenMoaView ?: return
         val savedMode = SettingsPreferences.getHangulInputMode(this)
-        val currentView = keyboardViews[IMEMode.IME_KO] as? OpenMoaView ?: return
-        val currentIsMoakey = currentView.isMoakeyMode
-        val currentShowsMoeumKey = currentView.moeumKeyVisible
-        if (currentIsMoakey != savedMode.isMoakeyLayout ||
-            currentShowsMoeumKey != savedMode.showsMoeumKey) {
-            keyboardViews = keyboardViews + (IMEMode.IME_KO to OpenMoaView(this).also { it.jaumPreviewResolver = hangulAssembler::previewWithAppended })
+        if (openMoa.isMoakeyMode != savedMode.isMoakeyLayout ||
+            openMoa.moeumKeyVisible != savedMode.showsMoeumKey) {
+            keyboardViews = keyboardViews + (IMEMode.IME_KO to buildKoView())
+            wireKoViewCallbacks()
+        }
+    }
+
+    private fun wireKoViewCallbacks() {
+        val koView = keyboardViews[IMEMode.IME_KO]
+        (koView as? OpenMoaView)?.onEditPhraseRequest = { key ->
+            showPhraseEditForm(key)
+        }
+        (koView as? QuertyView)?.onEditPhraseRequest = { key ->
+            showPhraseEditForm(key)
         }
     }
 
@@ -1069,7 +1145,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
             clipboardManager?.addPrimaryClipChangedListener(clipboardListener)
         }
         refreshSkinIfNeeded()
-        refreshOpenMoaViewIfNeeded()
+        refreshKoViewIfNeeded()
         (keyboardViews[IMEMode.IME_KO] as? OpenMoaView)?.refreshQuickPhraseBadges()
         (keyboardViews[IMEMode.IME_KO] as? OpenMoaView)?.refreshUserCharLabels()
         applyKeyboardLayout()
@@ -1494,6 +1570,18 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         super.onDestroy()
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        if (this::keyboardViews.isInitialized) {
+            keyboardViews = buildKeyboardViews()
+            wireKoViewCallbacks()
+            if (this::binding.isInitialized) {
+                applyKeyboardLayout()
+                setKeyboard(imeMode)
+            }
+        }
+    }
+
     @SuppressLint("RestrictedApi")
     override fun onCreateInlineSuggestionsRequest(uiExtras: Bundle): InlineSuggestionsRequest {
         val styleBuilder = UiVersions.newStylesBuilder()
@@ -1668,9 +1756,24 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         return true
     }
 
+    private fun isSimpleQwertyKoActive(): Boolean {
+        val v = if (this::keyboardViews.isInitialized) keyboardViews[IMEMode.IME_KO] else null
+        return (v as? QuertyKoView)?.simple == true
+    }
+
     companion object {
         const val INTENT_ACTION = "keyInput"
         const val EXTRA_NAME = "key"
+
+        private const val SIMPLE_MULTI_TAP_MS = 400L
+
+        // 단모음 multi-tap 합성: 같은 자모 두 번 → 합성 자모
+        private val SIMPLE_MULTI_TAP_MAP = mapOf(
+            "ㅏ" to "ㅑ", "ㅓ" to "ㅕ", "ㅗ" to "ㅛ", "ㅜ" to "ㅠ",
+            "ㅐ" to "ㅒ", "ㅔ" to "ㅖ",
+            "ㄱ" to "ㄲ", "ㄷ" to "ㄸ", "ㅂ" to "ㅃ",
+            "ㅅ" to "ㅆ", "ㅈ" to "ㅉ",
+        )
     }
 
 }

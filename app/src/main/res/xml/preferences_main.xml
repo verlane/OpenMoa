@@ -11,6 +11,13 @@
             android:negativeButtonText="@string/dialog_close"
             app:icon="@drawable/ic_pref_keyboard" />
 
+        <SwitchPreferenceCompat
+            app:key="landscape_qwerty"
+            app:title="@string/settings_landscape_qwerty_title"
+            app:summary="@string/settings_landscape_qwerty_description"
+            app:defaultValue="false"
+            app:icon="@drawable/ic_pref_keyboard" />
+
         <Preference
             app:key="pref_gesture_angle"
             app:title="@string/settings_gesture_angle_title"

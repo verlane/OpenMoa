@@ -33,4 +33,6 @@ class Config(private val context: Context) {
         get() = SettingsPreferences.getGestureAngles(context)
     val clipboardEnabled: Boolean
         get() = SettingsPreferences.getClipboardEnabled(context)
+    val landscapeQwerty: Boolean
+        get() = SettingsPreferences.getLandscapeQwerty(context)
 }

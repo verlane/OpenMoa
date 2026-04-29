@@ -218,6 +218,18 @@ class HangulAssembler {
         }
     }
 
+    /**
+     * 마지막 자모를 새 자모로 교체 (multi-tap 합성용).
+     * removeLastJamo 와 달리 음절을 클리어하지 않고 jamoList의 마지막만 바꿈.
+     * @return 교체 후 unresolved (조합된 음절 또는 자모 시퀀스), 또는 null
+     */
+    fun replaceLastJamo(newJamo: String): String? {
+        if (jamoList.isEmpty()) return null
+        jamoList[jamoList.lastIndex] = newJamo
+        isDecomposedState = false
+        return getUnresolved()
+    }
+
     fun removeLastJamo() {
         val last = jamoList.lastOrNull() ?: return
         val firstOfDouble = DOUBLE_JONGSEONG_DECOMPOSITION[last]?.first()

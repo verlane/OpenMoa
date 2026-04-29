@@ -31,7 +31,7 @@ import pe.aioo.openmoa.view.preview.KeyPreviewController
 import pe.aioo.openmoa.view.preview.QuickPhraseMenuPopup
 import pe.aioo.openmoa.view.skin.SkinApplier
 
-class QuertyView : ConstraintLayout, KoinComponent {
+open class QuertyView : ConstraintLayout, KoinComponent {
 
     private val config: Config by inject()
 
@@ -51,7 +51,8 @@ class QuertyView : ConstraintLayout, KoinComponent {
 
     var onEditPhraseRequest: ((PhraseKey) -> Unit)? = null
     private var shiftKeyStatus = ShiftKeyStatus.DISABLED
-    private lateinit var binding: QuertyViewBinding
+    protected lateinit var binding: QuertyViewBinding
+        private set
     private var previewController: KeyPreviewController? = null
     private var currentSkin: KeyboardSkin = KeyboardSkin.DEFAULT
     private val configurableLongKeyListeners = mutableListOf<QwertyKeyTouchListener>()
@@ -86,6 +87,8 @@ class QuertyView : ConstraintLayout, KoinComponent {
             binding.nineKey to NumberLongKey.NUM_9, binding.zeroKey to NumberLongKey.NUM_0,
         )
     }
+
+    protected open fun keyList(): List<List<String>> = DEFAULT_KEY_LIST
 
     private fun init() {
         inflate(context, R.layout.querty_view, this)
@@ -144,7 +147,7 @@ class QuertyView : ConstraintLayout, KoinComponent {
                 binding.lKey, binding.zKey, binding.xKey, binding.cKey, binding.vKey, binding.bKey,
                 binding.nKey, binding.mKey,
             ).mapIndexed { index, view ->
-                view.text = KEY_LIST[if (isShiftEnabled) 1 else 0][index]
+                view.text = keyList()[if (isShiftEnabled) 1 else 0][index]
             }
             binding.shiftKey.setTextColor(
                 if (isShiftEnabled) {
@@ -163,6 +166,12 @@ class QuertyView : ConstraintLayout, KoinComponent {
             setShiftStatus(if (isEnabled) ShiftKeyStatus.AUTO_ENABLED else ShiftKeyStatus.DISABLED)
         }
     }
+
+    protected fun refreshKeyLabels() {
+        if (::binding.isInitialized) setShiftStatus(shiftKeyStatus, isInitialize = true)
+    }
+
+    protected fun isBindingInitialized(): Boolean = ::binding.isInitialized
 
     @SuppressLint("ClickableViewAccessibility")
     private fun setOnTouchListeners() {
@@ -254,7 +263,8 @@ class QuertyView : ConstraintLayout, KoinComponent {
                             ShiftKeyStatus.ENABLED -> ShiftKeyStatus.DISABLED
                             else -> shiftKeyStatus
                         })
-                        StringKeyMessage(key)
+                        // 단모음 자판에서 자모가 없는 자리(빈 키)는 무반응
+                        if (key.isEmpty()) null else StringKeyMessage(key)
                     }
                 ))
             }
@@ -272,7 +282,7 @@ class QuertyView : ConstraintLayout, KoinComponent {
                         ShiftKeyStatus.ENABLED -> ShiftKeyStatus.DISABLED
                         else -> shiftKeyStatus
                     })
-                    StringKeyMessage(key)
+                    if (key.isEmpty()) null else StringKeyMessage(key)
                 },
                 quickPhraseMenuPopup = popup,
                 onEdit = { onEditPhraseRequest?.invoke(longKeyEnum) }
@@ -286,7 +296,7 @@ class QuertyView : ConstraintLayout, KoinComponent {
     }
 
     companion object {
-        private val KEY_LIST = listOf(
+        private val DEFAULT_KEY_LIST = listOf(
             listOf(
                 "q", "w", "e", "r", "t", "y", "u", "i", "o", "p",
                 "a", "s", "d", "f", "g", "h", "j", "k", "l",
