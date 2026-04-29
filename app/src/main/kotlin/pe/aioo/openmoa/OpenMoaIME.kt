@@ -1574,7 +1574,8 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                 APPEARANCE_LIGHT_NAVIGATION_BARS,
             )
         }
-        val oneHandMode = SettingsPreferences.getOneHandMode(this)
+        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val oneHandMode = if (isLandscape) OneHandMode.NONE else SettingsPreferences.getOneHandMode(this)
         val displayWidth = resources.displayMetrics.widthPixels
         val keyboardWidth = if (oneHandMode.isReduced) {
             (displayWidth * 0.80f).toInt()
@@ -1615,9 +1616,11 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     private fun calculateKeyboardHeight(): Int {
         val displayHeight = resources.displayMetrics.heightPixels
         val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-        val baseScale = if (isLandscape) 0.50f else 0.35f
+        if (isLandscape) {
+            return (displayHeight * 0.50f).toInt()
+        }
         val heightScale = SettingsPreferences.getKeypadHeight(this).heightScale
-        return (displayHeight * baseScale * heightScale).toInt()
+        return (displayHeight * 0.35f * heightScale).toInt()
     }
 
     private fun getHeight(): Int {
