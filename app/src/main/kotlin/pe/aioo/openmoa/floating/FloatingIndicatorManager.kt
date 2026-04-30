@@ -6,6 +6,8 @@ import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.PixelFormat
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.util.DisplayMetrics
 import android.view.Gravity
@@ -26,6 +28,8 @@ class FloatingIndicatorManager(context: Context) {
     private val windowManager: WindowManager =
         this.context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
+    private val longPressTimeout = ViewConfiguration.getLongPressTimeout().toLong()
+    private val handler = Handler(Looper.getMainLooper())
     private val edgeMarginPx = dp(8)
     private val verticalSafeMarginPx = dp(INDICATOR_SIZE_DP)
     private val indicatorSizePx = dp(INDICATOR_SIZE_DP)
@@ -34,7 +38,9 @@ class FloatingIndicatorManager(context: Context) {
     private var labelView: TextView? = null
     private var layoutParams: WindowManager.LayoutParams? = null
     private var onTap: (() -> Unit)? = null
+    private var onLongTap: (() -> Unit)? = null
     private var snapAnimator: ValueAnimator? = null
+    private var currentIsKorean = false
 
     fun canShow(): Boolean = Settings.canDrawOverlays(context)
 
@@ -44,7 +50,12 @@ class FloatingIndicatorManager(context: Context) {
         onTap = listener
     }
 
+    fun setOnLongTapListener(listener: () -> Unit) {
+        onLongTap = listener
+    }
+
     fun show(isKorean: Boolean) {
+        currentIsKorean = isKorean
         if (rootView != null) {
             updateLanguage(isKorean)
             return
@@ -70,6 +81,7 @@ class FloatingIndicatorManager(context: Context) {
     }
 
     fun hide() {
+        handler.removeCallbacksAndMessages(null)
         snapAnimator?.cancel()
         snapAnimator = null
         rootView?.let {
@@ -85,7 +97,15 @@ class FloatingIndicatorManager(context: Context) {
     }
 
     fun updateLanguage(isKorean: Boolean) {
+        currentIsKorean = isKorean
         labelView?.let { applyLanguageLabel(it, isKorean) }
+    }
+
+    fun updateVimMode(vimMode: String?) {
+        labelView?.text = vimMode ?: context.getString(
+            if (currentIsKorean) R.string.floating_indicator_label_ko
+            else R.string.floating_indicator_label_en
+        )
     }
 
     private fun applyLanguageLabel(label: TextView, isKorean: Boolean) {
@@ -147,6 +167,8 @@ class FloatingIndicatorManager(context: Context) {
         var initialParamsY = 0
         var downTime = 0L
         var dragging = false
+        var longPressTriggered = false
+        var longPressRunnable: Runnable? = null
 
         view.setOnTouchListener { v, event ->
             when (event.action) {
@@ -158,6 +180,16 @@ class FloatingIndicatorManager(context: Context) {
                     initialParamsY = params.y
                     downTime = System.currentTimeMillis()
                     dragging = false
+                    longPressTriggered = false
+                    val runnable = Runnable {
+                        if (!dragging) {
+                            longPressTriggered = true
+                            v.performClick()
+                            onLongTap?.invoke()
+                        }
+                    }
+                    longPressRunnable = runnable
+                    handler.postDelayed(runnable, longPressTimeout)
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
@@ -165,6 +197,8 @@ class FloatingIndicatorManager(context: Context) {
                     val dy = (event.rawY - initialRawY).toInt()
                     if (!dragging && (abs(dx) > touchSlop || abs(dy) > touchSlop)) {
                         dragging = true
+                        longPressRunnable?.let { handler.removeCallbacks(it) }
+                        longPressRunnable = null
                     }
                     if (dragging) {
                         params.x = initialParamsX + dx
@@ -184,16 +218,20 @@ class FloatingIndicatorManager(context: Context) {
                     true
                 }
                 MotionEvent.ACTION_UP -> {
+                    longPressRunnable?.let { handler.removeCallbacks(it) }
+                    longPressRunnable = null
                     val elapsed = System.currentTimeMillis() - downTime
-                    if (!dragging && elapsed < TAP_THRESHOLD_MS) {
+                    if (dragging) {
+                        snapToEdge(v, params)
+                    } else if (!longPressTriggered && elapsed < TAP_THRESHOLD_MS) {
                         v.performClick()
                         onTap?.invoke()
-                    } else if (dragging) {
-                        snapToEdge(v, params)
                     }
                     true
                 }
                 MotionEvent.ACTION_CANCEL -> {
+                    longPressRunnable?.let { handler.removeCallbacks(it) }
+                    longPressRunnable = null
                     if (dragging) snapToEdge(v, params)
                     true
                 }

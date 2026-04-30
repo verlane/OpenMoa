@@ -77,24 +77,66 @@ class TabHoldVimDetectorTest {
     }
 
     @Test
-    fun `Tab hold 중 e는 MoveWord forward (단어 이동)`() {
+    fun `Tab hold 중 e는 LineEnd`() {
         val d = newDetector()
         d.tabDown()
-        assertEquals(VimAction.MoveWord(forward = true), d.key(TabHoldVimDetector.KEYCODE_E))
+        assertEquals(VimAction.LineEnd(), d.key(TabHoldVimDetector.KEYCODE_E))
+    }
+
+    @Test
+    fun `Tab hold 중 r는 LineHome`() {
+        val d = newDetector()
+        d.tabDown()
+        assertEquals(VimAction.LineHome(), d.key(TabHoldVimDetector.KEYCODE_R))
+    }
+
+    @Test
+    fun `Tab hold 중 f는 PageScroll down`() {
+        val d = newDetector()
+        d.tabDown()
+        assertEquals(VimAction.PageScroll(down = true), d.key(TabHoldVimDetector.KEYCODE_F))
+    }
+
+    @Test
+    fun `Tab hold 중 Shift+f는 PageScroll up`() {
+        val d = newDetector()
+        d.tabDown()
+        assertEquals(VimAction.PageScroll(down = false), d.key(TabHoldVimDetector.KEYCODE_F, shift = true))
+    }
+
+    @Test
+    fun `Tab hold 중 g는 DocumentEdge start`() {
+        val d = newDetector()
+        d.tabDown()
+        assertEquals(VimAction.DocumentEdge(end = false), d.key(TabHoldVimDetector.KEYCODE_G))
+    }
+
+    @Test
+    fun `Tab hold 중 Shift+g는 DocumentEdge end`() {
+        val d = newDetector()
+        d.tabDown()
+        assertEquals(VimAction.DocumentEdge(end = true), d.key(TabHoldVimDetector.KEYCODE_G, shift = true))
     }
 
     @Test
     fun `Tab hold 중 0는 LineHome`() {
         val d = newDetector()
         d.tabDown()
-        assertEquals(VimAction.LineHome, d.key(TabHoldVimDetector.KEYCODE_ZERO))
+        assertEquals(VimAction.LineHome(), d.key(TabHoldVimDetector.KEYCODE_ZERO))
     }
 
     @Test
     fun `Tab hold 중 Shift+4는 LineEnd`() {
         val d = newDetector()
         d.tabDown()
-        assertEquals(VimAction.LineEnd, d.key(TabHoldVimDetector.KEYCODE_4, shift = true))
+        assertEquals(VimAction.LineEnd(), d.key(TabHoldVimDetector.KEYCODE_4, shift = true))
+    }
+
+    @Test
+    fun `Tab hold 중 Shift+6는 LineHome`() {
+        val d = newDetector()
+        d.tabDown()
+        assertEquals(VimAction.LineHome(), d.key(TabHoldVimDetector.KEYCODE_6, shift = true))
     }
 
     @Test
@@ -105,20 +147,38 @@ class TabHoldVimDetectorTest {
     }
 
     @Test
-    fun `Tab hold 중 dd는 DeleteLine`() {
+    fun `Tab hold 중 d는 DeleteLine`() {
         val d = newDetector()
         d.tabDown()
-        assertEquals(VimAction.Consume, d.key(TabHoldVimDetector.KEYCODE_D))
         assertEquals(VimAction.DeleteLine, d.key(TabHoldVimDetector.KEYCODE_D))
     }
 
     @Test
-    fun `Tab hold 중 d 후 다른 키는 pending 취소`() {
+    fun `Tab hold 중 y는 YankLine`() {
         val d = newDetector()
         d.tabDown()
-        d.key(TabHoldVimDetector.KEYCODE_D)
-        val result = d.key(TabHoldVimDetector.KEYCODE_H)
-        assertEquals(VimAction.MoveCursor(CursorDirection.LEFT), result)
+        assertEquals(VimAction.YankLine, d.key(TabHoldVimDetector.KEYCODE_Y))
+    }
+
+    @Test
+    fun `Tab hold 중 p는 Paste`() {
+        val d = newDetector()
+        d.tabDown()
+        assertEquals(VimAction.Paste, d.key(TabHoldVimDetector.KEYCODE_P))
+    }
+
+    @Test
+    fun `Tab hold 중 o는 NewLineBelow`() {
+        val d = newDetector()
+        d.tabDown()
+        assertEquals(VimAction.NewLineBelow, d.key(TabHoldVimDetector.KEYCODE_O))
+    }
+
+    @Test
+    fun `Tab hold 중 Shift+o는 NewLineAbove`() {
+        val d = newDetector()
+        d.tabDown()
+        assertEquals(VimAction.NewLineAbove, d.key(TabHoldVimDetector.KEYCODE_O, shift = true))
     }
 
     @Test
@@ -127,6 +187,14 @@ class TabHoldVimDetectorTest {
         d.tabDown()
         d.key(TabHoldVimDetector.KEYCODE_H)
         assertEquals(VimAction.Consume, d.tabUp())
+    }
+
+    @Test
+    fun `Tab hold 중 Shift 키 자체는 Consume`() {
+        val d = newDetector()
+        d.tabDown()
+        assertEquals(VimAction.Consume, d.onKeyDown(59, false, false)) // SHIFT_LEFT
+        assertEquals(VimAction.Consume, d.onKeyUp(59))
     }
 
     @Test
@@ -139,46 +207,44 @@ class TabHoldVimDetectorTest {
     }
 
     @Test
-    fun `visual mode 중 v 재입력은 CollapseSelection`() {
+    fun `visual mode 중 v 재입력은 Consume (선택 유지)`() {
         val d = newDetector()
         d.tabDown()
-        d.key(TabHoldVimDetector.KEYCODE_V)  // VisualEnter
-        assertEquals(VimAction.CollapseSelection, d.key(TabHoldVimDetector.KEYCODE_V))
+        d.key(TabHoldVimDetector.KEYCODE_V)
+        assertEquals(VimAction.Consume, d.key(TabHoldVimDetector.KEYCODE_V))
     }
 
     @Test
-    fun `visual mode 중 y는 Yank`() {
+    fun `visual mode 종료 후 hjkl은 extend=false`() {
         val d = newDetector()
         d.tabDown()
-        d.key(TabHoldVimDetector.KEYCODE_V)  // VisualEnter
-        assertEquals(VimAction.Yank, d.key(TabHoldVimDetector.KEYCODE_Y))
+        d.key(TabHoldVimDetector.KEYCODE_V)
+        d.key(TabHoldVimDetector.KEYCODE_V)  // exit visual
+        assertEquals(VimAction.MoveCursor(CursorDirection.LEFT, extend = false), d.key(TabHoldVimDetector.KEYCODE_H))
     }
 
     @Test
-    fun `visual mode 아닐 때 y는 Yank (줄 복사)`() {
+    fun `visual mode 중 y는 YankSelection 후 visual 해제`() {
         val d = newDetector()
         d.tabDown()
-        assertEquals(VimAction.Yank, d.key(TabHoldVimDetector.KEYCODE_Y))
+        d.key(TabHoldVimDetector.KEYCODE_V)
+        assertEquals(VimAction.YankSelection, d.key(TabHoldVimDetector.KEYCODE_Y))
+        assertEquals(VimAction.MoveCursor(CursorDirection.LEFT, extend = false), d.key(TabHoldVimDetector.KEYCODE_H))
     }
 
     @Test
-    fun `Tab release 후에도 visual mode 유지 - 재차 Tab+h는 extend=true`() {
+    fun `visual mode 아닐 때 y는 YankLine`() {
         val d = newDetector()
         d.tabDown()
-        d.key(TabHoldVimDetector.KEYCODE_V)  // VisualEnter
-        d.tabUp()           // Tab 해제해도 visual mode 유지
-        d.tabDown()
-        val move = d.key(TabHoldVimDetector.KEYCODE_H)
-        assertEquals(VimAction.MoveCursor(CursorDirection.LEFT, extend = true), move)
+        assertEquals(VimAction.YankLine, d.key(TabHoldVimDetector.KEYCODE_Y))
     }
 
     @Test
     fun `visual mode 중 d는 DeleteSelection 후 visual mode 해제`() {
         val d = newDetector()
         d.tabDown()
-        d.key(TabHoldVimDetector.KEYCODE_V)  // VisualEnter
+        d.key(TabHoldVimDetector.KEYCODE_V)
         assertEquals(VimAction.DeleteSelection, d.key(TabHoldVimDetector.KEYCODE_D))
-        // visual mode 해제됐으므로 다음 Tab+h는 extend=false
         assertEquals(VimAction.MoveCursor(CursorDirection.LEFT, extend = false), d.key(TabHoldVimDetector.KEYCODE_H))
     }
 
@@ -186,7 +252,7 @@ class TabHoldVimDetectorTest {
     fun `visual mode 중 x는 DeleteSelection 후 visual mode 해제`() {
         val d = newDetector()
         d.tabDown()
-        d.key(TabHoldVimDetector.KEYCODE_V)  // VisualEnter
+        d.key(TabHoldVimDetector.KEYCODE_V)
         assertEquals(VimAction.DeleteSelection, d.key(TabHoldVimDetector.KEYCODE_X))
     }
 
@@ -198,11 +264,75 @@ class TabHoldVimDetectorTest {
     }
 
     @Test
+    fun `visual mode 중 e는 LineEnd(extend=true)`() {
+        val d = newDetector()
+        d.tabDown()
+        d.key(TabHoldVimDetector.KEYCODE_V)
+        assertEquals(VimAction.LineEnd(extend = true), d.key(TabHoldVimDetector.KEYCODE_E))
+    }
+
+    @Test
+    fun `visual mode 중 r는 LineHome(extend=true)`() {
+        val d = newDetector()
+        d.tabDown()
+        d.key(TabHoldVimDetector.KEYCODE_V)
+        assertEquals(VimAction.LineHome(extend = true), d.key(TabHoldVimDetector.KEYCODE_R))
+    }
+
+    @Test
+    fun `visual mode 중 f는 PageScroll(down=true, extend=true)`() {
+        val d = newDetector()
+        d.tabDown()
+        d.key(TabHoldVimDetector.KEYCODE_V)
+        assertEquals(VimAction.PageScroll(down = true, extend = true), d.key(TabHoldVimDetector.KEYCODE_F))
+    }
+
+    @Test
+    fun `visual mode 중 g는 DocumentEdge(end=false, extend=true)`() {
+        val d = newDetector()
+        d.tabDown()
+        d.key(TabHoldVimDetector.KEYCODE_V)
+        assertEquals(VimAction.DocumentEdge(end = false, extend = true), d.key(TabHoldVimDetector.KEYCODE_G))
+    }
+
+    @Test
+    fun `Tab release 시 visual mode 해제 - 재차 Tab+h는 extend=false`() {
+        val d = newDetector()
+        d.tabDown()
+        d.key(TabHoldVimDetector.KEYCODE_V)
+        d.tabUp()
+        d.tabDown()
+        val move = d.key(TabHoldVimDetector.KEYCODE_H)
+        assertEquals(VimAction.MoveCursor(CursorDirection.LEFT, extend = false), move)
+    }
+
+    @Test
     fun `reset 후 상태 초기화`() {
         val d = newDetector()
         d.tabDown()
-        d.key(TabHoldVimDetector.KEYCODE_V)  // VisualEnter
+        d.key(TabHoldVimDetector.KEYCODE_V)
         d.reset()
         assertEquals(VimAction.InjectTab, d.tabDown().let { d.tabUp() })
+    }
+
+    @Test
+    fun `isTabHeld 상태 반영`() {
+        val d = newDetector()
+        assert(!d.isTabHeld)
+        d.tabDown()
+        assert(d.isTabHeld)
+        d.tabUp()
+        assert(!d.isTabHeld)
+    }
+
+    @Test
+    fun `isVisualMode 상태 반영`() {
+        val d = newDetector()
+        assert(!d.isVisualMode)
+        d.tabDown()
+        d.key(TabHoldVimDetector.KEYCODE_V)
+        assert(d.isVisualMode)
+        d.key(TabHoldVimDetector.KEYCODE_V)
+        assert(!d.isVisualMode)
     }
 }

@@ -1,6 +1,7 @@
 package pe.aioo.openmoa.hardware
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.os.SystemClock
@@ -11,6 +12,7 @@ import pe.aioo.openmoa.BuildConfig
 import pe.aioo.openmoa.IMEMode
 import pe.aioo.openmoa.floating.FloatingIndicatorManager
 import pe.aioo.openmoa.isKoreanFamily
+import pe.aioo.openmoa.settings.SettingsActivity
 import pe.aioo.openmoa.settings.SettingsPreferences
 
 class HardwareKeyboardController(
@@ -57,6 +59,11 @@ class HardwareKeyboardController(
 
     init {
         indicator.setOnTapListener { onToggleLanguageRequested() }
+        indicator.setOnLongTapListener {
+            val intent = Intent(context, SettingsActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+        }
         prefs.registerOnSharedPreferenceChangeListener(prefsListener)
     }
 
@@ -93,6 +100,7 @@ class HardwareKeyboardController(
         )
         if (vimAction != VimAction.PassThrough) {
             inputConnectionProvider()?.let { ic -> VimActionExecutor.execute(vimAction, ic) }
+            updateVimIndicator()
             return true
         }
 
@@ -117,7 +125,8 @@ class HardwareKeyboardController(
         if (event.metaState and KeyEvent.META_CAPS_LOCK_ON == 0) return false
         val lower = letterChar(event.keyCode) ?: return false
         val char = if (event.isShiftPressed) lower.uppercaseChar() else lower
-        inputConnectionProvider()?.commitText(char.toString(), 1) ?: return false
+        val ic = inputConnectionProvider() ?: return false
+        ic.commitText(char.toString(), 1)
         return true
     }
 
@@ -146,10 +155,21 @@ class HardwareKeyboardController(
         val vimAction = tabHoldVimDetector.onKeyUp(event.keyCode)
         if (vimAction != VimAction.PassThrough) {
             inputConnectionProvider()?.let { ic -> VimActionExecutor.execute(vimAction, ic) }
+            updateVimIndicator()
             return true
         }
 
         return handle(detector.onKeyUp(event.keyCode))
+    }
+
+    private fun updateVimIndicator() {
+        if (!cachedTabVimMode) return
+        val mode = when {
+            tabHoldVimDetector.isTabHeld && tabHoldVimDetector.isVisualEnteredThisTab -> "V"
+            tabHoldVimDetector.isTabHeld -> "F"
+            else -> null
+        }
+        indicator.updateVimMode(mode)
     }
 
     private fun handle(action: ShortcutAction): Boolean = when (action) {

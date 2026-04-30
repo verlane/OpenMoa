@@ -4,6 +4,7 @@ import android.view.KeyEvent
 
 class CapsLockRemapper {
     var enabled = false
+        set(value) { field = value; if (!value) reset() }
     private var capsHeld = false
     private var lastRewrittenKeyCode: Int? = null
 
