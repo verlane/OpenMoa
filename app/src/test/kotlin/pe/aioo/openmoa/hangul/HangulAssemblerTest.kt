@@ -418,4 +418,154 @@ class HangulAssemblerTest {
         assertEquals("곰", assembler.previewWithAppended("ㅁ"))
     }
 
+    // --- removeLastJamo(decomposeMoeum=true) 두벌식/단모음 ---
+
+    @Test
+    fun `removeLastJamo decompose - 왜에서 백스페이스 시 오 → ㅇ 순서로 분해`() {
+        val assembler = HangulAssembler()
+        assembler.appendJamo("ㅇ")
+        assembler.appendJamo("ㅗ")
+        assembler.appendJamo("ㅐ")
+        assertEquals("왜", assembler.getUnresolved())
+        assembler.removeLastJamo(true)
+        assertEquals("오", assembler.getUnresolved())
+        assembler.removeLastJamo(true)
+        assertEquals("ㅇ", assembler.getUnresolved())
+        assembler.removeLastJamo(true)
+        assertNull(assembler.getUnresolved())
+    }
+
+    @Test
+    fun `removeLastJamo decompose - 과에서 백스페이스 시 고 → ㄱ 순서로 분해`() {
+        val assembler = HangulAssembler()
+        assembler.appendJamo("ㄱ")
+        assembler.appendJamo("ㅗ")
+        assembler.appendJamo("ㅏ")
+        assertEquals("과", assembler.getUnresolved())
+        assembler.removeLastJamo(true)
+        assertEquals("고", assembler.getUnresolved())
+        assembler.removeLastJamo(true)
+        assertEquals("ㄱ", assembler.getUnresolved())
+        assembler.removeLastJamo(true)
+        assertNull(assembler.getUnresolved())
+    }
+
+    @Test
+    fun `removeLastJamo decompose - 궤에서 백스페이스 시 구 → ㄱ 순서로 분해`() {
+        val assembler = HangulAssembler()
+        assembler.appendJamo("ㄱ")
+        assembler.appendJamo("ㅜ")
+        assembler.appendJamo("ㅔ")
+        assertEquals("궤", assembler.getUnresolved())
+        assembler.removeLastJamo(true)
+        assertEquals("구", assembler.getUnresolved())
+        assembler.removeLastJamo(true)
+        assertEquals("ㄱ", assembler.getUnresolved())
+        assembler.removeLastJamo(true)
+        assertNull(assembler.getUnresolved())
+    }
+
+    @Test
+    fun `removeLastJamo decompose - 가에서 백스페이스 시 전체 초기화 아닌 ㄱ 남음`() {
+        val assembler = HangulAssembler()
+        assembler.appendJamo("ㄱ")
+        assembler.appendJamo("ㅏ")
+        assertEquals("가", assembler.getUnresolved())
+        assembler.removeLastJamo(true)
+        assertEquals("ㄱ", assembler.getUnresolved())
+    }
+
+    @Test
+    fun `removeLastJamo decompose=false - 가에서 백스페이스 시 전체 초기화 (모아키 기존 동작)`() {
+        val assembler = HangulAssembler()
+        assembler.appendJamo("ㄱ")
+        assembler.appendJamo("ㅏ")
+        assembler.removeLastJamo(false)
+        assertNull(assembler.getUnresolved())
+    }
+
+    @Test
+    fun `removeLastJamo decompose - 간에서 백스페이스 시 가 → ㄱ 순서로 분해`() {
+        val assembler = HangulAssembler()
+        assembler.appendJamo("ㄱ")
+        assembler.appendJamo("ㅏ")
+        assembler.appendJamo("ㄴ")
+        assembler.removeLastJamo(true)
+        assertEquals("가", assembler.getUnresolved())
+        assembler.removeLastJamo(true)
+        assertEquals("ㄱ", assembler.getUnresolved())
+    }
+
+    // --- 복합 모음 조합 (두벌식/단모음) ---
+
+    @Test
+    fun `assembleLastMoeum - ㅗ+ㅏ = ㅘ (과 입력)`() {
+        val assembler = HangulAssembler()
+        assembler.appendJamo("ㄱ")
+        assembler.appendJamo("ㅗ")
+        assertEquals("고", assembler.getUnresolved())
+        assertNull(assembler.appendJamo("ㅏ"))
+        assertEquals("과", assembler.getUnresolved())
+    }
+
+    @Test
+    fun `assembleLastMoeum - ㅗ+ㅐ = ㅙ`() {
+        val assembler = HangulAssembler()
+        assembler.appendJamo("ㄱ")
+        assembler.appendJamo("ㅗ")
+        assertNull(assembler.appendJamo("ㅐ"))
+        assertEquals("괘", assembler.getUnresolved())
+    }
+
+    @Test
+    fun `assembleLastMoeum - ㅜ+ㅓ = ㅝ (궈 입력)`() {
+        val assembler = HangulAssembler()
+        assembler.appendJamo("ㄱ")
+        assembler.appendJamo("ㅜ")
+        assertEquals("구", assembler.getUnresolved())
+        assertNull(assembler.appendJamo("ㅓ"))
+        assertEquals("궈", assembler.getUnresolved())
+    }
+
+    @Test
+    fun `assembleLastMoeum - ㅜ+ㅔ = ㅞ`() {
+        val assembler = HangulAssembler()
+        assembler.appendJamo("ㄱ")
+        assembler.appendJamo("ㅜ")
+        assertNull(assembler.appendJamo("ㅔ"))
+        assertEquals("궤", assembler.getUnresolved())
+    }
+
+    @Test
+    fun `assembleLastMoeum - ㅗ+ㅏ+ㅣ = ㅙ (3단계 조합)`() {
+        val assembler = HangulAssembler()
+        assembler.appendJamo("ㄱ")
+        assembler.appendJamo("ㅗ")
+        assembler.appendJamo("ㅏ")
+        assertNull(assembler.appendJamo("ㅣ"))
+        assertEquals("괘", assembler.getUnresolved())
+    }
+
+    @Test
+    fun `assembleLastMoeum - ㅜ+ㅓ+ㅣ = ㅞ (3단계 조합)`() {
+        val assembler = HangulAssembler()
+        assembler.appendJamo("ㄱ")
+        assembler.appendJamo("ㅜ")
+        assembler.appendJamo("ㅓ")
+        assertNull(assembler.appendJamo("ㅣ"))
+        assertEquals("궤", assembler.getUnresolved())
+    }
+
+    @Test
+    fun `assembleLastMoeum - 과에 받침 추가 후 다음 자음으로 분리`() {
+        val assembler = HangulAssembler()
+        assembler.appendJamo("ㄱ")
+        assembler.appendJamo("ㅗ")
+        assembler.appendJamo("ㅏ")
+        assembler.appendJamo("ㄴ")
+        assertEquals("관", assembler.getUnresolved())
+        assertEquals("관", assembler.appendJamo("ㄱ"))
+        assertEquals("ㄱ", assembler.getUnresolved())
+    }
+
 }

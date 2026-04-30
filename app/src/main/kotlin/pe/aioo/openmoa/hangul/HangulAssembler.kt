@@ -91,6 +91,8 @@ class HangulAssembler {
                     else -> lastJamo
                 }
                 "ㅗ" -> when (jamo) {
+                    "ㅏ" -> "ㅘ"
+                    "ㅐ" -> "ㅙ"
                     "ㅣ" -> "ㅚ"
                     "ㆍ" -> "ㅛ"
                     else -> lastJamo
@@ -104,6 +106,8 @@ class HangulAssembler {
                     else -> lastJamo
                 }
                 "ㅜ" -> when (jamo) {
+                    "ㅓ" -> "ㅝ"
+                    "ㅔ" -> "ㅞ"
                     "ㅣ" -> "ㅟ"
                     "ㆍ" -> "ㅠ"
                     else -> lastJamo
@@ -230,7 +234,7 @@ class HangulAssembler {
         return getUnresolved()
     }
 
-    fun removeLastJamo() {
+    fun removeLastJamo(decomposeMoeum: Boolean = false) {
         val last = jamoList.lastOrNull() ?: return
         val firstOfDouble = DOUBLE_JONGSEONG_DECOMPOSITION[last]?.first()
         when {
@@ -238,7 +242,16 @@ class HangulAssembler {
                 jamoList[jamoList.lastIndex] = firstOfDouble
             }
             last.matches(MOEUM_REGEX) -> {
-                if (isDecomposedState) {
+                if (decomposeMoeum) {
+                    val decomposed = COMPOUND_MOEUM_DECOMPOSITION[last]
+                    if (decomposed != null) {
+                        jamoList[jamoList.lastIndex] = decomposed
+                    } else {
+                        jamoList.removeAt(jamoList.lastIndex)
+                    }
+                    // 모음을 제거/교체했으므로 마지막 자모는 자음 또는 없음 → false
+                    isDecomposedState = false
+                } else if (isDecomposedState) {
                     jamoList.removeAt(jamoList.lastIndex)
                     isDecomposedState = false
                 } else {
@@ -262,6 +275,18 @@ class HangulAssembler {
         private val JAEUM_REGEX = Regex("^[ㄱ-ㅎ]$")
         private val MOEUM_REGEX = Regex("^[ㅏ-ㅣㆍᆢ]$")
         private val ARAEA_REGEX = Regex("^[ㆍᆢ]$")
+        // 두벌식/단모음 backspace 시 복합 모음을 첫 번째 구성 모음으로 분해.
+        // ㅛ/ㅠ/ㅕ/ㅑ 는 두벌식 키보드에서 단일 키이므로 제외(한 번에 삭제).
+        // ᆢ/ㆍ 계열은 두벌식에서 입력 불가이므로 제외.
+        private val COMPOUND_MOEUM_DECOMPOSITION = mapOf(
+            "ㅘ" to "ㅗ",
+            "ㅙ" to "ㅗ",
+            "ㅚ" to "ㅗ",
+            "ㅝ" to "ㅜ",
+            "ㅞ" to "ㅜ",
+            "ㅟ" to "ㅜ",
+            "ㅢ" to "ㅡ",
+        )
         private val DOUBLE_JONGSEONG_DECOMPOSITION = mapOf(
             "ㄳ" to listOf("ㄱ", "ㅅ"),
             "ㄵ" to listOf("ㄴ", "ㅈ"),

@@ -617,7 +617,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                                     composingText = composingText.substring(
                                         0, composingText.length - unresolved.length
                                     )
-                                    hangulAssembler.removeLastJamo()
+                                    hangulAssembler.removeLastJamo(isQwertyKoActive())
                                     hangulAssembler.getUnresolved()?.let {
                                         composingText += it
                                     }
@@ -1072,6 +1072,8 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
 
     private data class KoLayout(val useQwerty: Boolean, val simpleQwerty: Boolean)
 
+    private fun isQwertyKoActive(): Boolean = keyboardViews[IMEMode.IME_KO] is QuertyKoView
+
     private fun resolveKoLayout(): KoLayout {
         val savedMode = SettingsPreferences.getHangulInputMode(this)
         if (savedMode.isQwertyLayout) {
@@ -1521,7 +1523,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                     }
                     val unresolved = hangulAssembler.getUnresolved()
                     if (unresolved != null) {
-                        hangulAssembler.removeLastJamo()
+                        hangulAssembler.removeLastJamo(isQwertyKoActive())
                         val newUnresolved = hangulAssembler.getUnresolved()
                         val start = (cursor - unresolved.length).coerceAtLeast(0)
                         editText.text.replace(start, cursor, newUnresolved ?: "")
