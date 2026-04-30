@@ -48,6 +48,8 @@ object SettingsPreferences {
     const val KEY_FLOATING_INDICATOR_X = "floating_indicator_x"
     const val KEY_FLOATING_INDICATOR_Y = "floating_indicator_y"
     const val KEY_OVERLAY_PERMISSION_NOTIFIED = "overlay_permission_notified"
+    const val KEY_HW_CAPSLOCK_TO_CTRL = "hw_capslock_to_ctrl"
+    const val KEY_HW_TAB_VIM_MODE = "hw_tab_vim_mode"
 
     val ALL_KEYS = setOf(
         KEY_HANGUL_INPUT_MODE,
@@ -79,6 +81,8 @@ object SettingsPreferences {
         KEY_FLOATING_INDICATOR_X,
         KEY_FLOATING_INDICATOR_Y,
         KEY_OVERLAY_PERMISSION_NOTIFIED,
+        KEY_HW_CAPSLOCK_TO_CTRL,
+        KEY_HW_TAB_VIM_MODE,
     ) + UserCharKey.values().map { it.prefKey }.toSet()
 
     private fun prefs(context: Context) =
@@ -233,6 +237,12 @@ object SettingsPreferences {
     fun setOverlayPermissionNotified(context: Context, notified: Boolean) {
         prefs(context).edit().putBoolean(KEY_OVERLAY_PERMISSION_NOTIFIED, notified).apply()
     }
+
+    fun getCapsLockToCtrl(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_HW_CAPSLOCK_TO_CTRL, false)
+
+    fun getTabVimMode(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_HW_TAB_VIM_MODE, false)
 
     fun save(context: Context, key: String, value: String) {
         prefs(context).edit().putString(key, value).apply()

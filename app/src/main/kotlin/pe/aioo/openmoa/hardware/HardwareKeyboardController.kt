@@ -3,8 +3,10 @@ package pe.aioo.openmoa.hardware
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.Configuration
+import android.os.SystemClock
 import android.util.Log
 import android.view.KeyEvent
+import android.view.inputmethod.InputConnection
 import pe.aioo.openmoa.BuildConfig
 import pe.aioo.openmoa.IMEMode
 import pe.aioo.openmoa.floating.FloatingIndicatorManager
@@ -16,6 +18,7 @@ class HardwareKeyboardController(
     private val onToggleLanguageRequested: () -> Unit,
     private val currentImeMode: () -> IMEMode,
     private val onJamoInput: (String) -> Unit = {},
+    private val inputConnectionProvider: () -> InputConnection? = { null },
 ) {
     private val context: Context = context.applicationContext
     private val prefs: SharedPreferences = this.context
@@ -24,8 +27,12 @@ class HardwareKeyboardController(
     private var cachedFloatingEnabled =
         SettingsPreferences.getFloatingIndicatorEnabled(this.context)
     private var cachedHardwareKbConnected = computeHardwareKeyboardConnected()
+    private var cachedCapsLockToCtrl = SettingsPreferences.getCapsLockToCtrl(this.context)
+    private var cachedTabVimMode = SettingsPreferences.getTabVimMode(this.context)
 
     private val detector = HardwareKeyShortcutDetector()
+    private val capsLockRemapper = CapsLockRemapper().also { it.enabled = cachedCapsLockToCtrl }
+    private val tabHoldVimDetector = TabHoldVimDetector().also { it.enabled = cachedTabVimMode }
     private val indicator = FloatingIndicatorManager(this.context)
     private var isInputActive = false
 
@@ -33,6 +40,16 @@ class HardwareKeyboardController(
         when (key) {
             SettingsPreferences.KEY_FLOATING_INDICATOR_ENABLED ->
                 cachedFloatingEnabled = SettingsPreferences.getFloatingIndicatorEnabled(this.context)
+            SettingsPreferences.KEY_HW_CAPSLOCK_TO_CTRL -> {
+                cachedCapsLockToCtrl = SettingsPreferences.getCapsLockToCtrl(this.context)
+                capsLockRemapper.enabled = cachedCapsLockToCtrl
+                capsLockRemapper.reset()
+            }
+            SettingsPreferences.KEY_HW_TAB_VIM_MODE -> {
+                cachedTabVimMode = SettingsPreferences.getTabVimMode(this.context)
+                tabHoldVimDetector.enabled = cachedTabVimMode
+                tabHoldVimDetector.reset()
+            }
             else -> return@OnSharedPreferenceChangeListener
         }
         evaluateAndUpdate()
@@ -51,6 +68,34 @@ class HardwareKeyboardController(
                     "ctrl=${event.isCtrlPressed} alt=${event.isAltPressed}"
             )
         }
+
+        when (val capsResult = capsLockRemapper.onKeyDown(event.keyCode, event.metaState)) {
+            CapsLockRemapper.Result.Consumed -> return true
+            is CapsLockRemapper.Result.RewriteAsCtrl -> {
+                inputConnectionProvider()?.let { ic ->
+                    val now = SystemClock.uptimeMillis()
+                    ic.sendKeyEvent(KeyEvent(now, now, KeyEvent.ACTION_DOWN, capsResult.keyCode, 0, capsResult.metaState))
+                    ic.sendKeyEvent(KeyEvent(now, now, KeyEvent.ACTION_UP, capsResult.keyCode, 0, capsResult.metaState))
+                }
+                return true
+            }
+            CapsLockRemapper.Result.Pass -> Unit
+        }
+
+        return handleKeyDownEvent(event)
+    }
+
+    private fun handleKeyDownEvent(event: KeyEvent): Boolean {
+        val vimAction = tabHoldVimDetector.onKeyDown(
+            keyCode = event.keyCode,
+            isShift = event.isShiftPressed,
+            isRepeat = event.repeatCount > 0,
+        )
+        if (vimAction != VimAction.PassThrough) {
+            inputConnectionProvider()?.let { ic -> VimActionExecutor.execute(vimAction, ic) }
+            return true
+        }
+
         val shortcut = handle(
             detector.onKeyDown(
                 keyCode = event.keyCode,
@@ -60,7 +105,20 @@ class HardwareKeyboardController(
             )
         )
         if (shortcut) return true
-        return tryHangulInput(event)
+        if (tryHangulInput(event)) return true
+        return tryForceLowercase(event)
+    }
+
+    private fun tryForceLowercase(event: KeyEvent): Boolean {
+        if (!capsLockRemapper.enabled) return false
+        if (currentImeMode() == IMEMode.IME_KO) return false
+        if (!cachedHardwareKbConnected) return false
+        if (event.isCtrlPressed || event.isAltPressed) return false
+        if (event.metaState and KeyEvent.META_CAPS_LOCK_ON == 0) return false
+        val lower = letterChar(event.keyCode) ?: return false
+        val char = if (event.isShiftPressed) lower.uppercaseChar() else lower
+        inputConnectionProvider()?.commitText(char.toString(), 1) ?: return false
+        return true
     }
 
     private fun tryHangulInput(event: KeyEvent): Boolean {
@@ -82,6 +140,15 @@ class HardwareKeyboardController(
         if (BuildConfig.DEBUG) {
             Log.d(TAG, "onKeyUp kc=${event.keyCode}")
         }
+
+        if (capsLockRemapper.onKeyUp(event.keyCode) != CapsLockRemapper.Result.Pass) return true
+
+        val vimAction = tabHoldVimDetector.onKeyUp(event.keyCode)
+        if (vimAction != VimAction.PassThrough) {
+            inputConnectionProvider()?.let { ic -> VimActionExecutor.execute(vimAction, ic) }
+            return true
+        }
+
         return handle(detector.onKeyUp(event.keyCode))
     }
 
@@ -111,6 +178,8 @@ class HardwareKeyboardController(
         if (!isInputActive) return
         isInputActive = false
         detector.reset()
+        capsLockRemapper.reset()
+        tabHoldVimDetector.reset()
         evaluateAndUpdate()
     }
 
@@ -120,11 +189,14 @@ class HardwareKeyboardController(
 
     fun onWindowHidden() {
         if (BuildConfig.DEBUG) Log.d(TAG, "onWindowHidden")
+        tabHoldVimDetector.reset()
     }
 
     fun onConfigurationChanged() {
         cachedHardwareKbConnected = computeHardwareKeyboardConnected()
         detector.reset()
+        capsLockRemapper.reset()
+        tabHoldVimDetector.reset()
         evaluateAndUpdate()
     }
 

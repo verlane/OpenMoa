@@ -323,6 +323,10 @@
     <string name="settings_overlay_permission_title">다른 앱 위에 표시 권한</string>
     <string name="settings_overlay_permission_summary_granted">허용됨 — 플로팅 인디케이터 표시 가능</string>
     <string name="settings_overlay_permission_summary_denied">필요 — 탭하여 시스템 설정으로 이동</string>
+    <string name="settings_hw_capslock_ctrl_title">CapsLock → LCtrl</string>
+    <string name="settings_hw_capslock_ctrl_description">CapsLock을 누르는 동안 다른 키에 Ctrl을 적용합니다</string>
+    <string name="settings_hw_tab_vim_title">Tab-hold vim 모드</string>
+    <string name="settings_hw_tab_vim_description">Tab을 누른 채 h/j/k/l 등 vim 키를 사용합니다. Tab 단독 입력은 그대로 탭 동작합니다</string>
 
     <string name="floating_indicator_label_ko">한</string>
     <string name="floating_indicator_label_en">A</string>

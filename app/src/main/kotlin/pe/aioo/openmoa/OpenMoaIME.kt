@@ -104,6 +104,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
             onToggleLanguageRequested = { toggleLanguage() },
             currentImeMode = { imeMode },
             onJamoInput = { jamo -> dispatchHardwareJamo(jamo) },
+            inputConnectionProvider = { currentInputConnection },
         )
     }
 
