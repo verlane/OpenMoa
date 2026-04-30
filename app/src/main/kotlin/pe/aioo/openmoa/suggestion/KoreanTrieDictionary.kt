@@ -41,13 +41,13 @@ class KoreanTrieDictionary : Dictionary {
         }
     }
 
-    private fun buildTrie(words: Sequence<String>): Node {
+    private suspend fun buildTrie(words: Sequence<String>): Node = withContext(Dispatchers.IO) {
         val trie = Node()
         words.map { it.trim() }
             .filter { it.isNotEmpty() && it.all { c -> c in '가'..'힣' } }
             .toHashSet()
             .forEach { word -> insert(trie, word) }
-        return trie
+        trie
     }
 
     private fun insert(root: Node, word: String) {
@@ -56,6 +56,18 @@ class KoreanTrieDictionary : Dictionary {
             node = node.children.getOrPut(c) { Node() }
         }
         node.isEnd = true
+    }
+
+    override suspend fun contains(word: String): Boolean {
+        ensureLoaded()
+        val trimmed = word.trim()
+        if (trimmed.isEmpty() || trimmed.any { it !in '가'..'힣' }) return false
+        val localRoot = root ?: return false
+        var node = localRoot
+        for (c in trimmed) {
+            node = node.children[c] ?: return false
+        }
+        return node.isEnd
     }
 
     override suspend fun prefix(prefix: String, limit: Int): List<String> {

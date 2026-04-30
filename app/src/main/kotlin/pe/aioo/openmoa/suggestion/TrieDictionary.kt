@@ -62,6 +62,18 @@ class TrieDictionary(private val context: Context) : Dictionary {
         return results
     }
 
+    override suspend fun contains(word: String): Boolean {
+        ensureLoaded()
+        val normalized = word.lowercase().trim()
+        if (normalized.isEmpty() || normalized.any { it !in 'a'..'z' }) return false
+        val localRoot = root ?: return false
+        var node = localRoot
+        for (c in normalized) {
+            node = node.children[c - 'a'] ?: return false
+        }
+        return node.isEnd
+    }
+
     private fun collectWords(node: Node, current: String, results: MutableList<String>, limit: Int) {
         if (results.size >= limit) return
         if (node.isEnd) results.add(current)

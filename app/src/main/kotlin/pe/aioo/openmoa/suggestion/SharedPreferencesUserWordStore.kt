@@ -110,6 +110,19 @@ class SharedPreferencesUserWordStore(
         schedulePersist()
     }
 
+    override fun ensureMinCount(word: String, minCount: Int) {
+        if (word.isBlank()) return
+        val normalized = normalize(word)
+        synchronized(this) {
+            val current = words[normalized]?.count ?: 0
+            if (current < minCount) {
+                words[normalized] = WordMeta(count = minCount, lastUsedDay = clock.todayEpochDay())
+                if (words.size > MAX_WORDS) evict()
+            }
+        }
+        schedulePersist()
+    }
+
     override fun decrement(word: String) {
         val normalized = normalize(word)
         val changed = synchronized(this) {

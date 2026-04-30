@@ -356,6 +356,55 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         }
     }
 
+    // Phase 1 + Idea A + Idea B: 단어 커밋 시 학습 (Enter/Space/구두점 공통)
+    private fun learnComposingWordOnCommit() {
+        if (isPasswordField || composingText.isEmpty()) return
+        if (imeMode == IMEMode.IME_EN) {
+            val word = WordTokenizer.extractEnglish(composingText) ?: return
+            userWordStore.increment(word)
+            lastLearnedWord = word
+            lastLearnedIsKo = false
+            serviceScope.launch {
+                // Backspace로 undo됐으면(lastLearnedWord != word) ensureMinCount 건너뜀
+                if (suggestionEngine.containsInDictionary(word) && lastLearnedWord == word) {
+                    userWordStore.ensureMinCount(word, config.minLearnCount)
+                }
+            }
+        } else if (imeMode == IMEMode.IME_KO) {
+            val word = WordTokenizer.extractKorean(composingText) ?: return
+            koreanUserWordStore.increment(word)
+            lastLearnedWord = word
+            lastLearnedIsKo = true
+            serviceScope.launch {
+                if (koreanSuggestionEngine.containsInDictionary(word) && lastLearnedWord == word) {
+                    koreanUserWordStore.ensureMinCount(word, config.minLearnCount)
+                }
+            }
+        }
+    }
+
+    // Idea C: 커서 이동 시 사전에 있는 단어만 학습
+    private fun learnComposingWordIfInDictionary() {
+        if (isPasswordField || composingText.isEmpty()) return
+        if (imeMode == IMEMode.IME_EN) {
+            val word = WordTokenizer.extractEnglish(composingText) ?: return
+            serviceScope.launch {
+                if (suggestionEngine.containsInDictionary(word)) {
+                    userWordStore.increment(word)
+                    userWordStore.ensureMinCount(word, config.minLearnCount)
+                }
+            }
+        } else if (imeMode == IMEMode.IME_KO) {
+            val word = WordTokenizer.extractKorean(composingText) ?: return
+            serviceScope.launch {
+                if (koreanSuggestionEngine.containsInDictionary(word)) {
+                    koreanUserWordStore.increment(word)
+                    koreanUserWordStore.ensureMinCount(word, config.minLearnCount)
+                }
+            }
+        }
+    }
+
     private fun onSuggestionPicked(word: String, isHotstring: Boolean) {
         val formEditText = activeFormEditText
         if (formEditText != null) {
@@ -584,6 +633,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                             }
                             SpecialKey.ENTER -> {
                                 hotstringBuffer = ""
+                                learnComposingWordOnCommit()
                                 finishComposing()
                                 val action = currentInputEditorInfo.imeOptions and (
                                     EditorInfo.IME_MASK_ACTION or
@@ -641,24 +691,32 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                             }
                             SpecialKey.ARROW_UP -> {
                                 hotstringBuffer = ""
+                                learnComposingWordIfInDictionary()
+                                if (composingText.isNotEmpty()) finishComposing()
                                 if (!isTextEmpty()) {
                                     sendKeyDownUpEvent(KeyEvent.KEYCODE_DPAD_UP)
                                 }
                             }
                             SpecialKey.ARROW_LEFT -> {
                                 hotstringBuffer = ""
+                                learnComposingWordIfInDictionary()
+                                if (composingText.isNotEmpty()) finishComposing()
                                 if (!isTextEmpty()) {
                                     sendKeyDownUpEvent(KeyEvent.KEYCODE_DPAD_LEFT)
                                 }
                             }
                             SpecialKey.ARROW_RIGHT -> {
                                 hotstringBuffer = ""
+                                learnComposingWordIfInDictionary()
+                                if (composingText.isNotEmpty()) finishComposing()
                                 if (!isTextEmpty()) {
                                     sendKeyDownUpEvent(KeyEvent.KEYCODE_DPAD_RIGHT)
                                 }
                             }
                             SpecialKey.ARROW_DOWN -> {
                                 hotstringBuffer = ""
+                                learnComposingWordIfInDictionary()
+                                if (composingText.isNotEmpty()) finishComposing()
                                 if (!isTextEmpty()) {
                                     sendKeyDownUpEvent(KeyEvent.KEYCODE_DPAD_DOWN)
                                 }
@@ -800,20 +858,8 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
                             lastHotstringTrigger = null
                             lastHotstringExpansion = null
                             lastLearnedWord = null
-                            if (key == " " && !isPasswordField) {
-                                if (imeMode == IMEMode.IME_EN && composingText.isNotEmpty()) {
-                                    WordTokenizer.extractEnglish(composingText)?.let {
-                                        userWordStore.increment(it)
-                                        lastLearnedWord = it
-                                        lastLearnedIsKo = false
-                                    }
-                                } else if (imeMode == IMEMode.IME_KO && composingText.isNotEmpty()) {
-                                    WordTokenizer.extractKorean(composingText)?.let {
-                                        koreanUserWordStore.increment(it)
-                                        lastLearnedWord = it
-                                        lastLearnedIsKo = true
-                                    }
-                                }
+                            if ((key == " " || key in WORD_COMMIT_PUNCTUATION)) {
+                                learnComposingWordOnCommit()
                             }
                             if (key != " ") {
                                 hotstringBuffer = (hotstringBuffer + key).takeLast(50)
@@ -1853,6 +1899,8 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
         private const val INPUT_POLL_INTERVAL_MS = 3000L
 
         private const val SIMPLE_MULTI_TAP_MS = 400L
+
+        private val WORD_COMMIT_PUNCTUATION = setOf(".", ",", "!", "?", ";", ":")
 
         // 단모음 multi-tap 합성: 같은 자모 두 번 → 합성 자모
         private val SIMPLE_MULTI_TAP_MAP = mapOf(

@@ -8,6 +8,8 @@ class SuggestionEngine(
     private val userWordStore: UserWordStore,
     private val maxCount: Int = 5,
 ) {
+    suspend fun containsInDictionary(word: String): Boolean = dictionary.contains(word)
+
     suspend fun suggest(prefix: String, minCount: Int = 1): List<String> = withContext(Dispatchers.Default) {
         if (prefix.isBlank()) return@withContext emptyList()
 

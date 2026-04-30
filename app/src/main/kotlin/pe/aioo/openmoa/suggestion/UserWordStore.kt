@@ -4,6 +4,7 @@ interface UserWordStore {
     suspend fun topN(prefix: String, limit: Int, minCount: Int = 1): List<String>
     suspend fun topNChosung(pattern: String, limit: Int, minCount: Int = 1): List<String> = emptyList()
     fun increment(word: String)
+    fun ensureMinCount(word: String, minCount: Int) = Unit
     fun decrement(word: String)
     fun remove(word: String)
     fun contains(word: String): Boolean
@@ -40,6 +41,12 @@ class InMemoryUserWordStore : UserWordStore {
     override fun increment(word: String) {
         if (word.isBlank()) return
         words[word] = (words[word] ?: 0) + 1
+    }
+
+    override fun ensureMinCount(word: String, minCount: Int) {
+        if (word.isBlank()) return
+        val current = words[word] ?: 0
+        if (current < minCount) words[word] = minCount
     }
 
     override fun decrement(word: String) {
