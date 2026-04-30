@@ -3,6 +3,7 @@ package pe.aioo.openmoa.view.keyboardview.qwerty
 import android.content.Context
 import android.util.AttributeSet
 import android.view.View
+import androidx.constraintlayout.widget.ConstraintLayout
 
 class QuertyKoView : QuertyView {
 
@@ -20,19 +21,45 @@ class QuertyKoView : QuertyView {
 
     override fun keyList(): List<List<String>> = if (simple) SIMPLE_KEY_LIST else KO_KEY_LIST
 
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        applySimpleVisibility()
+    }
+
     /**
      * 단모음 모드: 자모가 없는 키 자리(o, p, l, m)를 GONE 처리.
-     * ConstraintLayout horizontal chain에서 GONE된 view는 weight 합에서 제외되어
-     * 나머지 키들이 균등하게 화면을 채움.
+     * beforeASpace/afterLSpace는 수직 체인 앵커 역할을 하므로 GONE 불가.
+     * 대신 horizontal weight를 0으로 조정해 ㅁ행/ㅋ행 weight를 8.0으로 맞춤 (ㅂ행과 동일).
      */
     private fun applySimpleVisibility() {
-        // setter 가 init() 완료 전에 호출될 가능성을 가드 (XML attribute 바인딩 등)
         if (!isBindingInitialized()) return
         val visibility = if (simple) View.GONE else View.VISIBLE
         binding.oKey.visibility = visibility
         binding.pKey.visibility = visibility
         binding.lKey.visibility = visibility
         binding.mKey.visibility = visibility
+
+        val spaceWeight = if (simple) 0f else 0.5f
+        (binding.beforeASpace.layoutParams as? ConstraintLayout.LayoutParams)?.let {
+            it.horizontalWeight = spaceWeight
+            binding.beforeASpace.layoutParams = it
+            binding.beforeASpace.requestLayout()
+        }
+        (binding.afterLSpace.layoutParams as? ConstraintLayout.LayoutParams)?.let {
+            it.horizontalWeight = spaceWeight
+            binding.afterLSpace.layoutParams = it
+            binding.afterLSpace.requestLayout()
+        }
+
+        val shiftBackspaceWeight = if (simple) 1f else 1.5f
+        (binding.shiftKey.layoutParams as? ConstraintLayout.LayoutParams)?.let {
+            it.horizontalWeight = shiftBackspaceWeight
+            binding.shiftKey.layoutParams = it
+        }
+        (binding.backspaceKey.layoutParams as? ConstraintLayout.LayoutParams)?.let {
+            it.horizontalWeight = shiftBackspaceWeight
+            binding.backspaceKey.layoutParams = it
+        }
     }
 
     companion object {
