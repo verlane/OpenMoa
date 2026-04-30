@@ -117,6 +117,7 @@ class NumberView : ConstraintLayout, KoinComponent {
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         prefs.registerOnSharedPreferenceChangeListener(prefChangeListener)
+        updateKeyHints()
     }
 
     override fun onDetachedFromWindow() {

@@ -21,15 +21,15 @@ class HardwareKeyboardController(
     private val prefs: SharedPreferences = this.context
         .getSharedPreferences(SettingsPreferences.PREFS_NAME, Context.MODE_PRIVATE)
 
-    @Volatile private var cachedFloatingEnabled =
+    private var cachedFloatingEnabled =
         SettingsPreferences.getFloatingIndicatorEnabled(this.context)
-    @Volatile private var cachedLanguageSwitchEnabled =
+    private var cachedLanguageSwitchEnabled =
         SettingsPreferences.getHwLanguageSwitchEnabled(this.context)
-    @Volatile private var cachedRAltEnabled =
+    private var cachedRAltEnabled =
         SettingsPreferences.getHwRAltEnabled(this.context)
-    @Volatile private var cachedShiftSpaceEnabled =
+    private var cachedShiftSpaceEnabled =
         SettingsPreferences.getHwShiftSpaceEnabled(this.context)
-    @Volatile private var cachedHardwareKbConnected = computeHardwareKeyboardConnected()
+    private var cachedHardwareKbConnected = computeHardwareKeyboardConnected()
 
     private val detector = HardwareKeyShortcutDetector(
         isLanguageSwitchEnabled = { cachedLanguageSwitchEnabled },

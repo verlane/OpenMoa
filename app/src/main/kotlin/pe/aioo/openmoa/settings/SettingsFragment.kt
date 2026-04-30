@@ -9,12 +9,12 @@ import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CancellationException
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.SwitchPreferenceCompat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -35,9 +35,9 @@ import pe.aioo.openmoa.config.OneHandMode
 import pe.aioo.openmoa.config.SoundType
 import pe.aioo.openmoa.config.SoundVolume
 import pe.aioo.openmoa.config.SpaceLongPressAction
+import pe.aioo.openmoa.quickphrase.NumberLongKey
 import pe.aioo.openmoa.quickphrase.QuickPhraseKey
 import pe.aioo.openmoa.quickphrase.QwertyLongKey
-import pe.aioo.openmoa.suggestion.SharedPreferencesUserWordStore
 import pe.aioo.openmoa.suggestion.UserWordStore
 import org.koin.android.ext.android.get
 import org.koin.core.qualifier.named
@@ -47,10 +47,39 @@ class SettingsFragment : PreferenceFragmentCompat() {
     companion object {
         private const val SETTINGS_FILE_NAME = "openmoa_settings.json"
         private const val DEV_TAP_REQUIRED = 7
+
+        private val BOOLEAN_KEYS = setOf(
+            SettingsPreferences.KEY_KEY_PREVIEW,
+            SettingsPreferences.KEY_AUTO_SPACE_PERIOD,
+            SettingsPreferences.KEY_AUTO_CAPITALIZE_ENGLISH,
+            SettingsPreferences.KEY_HOTSTRING_ENABLED,
+            SettingsPreferences.KEY_WORD_SUGGESTION_ENABLED,
+            SettingsPreferences.KEY_KOREAN_WORD_SUGGESTION_ENABLED,
+            SettingsPreferences.KEY_CLIPBOARD_ENABLED,
+            SettingsPreferences.KEY_LANDSCAPE_QWERTY,
+            SettingsPreferences.KEY_FLOATING_INDICATOR_ENABLED,
+            SettingsPreferences.KEY_HW_LANGUAGE_SWITCH_ENABLED,
+            SettingsPreferences.KEY_HW_RALT_ENABLED,
+            SettingsPreferences.KEY_HW_SHIFT_SPACE_ENABLED,
+            SettingsPreferences.KEY_OVERLAY_PERMISSION_NOTIFIED,
+        )
+
+        private val ALLOWED_KEYS: Set<String> by lazy {
+            buildSet {
+                addAll(SettingsPreferences.ALL_KEYS)
+                QuickPhraseKey.values().forEach { add(it.prefKey) }
+                QwertyLongKey.values().forEach { add(it.prefKey) }
+                NumberLongKey.values().forEach { add(it.prefKey) }
+            }
+        }
     }
 
     private var devTapCount = 0
     private var devTapLastTime = 0L
+
+    private val importLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri -> if (uri != null) importSettings(uri) }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         preferenceManager.sharedPreferencesName = SettingsPreferences.PREFS_NAME
@@ -137,7 +166,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             true
         }
         pref<Preference>("pref_data_import")?.setOnPreferenceClickListener {
-            importSettings()
+            importLauncher.launch(arrayOf("application/json", "*/*"))
             true
         }
         pref<Preference>("pref_data_reset")?.setOnPreferenceClickListener {
@@ -323,43 +352,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
     }
 
-    private fun importSettings() {
+    private fun importSettings(uri: Uri) {
         val ctx = requireContext()
-        val allowedKeys = buildSet {
-            addAll(SettingsPreferences.ALL_KEYS)
-            QuickPhraseKey.values().forEach { add(it.prefKey) }
-            QwertyLongKey.values().forEach { add(it.prefKey) }
-        }
-        val booleanKeys = setOf(
-            SettingsPreferences.KEY_KEY_PREVIEW,
-            SettingsPreferences.KEY_AUTO_SPACE_PERIOD,
-            SettingsPreferences.KEY_AUTO_CAPITALIZE_ENGLISH,
-            SettingsPreferences.KEY_HOTSTRING_ENABLED,
-            SettingsPreferences.KEY_WORD_SUGGESTION_ENABLED,
-            SettingsPreferences.KEY_KOREAN_WORD_SUGGESTION_ENABLED,
-            SettingsPreferences.KEY_CLIPBOARD_ENABLED,
-        )
         lifecycleScope.launch(Dispatchers.IO) {
             val success = try {
                 val resolver = ctx.contentResolver
-                val uri = resolver.query(
-                    MediaStore.Downloads.EXTERNAL_CONTENT_URI,
-                    arrayOf(MediaStore.Downloads._ID),
-                    "${MediaStore.Downloads.DISPLAY_NAME} = ?",
-                    arrayOf(SETTINGS_FILE_NAME),
-                    null
-                )?.use {
-                    if (it.moveToFirst()) {
-                        val id = it.getLong(0)
-                        MediaStore.Downloads.EXTERNAL_CONTENT_URI.buildUpon()
-                            .appendPath(id.toString()).build()
-                    } else null
-                } ?: run {
-                    withContext(Dispatchers.Main) {
-                        if (isAdded) Toast.makeText(ctx, R.string.settings_data_import_fail, Toast.LENGTH_SHORT).show()
-                    }
-                    return@launch
-                }
                 val jsonText = resolver.openInputStream(uri)
                     ?.use { it.readBytes().toString(Charsets.UTF_8) }
                     ?: throw Exception("openInputStream failed")
@@ -372,8 +369,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 // 1단계: 전체 파싱 (실패 시 적용 없이 예외)
                 val settingsEdits = mutableListOf<Pair<String, Any>>()
                 settingsObj.keys().forEach { key ->
-                    if (key !in allowedKeys) return@forEach
-                    if (key in booleanKeys) {
+                    if (key !in ALLOWED_KEYS) return@forEach
+                    if (key in BOOLEAN_KEYS) {
                         settingsEdits.add(key to settingsObj.optBoolean(key))
                     } else {
                         val value = settingsObj.optString(key)

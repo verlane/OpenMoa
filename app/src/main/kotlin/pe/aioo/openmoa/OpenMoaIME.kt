@@ -108,9 +108,7 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     }
 
     private fun dispatchHardwareJamo(jamo: String) {
-        if (!this::broadcastReceiver.isInitialized) return
-        broadcastReceiver.onReceive(
-            this,
+        LocalBroadcastManager.getInstance(this).sendBroadcast(
             Intent(INTENT_ACTION).apply { putExtra(EXTRA_NAME, jamo) }
         )
     }
@@ -122,6 +120,8 @@ class OpenMoaIME : InputMethodService(), KoinComponent {
     }
 
     private val inputBindingPollHandler = Handler(Looper.getMainLooper())
+    // 일부 기기에서 BT 키보드 연결 해제 시 onUnbindInput/onFinishInput이 호출되지 않아
+    // 플로팅 인디케이터가 계속 표시되는 문제를 방어하기 위한 폴러
     private val inputBindingPollRunnable = object : Runnable {
         override fun run() {
             if (currentInputBinding == null || currentInputConnection == null) {
