@@ -23,19 +23,9 @@ class HardwareKeyboardController(
 
     private var cachedFloatingEnabled =
         SettingsPreferences.getFloatingIndicatorEnabled(this.context)
-    private var cachedLanguageSwitchEnabled =
-        SettingsPreferences.getHwLanguageSwitchEnabled(this.context)
-    private var cachedRAltEnabled =
-        SettingsPreferences.getHwRAltEnabled(this.context)
-    private var cachedShiftSpaceEnabled =
-        SettingsPreferences.getHwShiftSpaceEnabled(this.context)
     private var cachedHardwareKbConnected = computeHardwareKeyboardConnected()
 
-    private val detector = HardwareKeyShortcutDetector(
-        isLanguageSwitchEnabled = { cachedLanguageSwitchEnabled },
-        isShiftSpaceEnabled = { cachedShiftSpaceEnabled },
-        isRAltEnabled = { cachedRAltEnabled },
-    )
+    private val detector = HardwareKeyShortcutDetector()
     private val indicator = FloatingIndicatorManager(this.context)
     private var isInputActive = false
 
@@ -43,12 +33,6 @@ class HardwareKeyboardController(
         when (key) {
             SettingsPreferences.KEY_FLOATING_INDICATOR_ENABLED ->
                 cachedFloatingEnabled = SettingsPreferences.getFloatingIndicatorEnabled(this.context)
-            SettingsPreferences.KEY_HW_LANGUAGE_SWITCH_ENABLED ->
-                cachedLanguageSwitchEnabled = SettingsPreferences.getHwLanguageSwitchEnabled(this.context)
-            SettingsPreferences.KEY_HW_RALT_ENABLED ->
-                cachedRAltEnabled = SettingsPreferences.getHwRAltEnabled(this.context)
-            SettingsPreferences.KEY_HW_SHIFT_SPACE_ENABLED ->
-                cachedShiftSpaceEnabled = SettingsPreferences.getHwShiftSpaceEnabled(this.context)
             else -> return@OnSharedPreferenceChangeListener
         }
         evaluateAndUpdate()

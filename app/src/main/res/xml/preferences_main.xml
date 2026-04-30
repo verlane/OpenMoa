@@ -92,26 +92,6 @@
             app:title="@string/settings_overlay_permission_title"
             app:icon="@drawable/ic_pref_keyboard" />
 
-        <SwitchPreferenceCompat
-            app:key="hw_language_switch_enabled"
-            app:title="@string/settings_hw_language_switch_title"
-            app:summary="@string/settings_hw_language_switch_description"
-            app:defaultValue="true"
-            app:icon="@drawable/ic_pref_keyboard" />
-
-        <SwitchPreferenceCompat
-            app:key="hw_ralt_enabled"
-            app:title="@string/settings_hw_ralt_title"
-            app:summary="@string/settings_hw_ralt_description"
-            app:defaultValue="true"
-            app:icon="@drawable/ic_pref_keyboard" />
-
-        <SwitchPreferenceCompat
-            app:key="hw_shift_space_enabled"
-            app:title="@string/settings_hw_shift_space_title"
-            app:summary="@string/settings_hw_shift_space_description"
-            app:defaultValue="true"
-            app:icon="@drawable/ic_pref_keyboard" />
 
     </PreferenceCategory>
 

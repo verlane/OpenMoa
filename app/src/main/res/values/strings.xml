@@ -320,12 +320,6 @@
     <string name="settings_hw_keyboard_section">외장 키보드</string>
     <string name="settings_floating_indicator_title">한/영 플로팅 인디케이터</string>
     <string name="settings_floating_indicator_description">외장 키보드 사용 중 화면에 한/영 상태를 표시합니다 (탭으로 전환, 드래그로 이동)</string>
-    <string name="settings_hw_language_switch_title">물리 한/영 키 사용</string>
-    <string name="settings_hw_language_switch_description">키보드의 한/영, KANA 키로 언어를 전환합니다</string>
-    <string name="settings_hw_ralt_title">오른쪽 Alt(RAlt)로 한/영 전환</string>
-    <string name="settings_hw_ralt_description">RAlt를 단독으로 누르면 한/영을 전환합니다</string>
-    <string name="settings_hw_shift_space_title">Shift+Space로 한/영 전환</string>
-    <string name="settings_hw_shift_space_description">Shift와 Space를 함께 눌러 언어를 전환합니다</string>
     <string name="settings_overlay_permission_title">다른 앱 위에 표시 권한</string>
     <string name="settings_overlay_permission_summary_granted">허용됨 — 플로팅 인디케이터 표시 가능</string>
     <string name="settings_overlay_permission_summary_denied">필요 — 탭하여 시스템 설정으로 이동</string>

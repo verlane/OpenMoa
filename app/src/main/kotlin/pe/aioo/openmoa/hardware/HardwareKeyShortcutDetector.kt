@@ -1,23 +1,19 @@
 package pe.aioo.openmoa.hardware
 
-class HardwareKeyShortcutDetector(
-    private val isLanguageSwitchEnabled: () -> Boolean = { true },
-    private val isShiftSpaceEnabled: () -> Boolean = { true },
-    private val isRAltEnabled: () -> Boolean = { true },
-) {
+class HardwareKeyShortcutDetector {
     private var rAltAlone = false
 
     fun onKeyDown(keyCode: Int, isShift: Boolean, isCtrl: Boolean, isAlt: Boolean): ShortcutAction {
-        if (isShiftSpaceEnabled() && keyCode == KEYCODE_SPACE && isShift && !isCtrl && !isAlt) {
+        if (keyCode == KEYCODE_SPACE && isShift && !isCtrl && !isAlt) {
             rAltAlone = false
             return ShortcutAction.ConsumeToggleLanguage
         }
-        if (isLanguageSwitchEnabled() && keyCode in IMMEDIATE_LANGUAGE_TOGGLE_KEYS) {
+        if (keyCode in IMMEDIATE_LANGUAGE_TOGGLE_KEYS) {
             rAltAlone = false
             return ShortcutAction.ConsumeToggleLanguage
         }
         if (keyCode == KEYCODE_ALT_RIGHT) {
-            rAltAlone = isRAltEnabled()
+            rAltAlone = true
             return ShortcutAction.Pass
         }
         rAltAlone = false
@@ -30,7 +26,7 @@ class HardwareKeyShortcutDetector(
 
     fun onKeyUp(keyCode: Int): ShortcutAction {
         if (keyCode == KEYCODE_ALT_RIGHT) {
-            val shouldToggle = rAltAlone && isRAltEnabled()
+            val shouldToggle = rAltAlone
             rAltAlone = false
             return if (shouldToggle) ShortcutAction.ConsumeToggleLanguage else ShortcutAction.Pass
         }

@@ -5,15 +5,7 @@ import org.junit.Test
 
 class HardwareKeyShortcutDetectorTest {
 
-    private fun newDetector(
-        languageSwitchEnabled: Boolean = true,
-        shiftSpaceEnabled: Boolean = true,
-        rAltEnabled: Boolean = true,
-    ) = HardwareKeyShortcutDetector(
-        isLanguageSwitchEnabled = { languageSwitchEnabled },
-        isShiftSpaceEnabled = { shiftSpaceEnabled },
-        isRAltEnabled = { rAltEnabled },
-    )
+    private fun newDetector() = HardwareKeyShortcutDetector()
 
     @Test
     fun `Shift Space 단축키는 토글 액션`() {
@@ -123,40 +115,4 @@ class HardwareKeyShortcutDetectorTest {
         assertEquals(ShortcutAction.Pass, upAction)
     }
 
-    @Test
-    fun `Shift Space 비활성화 시 토글 안 함`() {
-        val detector = newDetector(shiftSpaceEnabled = false)
-        val action = detector.onKeyDown(
-            keyCode = HardwareKeyShortcutDetector.KEYCODE_SPACE,
-            isShift = true,
-            isCtrl = false,
-            isAlt = false,
-        )
-        assertEquals(ShortcutAction.Pass, action)
-    }
-
-    @Test
-    fun `RAlt 비활성화 시 단독 RAlt도 토글 안 함`() {
-        val detector = newDetector(rAltEnabled = false)
-        detector.onKeyDown(
-            keyCode = HardwareKeyShortcutDetector.KEYCODE_ALT_RIGHT,
-            isShift = false,
-            isCtrl = false,
-            isAlt = true,
-        )
-        val upAction = detector.onKeyUp(HardwareKeyShortcutDetector.KEYCODE_ALT_RIGHT)
-        assertEquals(ShortcutAction.Pass, upAction)
-    }
-
-    @Test
-    fun `LANGUAGE_SWITCH 비활성화 시 토글 안 함`() {
-        val detector = newDetector(languageSwitchEnabled = false)
-        val action = detector.onKeyDown(
-            keyCode = HardwareKeyShortcutDetector.KEYCODE_LANGUAGE_SWITCH,
-            isShift = false,
-            isCtrl = false,
-            isAlt = false,
-        )
-        assertEquals(ShortcutAction.Pass, action)
-    }
 }

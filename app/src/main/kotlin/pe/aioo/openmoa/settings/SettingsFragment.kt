@@ -58,9 +58,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
             SettingsPreferences.KEY_CLIPBOARD_ENABLED,
             SettingsPreferences.KEY_LANDSCAPE_QWERTY,
             SettingsPreferences.KEY_FLOATING_INDICATOR_ENABLED,
-            SettingsPreferences.KEY_HW_LANGUAGE_SWITCH_ENABLED,
-            SettingsPreferences.KEY_HW_RALT_ENABLED,
-            SettingsPreferences.KEY_HW_SHIFT_SPACE_ENABLED,
             SettingsPreferences.KEY_OVERLAY_PERMISSION_NOTIFIED,
         )
 
